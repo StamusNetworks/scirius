@@ -272,7 +272,7 @@ class SourceCreationTestCase(TestCase):
     def test_source_update(self):
         """Test source update"""
         self.source.update()
-        self.assertNotEqual(len(Category.objects.filter(source=self.source)), 0)
+        self.assertNotEqual(Category.objects.filter(source=self.source).count(), 0)
 
     def test_unicode_rule(self):
         source = Source.objects.create(
@@ -627,7 +627,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         }
         self.http_post(reverse('publicsource-list'), params, status=status.HTTP_201_CREATED)
         sources = Source.objects.filter(name='sonic test public source')
-        self.assertEqual(len(sources) == 1, True)
+        self.assertEqual(sources.count() == 1, True)
 
         self.public_source = sources.first()
         self.ruleset.sources.add(sources.first())
@@ -642,14 +642,14 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         params.update(kwargs)
         self.http_post(reverse('source-list'), params, status=status.HTTP_201_CREATED)
         sources = Source.objects.filter(name='sonic test custom source')
-        self.assertEqual(len(sources) == 1, True)
+        self.assertEqual(sources.count() == 1, True)
 
         self.source = sources.first()
         self.ruleset.sources.add(sources.first())
 
     def _set_source_from_name(self, name):
         sources = Source.objects.filter(name=name)
-        self.assertEqual(len(sources), 1)
+        self.assertEqual(sources.count(), 1)
         self.source = sources[0]
 
     def test_000_custom_source_iprep(self):
@@ -663,9 +663,9 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
 
         self.source.update()
         category = self.source.category_set.get(name='botcc')
-        rules = list(category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server group'))
+        rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server group')
 
-        size = len(rules)
+        size = rules.count()
         self.assertGreater(size, 1)
         for rule in rules:
             self.assertIn('group', rule.msg)
@@ -676,8 +676,8 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self._set_source_from_name('sonic test custom source')
         self.source.update()
         category = self.source.category_set.get(name='botcc')
-        rules = list(category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server'))
-        self.assertEqual(len(rules), 1)
+        rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server')
+        self.assertEqual(rules.count(), 1)
         self.assertIn('iprep', rules[0].ruleatversion_set.first().content)
 
         response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': False, 'version': 1})
@@ -686,8 +686,8 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self._set_source_from_name('sonic test custom source')
         self.source.update()
         category = self.source.category_set.get(name='botcc')
-        rules = list(category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server'))
-        self.assertEqual(size, len(rules))
+        rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server')
+        self.assertEqual(size, rules.count())
 
     def test_001_public_source(self):
         self._create_public_source()
@@ -711,7 +711,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
 
         response = self.http_delete(reverse('publicsource-detail', args=(self.public_source.pk,)), status=status.HTTP_204_NO_CONTENT)
         sources = Source.objects.filter(pk=self.public_source.pk)
-        self.assertEqual(len(sources), 0)
+        self.assertEqual(sources.count(), 0)
 
     def test_002_custom_source_upload(self):
         self._create_custom_source('local', 'sig')
@@ -752,7 +752,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
 
         response = self.http_delete(reverse('source-detail', args=(self.source.pk,)), status=status.HTTP_204_NO_CONTENT)
         sources = Source.objects.filter(pk=self.source.pk)
-        self.assertEqual(len(sources), 0)
+        self.assertEqual(sources.count(), 0)
 
     def test_004_custom_source_http(self):
         self._create_custom_source('http', 'sigs', uri=ET_URL, cert_verif=True)
@@ -814,7 +814,7 @@ class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
 
         # Create Ruleset Transformation
         action_trans = RulesetTransformation.objects.filter(key='action')
-        self.assertEqual(len(action_trans) == 1, True)
+        self.assertEqual(action_trans.count() == 1, True)
         self.assertEqual(action_trans[0].ruleset_transformation == self.ruleset, True)
         self.assertEqual(action_trans[0].key == 'action', True)
         self.assertEqual(action_trans[0].value == 'reject', True)
@@ -884,7 +884,7 @@ class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
         self.http_delete(reverse('rulesettransformation-detail', args=(lateral_trans[0].pk,)), status=status.HTTP_204_NO_CONTENT)
         self.http_delete(reverse('rulesettransformation-detail', args=(target_trans[0].pk,)), status=status.HTTP_204_NO_CONTENT)
         rulesets = RulesetTransformation.objects.all()
-        self.assertEqual(len(rulesets), 0)
+        self.assertEqual(rulesets.count(), 0)
 
 
 class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
@@ -915,10 +915,10 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         rulesets = Ruleset.objects.all()
         sources = rulesets[0].sources.all()
 
-        self.assertEqual(len(rulesets), 1)
+        self.assertEqual(rulesets.count(), 1)
         self.assertEqual(rulesets[0].name, "MyCreatedRuleset")
-        self.assertEqual(len(rulesets[0].categories.all()) > 0, True)
-        self.assertEqual(len(sources) == 2, True)
+        self.assertEqual(rulesets[0].categories.count() > 0, True)
+        self.assertEqual(sources.count() == 2, True)
 
         for src in sources:
             self.assertEqual(src in [self.source, self.source2], True)
@@ -942,17 +942,17 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
             request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
 
             rulesets = Ruleset.objects.all()
-            self.assertEqual(len(rulesets), 1)
+            self.assertEqual(rulesets.count(), 1)
             self.assertEqual(rulesets[0].name, "MyRenamedCreatedRuleset%s" % idx)
 
-            self.assertEqual(len(rulesets[0].sources.all()) == 2, True)
+            self.assertEqual(rulesets[0].sources.count() == 2, True)
 
         # Delete
         rulesets = Ruleset.objects.all()
-        self.assertEqual(len(rulesets), 1)
+        self.assertEqual(rulesets.count(), 1)
         self.http_delete(reverse('ruleset-detail', args=(rulesets[0].pk,)), status=status.HTTP_204_NO_CONTENT)
         rulesets = Ruleset.objects.all()
-        self.assertEqual(len(rulesets), 0)
+        self.assertEqual(rulesets.count(), 0)
 
     def test_002_create_ruleset_source_wrong_category(self):
         params = {"name": "MyCreatedRuleset",
@@ -986,7 +986,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         # Create valid Ruleset
         self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
         rulesets = Ruleset.objects.all()
-        self.assertEqual(len(rulesets), 1)
+        self.assertEqual(rulesets.count(), 1)
 
         # PUT/PATCH
         params["sources"] = [self.source2.pk]
@@ -1003,7 +1003,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         # Create valid Ruleset
         self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
         rulesets = Ruleset.objects.all()
-        self.assertEqual(len(rulesets), 1)
+        self.assertEqual(rulesets.count(), 1)
 
         # PUT/PATCH
         params.pop("sources")
@@ -1022,7 +1022,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         # Create valid Ruleset
         self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
         rulesets = Ruleset.objects.all()
-        self.assertEqual(len(rulesets), 1)
+        self.assertEqual(rulesets.count(), 1)
 
         # PUT/PATCH
         for idx, request in enumerate((self.http_put, self.http_patch)):
@@ -1044,8 +1044,8 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
 
         ruleset_copy = Ruleset.objects.filter(name='MyCreatedRulesetCopy')[0]
         self.assertNotEqual(ruleset.pk, ruleset_copy.pk)
-        self.assertEqual(len(ruleset.sources.all()), len(ruleset_copy.sources.all()))
-        self.assertEqual(len(ruleset.categories.all()), len(ruleset_copy.categories.all()))
+        self.assertEqual(ruleset.sources.count(), ruleset_copy.sources.count())
+        self.assertEqual(ruleset.categories.count(), ruleset_copy.categories.count())
 
     def test_009_ruleset_name_unicode(self):
         name = "Rulesetàççé'-(è&_èç&àç\"ééè-"  # ignore_utf8_check: 224 231 233 232
@@ -1208,7 +1208,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
 
         # Check transformed rule
         transformed = self.ruleset.get_transformed_rules(key=Transformation.ACTION, value=Transformation.A_REJECT)
-        self.assertEqual(len(transformed), 1)
+        self.assertEqual(transformed.count(), 1)
         self.assertEqual(transformed[0].pk, self.rule.pk)
 
         transformation = self.rule.get_transformation(ruleset=self.ruleset, key=Transformation.ACTION)
@@ -1222,7 +1222,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
                             'transfo_value': Transformation.A_DROP.value})
 
         transformed = self.ruleset.get_transformed_rules(key=Transformation.ACTION, value=Transformation.A_REJECT)
-        self.assertEqual(len(transformed), 0)
+        self.assertEqual(transformed.count(), 0)
 
     def test_005_rule_transformation_content(self):
         version = 0
@@ -1949,7 +1949,7 @@ class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
         }
         self.http_post(reverse('publicsource-list'), params, status=status.HTTP_201_CREATED)
         sources = Source.objects.filter(name='sonic test public source')
-        self.assertEqual(len(sources) == 1, True)
+        self.assertEqual(sources.count() == 1, True)
 
         self.public_source = sources.first()
         self.ruleset.sources.add(sources.first())
