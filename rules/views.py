@@ -86,23 +86,23 @@ def search(request):
             search = request.GET['search']
     if search:
         rules = Rule.objects.filter(ruleatversion__content__icontains=search).distinct()
-        if len(rules) > 0:
-            length += len(rules)
+        if rules.count() > 0:
+            length += rules.count()
             rules = RuleTable(rules)
             tables.RequestConfig(request).configure(rules)
         else:
             rules = None
         categories_ = Category.objects.filter(name__icontains=search)
-        if len(categories_) > 0:
-            length += len(categories_)
+        if categories_.count() > 0:
+            length += categories_.count()
             categories_ = CategoryTable(categories_)
             tables.RequestConfig(request).configure(categories_)
         else:
             rules_width += 4
             categories_ = None
         rulesets = Ruleset.objects.filter(name__icontains=search)
-        if len(rulesets) > 0:
-            length += len(rulesets)
+        if rulesets.count() > 0:
+            length += rulesets.count()
             rulesets = RulesetTable(rulesets)
             tables.RequestConfig(request).configure(rulesets)
         else:
@@ -573,8 +573,8 @@ def edit_rule(request, rule_id):
 
                 # Case 1: One transfo on all rulesets
                 # Case 2: one transfo on n rulesets on x. x-n rulesets without transfo (None)
-                if len(rulesets) == rulesets_res[key][value] or \
-                        (None in rulesets_res[key] and len(rulesets) == rulesets_res[key][value] + rulesets_res[key][None]):
+                if rulesets.count() == rulesets_res[key][value] or \
+                        (None in rulesets_res[key] and rulesets.count() == rulesets_res[key][value] + rulesets_res[key][None]):
                     if value:
                         initial[key.value] = current_trans[key].value
 
@@ -582,8 +582,8 @@ def edit_rule(request, rule_id):
         for key, dict_val in rulesets_res.items():
             for val in dict_val.keys():
 
-                if len(rulesets) == rulesets_res[key][val] or \
-                        (None in rulesets_res[key] and len(rulesets) == rulesets_res[key][val] + rulesets_res[key][None]):
+                if rulesets.count() == rulesets_res[key][val] or \
+                        (None in rulesets_res[key] and rulesets.count() == rulesets_res[key][val] + rulesets_res[key][None]):
                     pass
                 else:
                     initial[key.value] = 'category'
@@ -735,8 +735,8 @@ def transform_category(request, cat_id):
 
                 # Case 1: One transfo on all rulesets
                 # Case 2: one transfo on n rulesets on x. x-n rulesets without transfo (None)
-                if len(rulesets) == rulesets_res[key][value] or \
-                        (None in rulesets_res[key] and len(rulesets) == rulesets_res[key][value] + rulesets_res[key][None]):
+                if rulesets.count() == rulesets_res[key][value] or \
+                        (None in rulesets_res[key] and rulesets.count() == rulesets_res[key][value] + rulesets_res[key][None]):
                     if value:
                         initial[key.value] = current_trans[key].value
 
@@ -744,8 +744,8 @@ def transform_category(request, cat_id):
         for key, dict_val in rulesets_res.items():
             for val in dict_val.keys():
 
-                if len(rulesets) == rulesets_res[key][val] or \
-                        (None in rulesets_res[key] and len(rulesets) == rulesets_res[key][val] + rulesets_res[key][None]):
+                if rulesets.count() == rulesets_res[key][val] or \
+                        (None in rulesets_res[key] and rulesets.count() == rulesets_res[key][val] + rulesets_res[key][None]):
                     pass
                 else:
                     initial[key.value] = 'none'
@@ -1070,7 +1070,7 @@ def update_source(request, source_id):
         return JsonResponse(data)
 
     supdate = SourceUpdate.objects.filter(source=src).order_by('-created_date')
-    if len(supdate) == 0:
+    if supdate.count() == 0:
         return redirect(src)
 
     return redirect('changelog_source', source_id=source_id)
@@ -1120,7 +1120,7 @@ def changelog_source(request, source_id):
 
     supdate = SourceUpdate.objects.filter(source=source).order_by('-created_date')
     # get last for now
-    if len(supdate) == 0:
+    if supdate.count() == 0:
         return scirius_render(request, 'rules/source.html', {'source': source, 'error': "No changelog"})
     changelogs = SourceUpdateTable(supdate)
     tables.RequestConfig(request).configure(changelogs)
@@ -1368,7 +1368,7 @@ def edit_source(request, source_id):
 
             if source.datatype == 'sig':
                 categories = Category.objects.filter(source=source)
-                firstimport = False if len(categories) > 0 else True
+                firstimport = False if categories.count() > 0 else True
 
                 if 'name' in form.changed_data and firstimport is False:
                     category = categories[0]  # sig => one2one source/category
@@ -1480,7 +1480,7 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
         for trans in (A_REJECT, A_DROP, A_FILESTORE):
             # Rules transformation
             trans_rules = ruleset.rules_transformation.filter(ruletransformation__value=trans.value).all()
-            if len(trans_rules):
+            if trans_rules.count():
                 trans_rules_t = RuleTable(trans_rules.order_by('sid'))
                 tables.RequestConfig(request).configure(trans_rules_t)
 
@@ -1492,7 +1492,7 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
                 categorytransformation__value=trans.value
             ).all()
 
-            if len(trans_categories):
+            if trans_categories.count():
                 trans_categories_t = CategoryTable(trans_categories.order_by('name'))
                 tables.RequestConfig(request).configure(trans_categories_t)
                 context['%s_categories' % trans.value] = trans_categories_t
@@ -1844,7 +1844,7 @@ def edit_ruleset(request, ruleset_id):
                 ruleset_transformation=ruleset
             )
 
-            if len(trans_action) > 0:
+            if trans_action.count() > 0:
                 initial['action'] = trans_action[0].value
 
             trans_lateral = RulesetTransformation.objects.filter(
@@ -1852,7 +1852,7 @@ def edit_ruleset(request, ruleset_id):
                 ruleset_transformation=ruleset
             )
 
-            if len(trans_lateral) > 0:
+            if trans_lateral.count() > 0:
                 initial['lateral'] = trans_lateral[0].value
 
             trans_target = RulesetTransformation.objects.filter(
@@ -1860,7 +1860,7 @@ def edit_ruleset(request, ruleset_id):
                 ruleset_transformation=ruleset
             )
 
-            if len(trans_target) > 0:
+            if trans_target.count() > 0:
                 initial['target'] = trans_target[0].value
 
             # trans_action = CategoryTransformation.objects.filter(key=Transformation.ACTION.value, ruleset=ruleset)
