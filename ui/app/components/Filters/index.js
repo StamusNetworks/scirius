@@ -108,7 +108,7 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
   const Component = commonStore.stickyFilters ? Affix : Static;
 
   return (
-    <Component offsetTop={10}>
+    <Component offsetTop={10} id="filters-bar">
       <UICard style={{ marginBottom: '10px' }}>
         <FilterContainer>
           <div>
@@ -116,6 +116,7 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
               Filters{' '}
               {commonStore.stickyFilters ? (
                 <PushpinFilled
+                  data-test="sticky-filters"
                   onClick={() => {
                     commonStore.stickyFilters = false;
                   }}
