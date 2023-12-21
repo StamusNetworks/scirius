@@ -19,7 +19,7 @@
         </ul>
     {% endif %}
     <div class="panel-heading">
-        <h2 class="panel-title">Action</h2>
+        <h2 class="panel-title">Action{% if adduri and action_links|length > 0 %}s{% endif %}</h2>
     </div>
     {% if adduri %}
         <ul class="action panel-body">
