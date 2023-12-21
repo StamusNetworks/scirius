@@ -415,10 +415,10 @@ class AccountViewSet(viewsets.ModelViewSet):
         token = ''
 
         if request.method == 'GET':
-            if len(tokens) > 0:
+            if tokens.count() > 0:
                 token = tokens[0].key
         else:
-            if len(tokens) > 0:
+            if tokens.count() > 0:
                 tokens[0].delete()
 
             token = Token.objects.create(user=scirius_user.user).key
