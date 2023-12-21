@@ -1,7 +1,9 @@
 import { makeAutoObservable, toJS } from 'mobx';
 import moment from 'moment';
+import { message } from 'antd';
 import endpoints from 'ui/config/endpoints';
 import { isEqual } from 'lodash';
+import isInViewport from 'ui/helpers/IsInViewport';
 import Filter from 'ui/utils/Filter';
 import { api } from '../api';
 import { PeriodEnum } from '../../maps/PeriodEnum';
@@ -302,6 +304,12 @@ class CommonStore {
     const filters = Array.isArray(stack) ? stack.map(toClass) : [toClass(stack)];
     this.ids.push(...filters);
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
+
+    // notify the user only when Filters component is not shown
+    if (!isInViewport('filters-bar'))
+      message.info({
+        content: `Filter added!`,
+      });
   }
 
   addHistoryFilter(filter) {
