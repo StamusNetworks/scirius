@@ -1789,6 +1789,7 @@ def edit_ruleset(request, ruleset_id):
 
         return redirect(ruleset)
     else:
+        from scirius.utils import get_middleware_module
         mode = request.GET.get('mode', None)
 
         if mode == 'sources':
@@ -1823,7 +1824,8 @@ def edit_ruleset(request, ruleset_id):
             'categories_list': categories_list,
             'sources': sources,
             'rules': rules,
-            'cats_selection': ", ".join(cats_selection)
+            'cats_selection': ", ".join(cats_selection),
+            'extra_links': get_middleware_module('common').get_edit_ruleset_links(ruleset_id)
         }
 
         if 'mode' in request.GET:
