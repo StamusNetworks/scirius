@@ -64,7 +64,7 @@ class RulesetChoiceForm(CommentForm):
         if hasattr(self, 'rulesets_label'):
             self.fields['rulesets'].label = self.rulesets_label
 
-        if not len(ruleset_list):
+        if not ruleset_list.count():
             if not (isinstance(self, AddSourceForm) or isinstance(self, AddPublicSourceForm)):
                 self.errors[NON_FIELD_ERRORS] = ['Please create a ruleset first']
             self.fields.pop('rulesets')
