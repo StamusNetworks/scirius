@@ -8,7 +8,7 @@
     </ul>
     {% if perms.rules.source_edit or perms.rules.ruleset_policy_view %}
         <div class="panel-heading">
-            <h2 class="panel-title">Action</h2>
+            <h2 class="panel-title">Action{% if perms.rules.source_edit and perms.rules.ruleset_policy_view %}s{% endif %}</h2>
         </div>
         <ul class="action panel-body">
             {% if perms.rules.source_edit %}
