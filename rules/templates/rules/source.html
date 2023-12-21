@@ -26,7 +26,7 @@
         </li>
     </ul>
     <div class="panel-heading">
-        <h2 class="panel-title">Action</h2>
+        <h2 class="panel-title">Action{% if perms.rules.ruleset_update_push or perms.rules.source_edit %}s{% endif %}</h2>
     </div>
     <ul class="action panel-body">
         <li>
