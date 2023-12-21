@@ -1,9 +1,7 @@
-{% extends "rules/base.html" %}
+{% extends "rules/edit_ruleset.html" %}
 {% load bootstrap3  %}
 {% block sidebar %}
-    <div class="panel-heading">
-        <h2 class="panel-title">Action</h2>
-    </div>
+    {{ block.super }}
     <div class="panel-body">
         <form action="{% url 'addsupprule' ruleset.id %}" method="post">
             {% csrf_token %}
