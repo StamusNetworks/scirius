@@ -21,6 +21,13 @@ const Value = styled.a`
   text-overflow: ellipsis;
 `;
 
+const DropdownLabel = styled.div`
+  white-space: nowrap;
+  max-width: 350px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
 const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_technique_id'];
 
 const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
@@ -269,7 +276,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
         items: [
           {
             type: 'group', // Must have
-            label: filter.label,
+            label: <DropdownLabel>{filter.label}</DropdownLabel>,
             children: listOfLinks,
           },
         ],
