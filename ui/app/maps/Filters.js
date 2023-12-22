@@ -848,6 +848,7 @@ export const FiltersList = [
     title: 'Stored',
     id: 'file.stored',
     category: FilterCategory.EVENT,
+    format: value => (value ? 'Yes' : 'No'),
   },
   /* HISTORY */
   {
