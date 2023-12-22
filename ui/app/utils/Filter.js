@@ -53,7 +53,7 @@ export default class Filter {
    * @example new Filter('signature', "ETPRO*", FilterCategory.EVENT, { fullString: false }
    * @example new Filter('signature', "ETPRO*", { fullString: false }
    * @param {string} filter -The ID of the filter
-   * @param {string|number} value - The value of the filter
+   * @param {string|number|boolean} value - The value of the filter
    * @param {object|string} a - filter parameters or filter category
    * @param {object} b - filter parameters if filter category is set on 3rd param
    * @returns {Filter}
