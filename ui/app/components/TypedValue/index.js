@@ -283,7 +283,9 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
   );
 };
 
-TypedValue.defaultProps = {};
+TypedValue.defaultProps = {
+  additionalLinks: [],
+};
 
 TypedValue.propTypes = {
   filter: PropTypes.instanceOf(Filter),
