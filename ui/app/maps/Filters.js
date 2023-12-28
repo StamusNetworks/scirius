@@ -829,6 +829,26 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
     wildcardable: false,
   },
+  {
+    title: 'Filename',
+    id: 'file.filename',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'SHA256',
+    id: 'file.sha256',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Mimetype',
+    id: 'file.mimetype',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Stored',
+    id: 'file.stored',
+    category: FilterCategory.EVENT,
+  },
   /* HISTORY */
   {
     title: 'User',
