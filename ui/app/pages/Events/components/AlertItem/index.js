@@ -817,6 +817,43 @@ class AlertItem extends React.Component {
 
             {data.app_proto === 'smb' && <SMBAlertCard data={data} />}
           </TabPaneResponsive>
+
+          <UICard title="Files" style={{ marginBottom: '10px' }}>
+            <div />
+            <Table
+              pagination={false}
+              dataSource={data.files}
+              columns={[
+                {
+                  key: 'filename',
+                  title: 'Filename',
+                  dataIndex: 'filename',
+                },
+                {
+                  key: 'mimetype',
+                  title: 'Mimetype',
+                  dataIndex: 'mimetype',
+                },
+                {
+                  key: 'size',
+                  title: 'Size',
+                  dataIndex: 'size',
+                },
+                {
+                  key: 'sha256',
+                  title: 'SHA256',
+                  dataIndex: 'sha256',
+                },
+                {
+                  key: 'stored',
+                  title: 'Stored',
+                  dataIndex: 'stored',
+                  render: value => (value ? 'Yes' : 'No'),
+                },
+              ]}
+            />
+          </UICard>
+
           {data.payload_printable && (
             <UICard data-test="alert-card-Payload printable" title="Payload printable" noPadding style={{ marginBottom: '10px' }}>
               {_.isEmpty(data.payload_printable) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
