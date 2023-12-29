@@ -25,6 +25,6 @@ from suricata import views
 
 urlpatterns = [
     re_path(r'^$', views.index, name='suricata_index'),
-    re_path(r'^edit$', views.edit, name='suricata_edit'),
-    re_path(r'^update$', views.update, name='suricata_update'),
+    re_path(r'^edit/$', views.edit, name='suricata_edit'),
+    re_path(r'^update/$', views.update, name='suricata_update'),
 ]

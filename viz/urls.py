@@ -24,6 +24,6 @@ from django.urls import re_path
 from viz import views
 
 urlpatterns = [
-    re_path(r'^dashboard$', views.dashboard, name='viz_dashboard'),
-    re_path(r'^dashboard_target$', views.dashboard_target, name='viz_target_dashboard'),
+    re_path(r'^dashboard/$', views.dashboard, name='viz_dashboard'),
+    re_path(r'^dashboard_target/$', views.dashboard_target, name='viz_target_dashboard'),
 ]
