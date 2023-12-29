@@ -190,7 +190,7 @@ const SignaturesPage = () => {
       <ErrorHandler>
         <Filters
           page="RULES_LIST"
-          filterTypes={['SIGNATURE', 'EVENT']}
+          filterTypes={['SIGNATURE', 'EVENT', 'HOST']}
           sortValues={{ option: listParams.sort.id, direction: listParams.sort.asc ? 'asc' : 'desc' }}
           onSortChange={(option, direction) => {
             updateSignatureListState({
