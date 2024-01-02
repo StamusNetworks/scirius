@@ -44,8 +44,14 @@
     {% if objects %}
         <div class="container-fluid">
             <div class="row">
-                <h2 class="title">{{ action.title }}{{ objects|length|pluralize }}</h2>
-                <div class="col-md-12">
+                <div class="col-md-8">
+                <h2 class="title">
+                    {% if action.lower|slice:"-1:" != 'y' %}
+                        {{ action.title }}{{ size|pluralize }}
+                    {% else %}
+                        {{ action.title|slice:":-1" }}{{ size|pluralize:"y,ies" }}
+                    {% endif %}
+                </h2>
                     {% load render_table from django_tables2 %}
                     {% render_table objects %}
                 </div>
