@@ -190,13 +190,12 @@ def scirius_listing(request, objectname, assocfn, template='rules/object_list.ht
         if 'order_by' in assocfn[name]:
             olist = olist.order_by(*assocfn[name]['order_by'])
 
-    links = None
-    action_links = {}
+    links = assocfn.get(name, {}).get('manage_links', {})
+    action_links = assocfn.get(name, {}).get('action_links', {})
+
     if olist:
         if table is None:
             data = assocfn[name]['table'](olist)
-            links = assocfn[name]['manage_links']
-            action_links = assocfn[name]['action_links']
         else:
             data = table(olist)
         tables.RequestConfig(request).configure(data)
