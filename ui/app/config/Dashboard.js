@@ -280,8 +280,16 @@ export const dashboard = [
         title: 'Client Software',
       },
       {
+        i: 'ssh.client.proto_version',
+        title: 'Client Version',
+      },
+      {
         i: 'ssh.server.software_version',
         title: 'Server Software',
+      },
+      {
+        i: 'ssh.server.proto_version',
+        title: 'Server Version',
       },
     ],
   },
