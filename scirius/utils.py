@@ -301,3 +301,11 @@ def convert_to_utc(time, user):
     except:
         return time
     return tz.normalize(tz.localize(time.replace(tzinfo=None))).astimezone(pytz.utc)
+
+
+def convert_to_local(time, user):
+    try:
+        tz = pytz.timezone(user.sciriususer.timezone)
+    except:
+        return time
+    return pytz.utc.normalize(pytz.utc.localize(time.replace(tzinfo=None))).astimezone(tz)
