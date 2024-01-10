@@ -499,7 +499,12 @@ export const FiltersList = [
     title: 'JA3',
     id: 'tls.ja3.hash',
     category: FilterCategory.EVENT,
-    convertible: 'host_id.tls.ja3.hash',
+  },
+  {
+    title: 'JA4',
+    id: 'tls.ja4.hash',
+    category: FilterCategory.EVENT,
+    convertible: 'host_id.tls.ja4.hash',
   },
   {
     title: 'Serial',
@@ -507,10 +512,27 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'User-Agent',
+    title: 'JA3 User-Agent',
     id: 'tls.ja3.agent',
     category: FilterCategory.EVENT,
-    convertible: 'host_id.tls.ja3.agent',
+  },
+  {
+    title: 'JA4 User-Agent',
+    id: 'tls.ja4.agent',
+    category: FilterCategory.EVENT,
+    convertible: 'host_id.tls.ja4.agent',
+  },
+  {
+    title: 'Host JA4',
+    id: 'host_id.tls.ja4.hash',
+    category: FilterCategory.EVENT,
+    convertible: 'tls.ja4.hash',
+  },
+  {
+    title: 'Host User-Agent',
+    id: 'host_id.tls.ja4.agent',
+    category: FilterCategory.EVENT,
+    convertible: 'tls.ja4.agent',
   },
   {
     title: 'Fingerprint',

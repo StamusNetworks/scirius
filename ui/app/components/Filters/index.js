@@ -40,7 +40,7 @@ const Separator = styled.div`
 
 const Static = styled.div``;
 
-const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
+const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) => {
   // Component setup
   useInjectReducer({ key: 'ruleSet', reducer: ruleSetReducer });
   useInjectSaga({ key: 'ruleSet', saga: ruleSetSaga });
