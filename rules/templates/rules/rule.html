@@ -55,35 +55,37 @@
         </div>
         <div class="panel-body">
             <ul class="action">
-                {% if rules_at_version.0.rulesets|length %}
-                    <li>
+                {% if rule.sid not in rule.READ_ONLY_SIDS %}
+                    {% if rules_at_version.0.rulesets|length %}
                         <li>
-                            <a href="{% url 'disable_rule' rule.sid %}">Disable rule in ruleset(s)</a>
+                            <li>
+                                <a href="{% url 'disable_rule' rule.sid %}">Disable rule in ruleset(s)</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'enable_rule' rule.sid %}">Enable rule in ruleset(s)</a>
+                            </li>
+                            {% if rule.get_transformation_choices|length %}
+                                <a href="{% url 'edit_rule' rule.sid %}">Edit rule</a>
+                            {% else %}
+                                <span class="text-muted">Edit rule</span>
+                            {% endif %}
                         </li>
+                    {% endif %}
+                    {# rule.state #}
+                    {% if show_rule_toggle %}
                         <li>
-                            <a href="{% url 'enable_rule' rule.sid %}">Enable rule in ruleset(s)</a>
+                            <form id="toggle_availability_form_1"
+                                  class="form"
+                                  action="{% url 'rule_toggle_availability' rule.sid %}"
+                                  method="post">
+                                {% csrf_token %}
+                                <a href="javascript:{}"
+                                   onclick="document.getElementById('toggle_availability_form_1').submit(); return false;">
+                                    Toggle availability
+                                </a>
+                            </form>
                         </li>
-                        {% if rule.get_transformation_choices|length %}
-                            <a href="{% url 'edit_rule' rule.sid %}">Edit rule</a>
-                        {% else %}
-                            <span class="text-muted">Edit rule</span>
-                        {% endif %}
-                    </li>
-                {% endif %}
-                {# rule.state #}
-                {% if show_rule_toggle %}
-                    <li>
-                        <form id="toggle_availability_form_1"
-                              class="form"
-                              action="{% url 'rule_toggle_availability' rule.sid %}"
-                              method="post">
-                            {% csrf_token %}
-                            <a href="javascript:{}"
-                               onclick="document.getElementById('toggle_availability_form_1').submit(); return false;">
-                                Toggle availability
-                            </a>
-                        </form>
-                    </li>
+                    {% endif %}
                 {% endif %}
                 {% if elasticsearch %}
                     <li>
@@ -430,7 +432,10 @@ $(document).ready(function(){
                                                                                   method="post">
                                                                                 {% csrf_token %}
                                                                                 <a href="javascript:{}"
-                                                                                    onclick="document.getElementById('toggle_availability_form_{{ rav.instance.pk }}').submit(); return false;">
+                                                                                    {% if rule.sid not in rule.READ_ONLY_SIDS %}
+                                                                                    onclick="document.getElementById('toggle_availability_form_{{ rav.instance.pk }}').submit(); return false;"
+                                                                                    {% endif %}
+                                                                                >
                                                                                     <input type="checkbox"
                                                                                            class="custom-control-input"
                                                                                            id="customSwitch1"  {% if rav.instance.state %}checked{% endif %} />

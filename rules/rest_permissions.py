@@ -4,6 +4,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
 from scirius.utils import get_middleware_module
+from rules.models import Rule
 
 
 def has_group_permission(perms, owner_allowed=False):
@@ -25,6 +26,17 @@ def has_group_permission(perms, owner_allowed=False):
             if not HasGroupPermission.check_perms(request, self, perms):
                 raise PermissionDenied()
             return func(self, request, *args, **kwargs)
+        return view
+    return decorator
+
+
+def edit_rule_permission():
+    def decorator(func):
+        @wraps(func)
+        def view(self, request, pk, *args, **kwargs):
+            if int(pk) in Rule.READ_ONLY_SIDS:
+                raise PermissionDenied()
+            return func(self, request, pk, *args, **kwargs)
         return view
     return decorator
 
