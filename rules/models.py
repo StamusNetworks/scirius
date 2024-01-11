@@ -2526,6 +2526,8 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
 
     GROUPSNAMEREGEXP = re.compile(r'^(.*) +group +\d+$')
 
+    READ_ONLY_SIDS = (999999999,)
+
     def __str__(self):
         return str(self.sid) + ":" + self.msg
 

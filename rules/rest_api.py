@@ -22,7 +22,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
-from rules.rest_permissions import NoPermission
+from rules.rest_permissions import NoPermission, edit_rule_permission
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import get_object_or_404
 
@@ -439,6 +439,11 @@ class RuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rule
         fields = ('pk', 'sid', 'category', 'msg', 'created', 'updated', 'hits', 'timeline_data', 'versions', 'probes')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['threat_info'] = get_middleware_module('common').get_threat_info_from_sid(instance.sid)
+        return data
 
 
 class ListFilter(filters.CharFilter):
@@ -893,6 +898,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
             return Response(res)
 
     @action(detail=True, methods=['post'])
+    @edit_rule_permission()
     def toggle_availability(self, request, pk):
         rule = self.get_object()
         comment = request.data.get('comment', None)
@@ -913,6 +919,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
         return Response({'toggle_availability': 'ok'})
 
     @action(detail=True, methods=['post'])
+    @edit_rule_permission()
     def enable(self, request, pk):
         rule = self.get_object()
         serializer = RuleChangeSerializer(data=request.data)
@@ -924,6 +931,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
         return Response({'enable': 'ok'})
 
     @action(detail=True, methods=['post'])
+    @edit_rule_permission()
     def disable(self, request, pk):
         rule = self.get_object()
         serializer = RuleChangeSerializer(data=request.data)
