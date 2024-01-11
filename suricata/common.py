@@ -230,6 +230,10 @@ def update_custom_source(source_path):
     pass
 
 
+def get_threat_info_from_sid(sid=0):
+    return {}
+
+
 def extract_custom_source(f, source_path):
     pass
 
