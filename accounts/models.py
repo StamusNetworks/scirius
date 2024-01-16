@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
 from django.contrib.auth.models import User, Group as DjangoGroup
+from rest_framework.authtoken.models import Token
 import pytz
 import django_auth_ldap.backend
 
@@ -122,6 +123,9 @@ class SciriusUser(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     timezone = models.CharField(max_length=40, choices=TIMEZONES)
+
+    def get_token(self):
+        return Token.objects.get_or_create(user=self.user)[0]
 
     def to_dict(self, json_compatible=False):
         from scirius.utils import get_middleware_module
