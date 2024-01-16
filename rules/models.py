@@ -729,9 +729,8 @@ class UserAction(models.Model):
             # ==== Coner cases
             # transformation is str type
             # or workaround for UserAction which can contains no instance but str (ex: create a source without a ruleset)
-            if action.action_key == 'transformation' or \
-                    (action.action_key == 'ruleset' and action.action_value == 'No Ruleset') or \
-                    action.action_key == 'threat_status':
+            if action.action_key in ('transformation', 'threat_status', 'notebooks') or \
+                    (action.action_key == 'ruleset' and action.action_value == 'No Ruleset'):
                 continue
 
             ct = action.content_type
