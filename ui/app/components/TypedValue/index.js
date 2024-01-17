@@ -13,8 +13,6 @@ import Filter from 'ui/utils/Filter';
 const Value = styled.a`
   display: block;
   overflow: hidden;
-  word-break: break-all;
-  max-height: 20px;
   cursor: pointer;
   white-space: nowrap;
   text-overflow: ellipsis;
