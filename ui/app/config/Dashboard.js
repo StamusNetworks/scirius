@@ -3,6 +3,7 @@ export const dashboard = [
     panelId: 'basic',
     title: 'Basic Information',
     position: 1,
+    itemsMinWidth: '350px',
     items: [
       {
         i: 'alert.signature',
@@ -155,6 +156,7 @@ export const dashboard = [
     id: 'http',
     title: 'HTTP Information',
     position: 9,
+    itemsMinWidth: '350px',
     items: [
       {
         i: 'http.hostname',
@@ -197,6 +199,7 @@ export const dashboard = [
     panelId: 'tls',
     title: 'TLS Information',
     position: 11,
+    itemsMinWidth: '500px',
     items: [
       {
         i: 'tls.sni',
