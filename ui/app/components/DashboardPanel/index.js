@@ -20,14 +20,14 @@ const Row = styled.div`
   padding-bottom: 10px;
 `;
 
-const DashboardPanel = ({ panel }) => {
+const DashboardPanel = ({ panel, hideEmptyTiles, setPanelIsEmpty }) => {
   /* Load more stuff */
   const [loadMoreField, setLoadMoreField] = useState({ block: null, field: null });
   const [loadMoreVisible, setLoadMoreVisible] = useState(false);
   const [loadMoreData, setLoadMoreData] = useState({});
 
   /* Dashboard blocks stuff */
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [blockData, setBlockData] = useState({});
   const { title, items } = panel;
   const emptyPanel = Object.values(blockData).every(block => block?.length === 0);
@@ -43,10 +43,13 @@ const DashboardPanel = ({ panel }) => {
   const fields = panel.items.map(item => item.i).join(',');
 
   useAutorun(async () => {
-    setLoading(true);
     const data = await fetchData(fields, 5);
-    setBlockData(dashboardSanitizer(data));
     setLoading(false);
+    setBlockData(dashboardSanitizer(data));
+    setPanelIsEmpty(
+      panel.panelId,
+      Object.values(data).every(block => block?.length === 0),
+    );
   }, [fields]);
 
   useEffect(() => {
@@ -59,12 +62,15 @@ const DashboardPanel = ({ panel }) => {
     }
   }, [loadMoreField.field]);
 
+  if (hideEmptyTiles && emptyPanel) return null;
+
   return (
     <div data-test={`dashboard-panel-${title}`}>
       <Title>{title}</Title>
       <Row itemsMinWidth={panel.itemsMinWidth}>
         {items.map(item => {
           const { [item.i]: data = [] } = blockData || {};
+          if (hideEmptyTiles && data.length === 0) return null;
           return (
             <DashboardBlock
               block={item}
@@ -94,4 +100,6 @@ export default DashboardPanel;
 
 DashboardPanel.propTypes = {
   panel: PropTypes.string,
+  hideEmptyTiles: PropTypes.bool,
+  setPanelIsEmpty: PropTypes.func,
 };
