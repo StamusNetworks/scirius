@@ -15,7 +15,7 @@ const Title = styled.h2`
 
 const Row = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(${({ itemsMinWidth }) => itemsMinWidth || '250px'}, 1fr));
   grid-gap: 5px;
   padding-bottom: 10px;
 `;
@@ -62,7 +62,7 @@ const DashboardPanel = ({ panel }) => {
   return (
     <div data-test={`dashboard-panel-${title}`}>
       <Title>{title}</Title>
-      <Row>
+      <Row itemsMinWidth={panel.itemsMinWidth}>
         {items.map(item => {
           const { [item.i]: data = [] } = blockData || {};
           return (

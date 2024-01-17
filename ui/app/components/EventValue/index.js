@@ -12,6 +12,7 @@ import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 
 const Container = styled.div`
   display: grid;
+  gap: 1rem;
   grid-template-columns: 1fr min-content;
   align-items: center;
   width: 100%;
