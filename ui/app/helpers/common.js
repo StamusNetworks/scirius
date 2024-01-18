@@ -5,12 +5,10 @@ import { buildQFilter } from 'ui/buildQFilter';
 export function buildListUrlParams(pageParams) {
   const { page, perPage } = pageParams.pagination;
   const { sort } = pageParams;
-  let ordering = '';
+  let ordering = '-hits';
 
-  if (sort.asc) {
-    ordering = sort.id;
-  } else {
-    ordering = `-${sort.id}`;
+  if (sort && sort.id) {
+    ordering = sort.asc ? sort.id : `-${sort.id}`;
   }
 
   return `ordering=${ordering}&page_size=${perPage}&page=${page}`;
