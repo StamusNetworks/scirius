@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Dropdown, message } from 'antd';
-import { CopyOutlined, InfoCircleFilled, RobotOutlined, UserOutlined, ZoomInOutlined, ZoomOutOutlined, DesktopOutlined } from '@ant-design/icons';
+import { CopyOutlined, InfoCircleFilled, RobotOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
@@ -33,11 +33,6 @@ const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_tech
 const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
   const { commonStore } = useStore();
   const history = useHistory();
-  const virusTotalLink = (
-    <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(filter.value)) ? 'ip-address' : 'domain'}/${filter.value}`} target="_blank">
-      <InfoCircleFilled /> <span>External info</span>
-    </a>
-  );
 
   let listOfLinks = [
     {
@@ -47,7 +42,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           <ZoomInOutlined /> <span>Filter on value</span>
         </div>
       ),
-    },
+    }, // Filter on value
     {
       key: 'eventValue2',
       label: (
@@ -61,7 +56,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           <ZoomOutOutlined /> <span>Negated filter on value</span>
         </div>
       ),
-    },
+    }, // Negated filter on value
     {
       key: 'copyTextToClipboard',
       label: (
@@ -77,7 +72,8 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           <CopyOutlined /> <span>Copy text to clipboard</span>
         </div>
       ),
-    },
+    }, // Copy text to clipboard
+    ...additionalLinks,
   ];
 
   const getRoleLabel = (location, removeFilters = false) => (
@@ -97,25 +93,24 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
       {
         key: 'typedValueRole0',
         label: getRoleLabel(),
-      },
+      }, // Filter on Role
       {
         key: 'typedValueRole1',
         label: getRoleLabel('hosts'),
-      },
+      }, // Filter on Role, go to Hosts
       {
         key: 'typedValueRole2',
         label: getRoleLabel('dashboards', true),
-      },
+      }, // Filter on Role, go to Dashboards (remove filters)
       {
         key: 'typedValueRole3',
         label: getRoleLabel('events'),
-      },
-    ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
+      }, // Filter on Role, go to Events
+    ];
   }
 
   if (filter.type === 'IP') {
     listOfLinks = [
-      ...additionalLinks,
       ...listOfLinks,
       {
         key: 'typedValueIP2',
@@ -129,7 +124,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
             <ZoomInOutlined /> <span>Filter on IP: {filter.displayValue}</span>
           </div>
         ),
-      },
+      }, // Filter on IP: 0.0.0.0
       {
         key: 'typedValueIP3',
         label: (
@@ -143,17 +138,23 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
             <ZoomOutOutlined /> <span>Negated filter on IP: {filter.displayValue}</span>
           </div>
         ),
-      },
+      }, // Negated filter on IP: 0.0.0.0
       {
         key: 'typedValueIP4',
-        label: virusTotalLink,
-      },
-    ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
+        label: (
+          <a
+            href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(filter.value)) ? 'ip-address' : 'domain'}/${filter.value}`}
+            target="_blank"
+          >
+            <InfoCircleFilled /> <span>External info</span>
+          </a>
+        ),
+      }, // External info
+    ];
   }
 
   if (filter.type === 'PORT') {
     listOfLinks = [
-      ...additionalLinks,
       ...listOfLinks,
       {
         key: 'typedValuePort',
@@ -164,89 +165,13 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
             </div>
           </a>
         ),
-      },
-    ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
-  }
-
-  if (filter.type === 'HOSTNAME') {
-    listOfLinks = [
-      {
-        key: 'typedValueHostname',
-        label: (
-          <div onClick={() => commonStore.addFilter(filter)}>
-            <DesktopOutlined /> <span>Filter on Hostname</span>
-          </div>
-        ),
-      },
-      {
-        key: 'typedValueHostnameNegated',
-        label: (
-          <div
-            onClick={() => {
-              filter.negated = true;
-              commonStore.addFilter(filter);
-            }}
-          >
-            <DesktopOutlined /> <span>Negated filter on Hostname</span>
-          </div>
-        ),
-      },
-      ...additionalLinks,
-      ...listOfLinks,
-      {
-        key: 'typedValueHostnameVirus',
-        label: virusTotalLink,
-      },
-    ].filter(obj => !_.isEmpty(obj.label));
-  }
-
-  if (filter.type === 'USERNAME') {
-    listOfLinks = [
-      ...additionalLinks,
-      {
-        key: 'typedValueUsername',
-        label: (
-          <div onClick={() => commonStore.addFilter(filter)}>
-            <UserOutlined /> <span>Filter on username</span>
-          </div>
-        ),
-      },
-      ...listOfLinks,
-    ].filter(obj => !_.isEmpty(obj.label));
-  }
-
-  if (filter.type === 'NETWORK_INFO') {
-    listOfLinks = [
-      {
-        key: 'typedValueNetInfo',
-        label: (
-          <div onClick={() => commonStore.addFilter(filter)}>
-            <UserOutlined /> <span>Filter on Net Info</span>
-          </div>
-        ),
-      },
-      {
-        key: 'typedValueNetInfoNegated',
-        label: (
-          <div
-            onClick={() => {
-              filter.negated = true;
-              commonStore.addFilter(filter);
-            }}
-          >
-            <UserOutlined /> <span>Negated filter on Net Info</span>
-          </div>
-        ),
-      },
-      ...additionalLinks,
-      ...listOfLinks,
-    ].filter(obj => !_.isEmpty(obj.label));
+      }, // External info
+    ];
   }
 
   // additionalLinks apply to all fields - ip, port, hostname, username
   if (filter.id === mitreLinks[0] || filter.id === mitreLinks[1]) {
     listOfLinks = [
-      ...additionalLinks,
       ...listOfLinks,
       {
         key: 'eventValue3',
@@ -266,7 +191,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
             <InfoCircleFilled /> <span>External info</span>
           </a>
         ),
-      },
+      }, // External info
     ];
   }
 
@@ -277,7 +202,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           {
             type: 'group', // Must have
             label: <DropdownLabel>{filter.label}</DropdownLabel>,
-            children: listOfLinks,
+            children: listOfLinks.filter(({ label }) => !_.isEmpty(label)),
           },
         ],
       }}
