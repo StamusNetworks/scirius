@@ -206,9 +206,9 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           },
         ],
       }}
-      trigger={['click']}
+      trigger={['contextMenu']}
       destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
-      onClick={e => e.stopPropagation()}
+      onClick={() => commonStore.addFilter(filter)}
     >
       {children || <Value data-test={filter.displayValue}>{filter.displayValue}</Value>}
     </Dropdown>
