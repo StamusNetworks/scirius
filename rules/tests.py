@@ -1912,7 +1912,7 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
                     continue
 
                 member = v.get_queryset().model._meta.get_field(field)
-                if isinstance(member, models.ForeignKey):
+                if isinstance(member, (models.ForeignKey, models.ManyToManyField)):
                     continue
 
                 param = '0'
