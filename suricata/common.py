@@ -326,3 +326,7 @@ def filter_event_types(request, queryset, view):
 
 def update_rule_analysis(_):
     pass
+
+
+def get_stamus_range(_):
+    return {}
