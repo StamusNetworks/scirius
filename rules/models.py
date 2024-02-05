@@ -1249,6 +1249,8 @@ class Source(models.Model):
             self.version = int(f.read())
 
         self.save()
+        from scirius.utils import get_middleware_module
+        Rule.SID_RANGES = get_middleware_module('common').get_stamus_range(self)
         self.get_categories()
 
     def json_rules_list(self, rlist):
@@ -2526,12 +2528,29 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
 
     READ_ONLY_SIDS = (999999999,)
 
+    # initialized in AppConfig or when adding stamus source or stay empty
+    SID_RANGES = {}
+
     def __str__(self):
         return str(self.sid) + ":" + self.msg
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
         Cache.__init__(self)
+
+    def is_in_stamus_range(self):
+        for values in self.SID_RANGES.values():
+            for arr in values.values():
+                for item in arr:
+                    if item['min'] <= self.sid <= item['max']:
+                        name = f"({item.get('name', '')})"
+                        raise ValidationError({'sid': f'"{self.sid}" is in Stamus ranges {name}'})
+
+    def clean(self):
+        super().clean()
+        # check stamus ranges
+        if self.category.source.datatype != 'threat':
+            self.is_in_stamus_range()
 
     def can_drop(self):
         '''
