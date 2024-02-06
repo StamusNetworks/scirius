@@ -14,6 +14,7 @@ import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import 'ui/pygments.css';
 import Filter from 'ui/utils/Filter';
+import SignatureFlow from 'ui/components/SignatureFlow';
 
 export const SigContent = styled.div`
   & pre {
@@ -150,7 +151,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
       });
     }
     return (
-      <div style={{ height: '100%', width: 'calc(100vw - 260px)' }}>
+      <div style={{ width: 'calc(100vw - 271px)' }}>
         {rule.versions?.length === 1 && <SigContent dangerouslySetInnerHTML={{ __html: rule.versions[0].content }} key={rule.versions[0].id} />}
         {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
         <SciriusChart
@@ -171,6 +172,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
           ))}
           {rule.probes.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
         </UICard>
+        <SignatureFlow rule={rule} />
       </div>
     );
   };
