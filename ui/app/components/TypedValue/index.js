@@ -1,12 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Dropdown, message } from 'antd';
-import { CopyOutlined, InfoCircleFilled, RobotOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { Dropdown } from 'antd';
+import { InfoCircleFilled, RobotOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
-import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
@@ -34,54 +33,15 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
   const { commonStore } = useStore();
   const history = useHistory();
 
-  let listOfLinks = [
-    {
-      key: 'eventValue1',
-      label: (
-        <div data-test="filter-on-value" onClick={() => commonStore.addFilter(filter)}>
-          <ZoomInOutlined /> <span>Filter on value</span>
-        </div>
-      ),
-    }, // Filter on value
-    {
-      key: 'eventValue2',
-      label: (
-        <div
-          data-test="negated-filter-on-value"
-          onClick={() => {
-            filter.negated = true;
-            commonStore.addFilter(filter);
-          }}
-        >
-          <ZoomOutOutlined /> <span>Negated filter on value</span>
-        </div>
-      ),
-    }, // Negated filter on value
-    {
-      key: 'copyTextToClipboard',
-      label: (
-        <div
-          onClick={() => {
-            copyTextToClipboard(filter.displayValue);
-            message.success({
-              duration: 1,
-              content: 'Copied!',
-            });
-          }}
-        >
-          <CopyOutlined /> <span>Copy text to clipboard</span>
-        </div>
-      ),
-    }, // Copy text to clipboard
-    ...additionalLinks,
-  ];
+  let listOfLinks = additionalLinks || [];
 
   const getRoleLabel = (location, removeFilters = false) => (
     <div
       onClick={() => {
         if (removeFilters) commonStore.clearFilters();
         commonStore.addFilter(filter);
-        if (redirect && location) history.push(`/stamus/hunting/${location}${window.location.search}`);
+        // Roles redirection must work regardless of the redirect flag
+        if (location) history.push(`/stamus/hunting/${location}${window.location.search}`);
       }}
     >
       <RobotOutlined /> <span>Filter on Role{location && `, go to ${_.capitalize(location)}`}</span>
