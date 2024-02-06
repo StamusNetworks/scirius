@@ -19,12 +19,12 @@ apiInstance.addRequestTransform(request => {
     request.data = cloneDeep(request.data.body);
     delete request.params.body;
   }
-  if (['patch', 'delete'].includes(request.method)) {
+  if (['post', 'patch', 'delete'].includes(request.method)) {
     request.headers['X-Csrftoken'] = getCookie('csrftoken');
   }
 
   let result = request.url.slice(); // Copy string by value
-  const parameters = Object.entries(request.params);
+  const parameters = Object.entries(request.params || {});
   for (let i = 0; i < parameters.length; i += 1) {
     const [param, value] = parameters[i];
     if (request.url.includes(`$${param}`)) {
