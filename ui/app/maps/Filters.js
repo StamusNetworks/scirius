@@ -613,6 +613,7 @@ export const FiltersList = [
     title: 'Asset',
     id: 'stamus.asset',
     category: FilterCategory.EVENT,
+    type: FilterType.IP,
   },
   {
     title: 'Offender',
