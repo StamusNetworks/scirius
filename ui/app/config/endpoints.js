@@ -1,4 +1,4 @@
-import { RULES_URL, CURRENT_USER_PATH } from 'ui/config';
+import { CURRENT_USER_PATH, RULES_URL } from 'ui/config';
 
 const ENDPOINT = {
   // Retrieving endpoints
@@ -77,6 +77,10 @@ const ENDPOINT = {
   ALERTS_TAIL: {
     name: 'Fetch Elasticsearch alerts tail',
     url: '/rest/rules/es/alerts_tail/:qFilter:datesEs:tenant:eventTypes',
+  },
+  ALERTS_TAIL_WITHOUT_QFILTER: {
+    name: 'Fetch Elasticsearch alerts tail',
+    url: '/rest/rules/es/alerts_tail/:datesEs:tenant:eventTypes',
   },
   SIGNATURES: {
     name: 'Fetching signature',
