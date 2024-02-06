@@ -289,6 +289,11 @@ class CommonStore {
     }
   }
 
+  async fetchElasticSearch(params) {
+    const response = await api.post(endpoints.ELASTIC_SEARCH.url, params);
+    return response;
+  }
+
   // @TODO: Should be handled better (skipCheck)
   addFilter(stack) {
     const toClass = f => (f instanceof Filter ? f : new Filter(f.id, f.value, { negated: f.negated, fullString: f.fullString }));
