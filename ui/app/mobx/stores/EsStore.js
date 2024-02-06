@@ -71,6 +71,15 @@ class EsStore {
 
     return response.data;
   }
+
+  async fetchAlertsTailCustomQfilter(qfilter) {
+    const response = await api.get(`${endpoints.ALERTS_TAIL_WITHOUT_QFILTER.url}?${qfilter.slice(1)}`);
+
+    if (response.ok) {
+      return response.data;
+    }
+    throw new Error(response.originalError);
+  }
 }
 
 export default EsStore;
