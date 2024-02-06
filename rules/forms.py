@@ -278,6 +278,7 @@ class SourceForm(forms.ModelForm, CommentForm):
         from scirius.utils import get_middleware_module
         extra_choices = get_middleware_module('common').update_source_content_type(source)
         self.fields['datatype'] = forms.ChoiceField(choices=Source.CONTENT_TYPE + extra_choices)
+        self.fields['datatype'].disabled = True
 
 
 class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
