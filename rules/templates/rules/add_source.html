@@ -93,10 +93,6 @@ $('document').ready(function() {
     hide_fields();
     select_fields();
 
-    {% if source and not update %}
-    $('#id_datatype').prop('disabled', true);
-    {% endif %}
-
     let src_type = {% if not source %}undefined{% else %}"{{ source.datatype }}"{% endif %};
     if (src_type !== undefined) {
         hide_threat_fields(src_type);
