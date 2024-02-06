@@ -82,6 +82,10 @@ const ENDPOINT = {
     name: 'Fetching signature',
     url: `/rest/rules/rule/:datesEs:filters:qFilter:eventTypes:withAlerts`,
   },
+  ELASTIC_SEARCH: {
+    name: 'Fetching elasticsearch data',
+    url: '/rest/rules/es/search/:datesEs',
+  },
 };
 
 export default ENDPOINT;
