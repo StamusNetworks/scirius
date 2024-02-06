@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { CopyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { message } from 'antd';
+
 import TypedValue from 'ui/components/TypedValue';
 import styled from 'styled-components';
 import { COLOR_BOX_HEADER } from 'ui/constants/colors';
 import Filter from 'ui/utils/Filter';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 
 const Container = styled.div`
   display: grid;
@@ -23,10 +28,52 @@ export const Count = styled.span`
 
 const EventValue = ({ filter, count, copyMode }) => {
   const [hover, setHover] = useState(false);
+  const { commonStore } = useStore();
+
+  const additionalLinks = [
+    {
+      key: 'eventValue1',
+      label: (
+        <div data-test="filter-on-value" onClick={() => commonStore.addFilter(filter)}>
+          <ZoomInOutlined /> <span>Filter on value</span>
+        </div>
+      ),
+    }, // Filter on value
+    {
+      key: 'eventValue2',
+      label: (
+        <div
+          data-test="negated-filter-on-value"
+          onClick={() => {
+            filter.negated = true;
+            commonStore.addFilter(filter);
+          }}
+        >
+          <ZoomOutOutlined /> <span>Negated filter on value</span>
+        </div>
+      ),
+    }, // Negated filter on value
+    {
+      key: 'copyTextToClipboard',
+      label: (
+        <div
+          onClick={() => {
+            copyTextToClipboard(filter.displayValue);
+            message.success({
+              duration: 1,
+              content: 'Copied!',
+            });
+          }}
+        >
+          <CopyOutlined /> <span>Copy text to clipboard</span>
+        </div>
+      ),
+    }, // Copy text to clipboard
+  ];
 
   return (
     <Container data-test="event-value" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} hover={hover}>
-      <TypedValue filter={filter} />
+      <TypedValue filter={filter} additionalLinks={additionalLinks} />
       {count && !(copyMode && hover) && <Count>{count}</Count>}
     </Container>
   );
