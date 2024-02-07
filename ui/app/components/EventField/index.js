@@ -5,6 +5,7 @@ import Filter from 'ui/utils/Filter';
 
 const EventField = ({ filter }) => {
   if (typeof filter.value === 'undefined') return null;
+
   return (
     <div data-test={`event-item-${filter.title}`} className="dl-item">
       <dt>{filter.title}</dt>
