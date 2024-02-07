@@ -9,6 +9,7 @@ import { DownloadOutlined, LinkOutlined } from '@ant-design/icons';
 import * as config from 'config/Api';
 import UICard from 'ui/components/UIElements/UICard';
 import EventField from 'ui/components/EventField';
+import EventsField from 'ui/components/EventsField';
 import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
@@ -650,20 +651,23 @@ class AlertItem extends React.Component {
                   {data.tls && (
                     <React.Fragment>
                       <ErrorHandler>
-                        <EventField filter={new Filter('tls.subject', data.tls.subject)} />
-                      </ErrorHandler>
-                      <ErrorHandler>
-                        <EventField filter={new Filter('tls.issuerdn', data.tls.issuerdn)} />
-                      </ErrorHandler>
-                      <ErrorHandler>
                         <EventField filter={new Filter('tls.sni', data.tls.sni)} />
                       </ErrorHandler>
-                      <ErrorHandler>
-                        <EventField filter={new Filter('tls.notbefore', data.tls.notbefore)} />
-                      </ErrorHandler>
-                      <ErrorHandler>
-                        <EventField filter={new Filter('tls.notafter', data.tls.notafter)} />
-                      </ErrorHandler>
+                      {data.tls.version !== undefined && (
+                        <ErrorHandler>
+                          <EventField filter={new Filter('tls.version', data.tls.version)} />
+                        </ErrorHandler>
+                      )}
+                      {data.tls.cipher_suite !== undefined && (
+                        <ErrorHandler>
+                          <EventField filter={new Filter('tls.cipher_suite', data.tls.cipher_suite)} />
+                        </ErrorHandler>
+                      )}
+                      {data.tls.cipher_security !== undefined && (
+                        <ErrorHandler>
+                          <EventField filter={new Filter('tls.cipher_security', data.tls.cipher_security)} />
+                        </ErrorHandler>
+                      )}
                       {data.tls.ja3 && data.tls.ja3.hash !== undefined && (
                         <ErrorHandler>
                           <EventField filter={new Filter('tls.ja3.hash', data.tls.ja3.hash)} />
@@ -682,19 +686,14 @@ class AlertItem extends React.Component {
                           <EventField filter={new Filter('tls.ja3s.hash', data.tls.ja3s.hash)} />
                         </ErrorHandler>
                       )}
-                      {data.tls.version !== undefined && (
+                      {data.tls.alpn_ts !== undefined && (
                         <ErrorHandler>
-                          <EventField filter={new Filter('tls.version', data.tls.version)} />
+                          <EventsField filters={data.tls.alpn_ts.map(value => new Filter('tls.alpn_ts', value))} />
                         </ErrorHandler>
                       )}
-                      {data.tls.cipher_suite !== undefined && (
+                      {data.tls.alpn_tc !== undefined && (
                         <ErrorHandler>
-                          <EventField filter={new Filter('tls.cipher_suite', data.tls.cipher_suite)} />
-                        </ErrorHandler>
-                      )}
-                      {data.tls.cipher_security !== undefined && (
-                        <ErrorHandler>
-                          <EventField filter={new Filter('tls.cipher_security', data.tls.cipher_security)} />
+                          <EventField filter={new Filter('tls.alpn_tc', data.tls.alpn_tc)} />
                         </ErrorHandler>
                       )}
                     </React.Fragment>
@@ -702,7 +701,29 @@ class AlertItem extends React.Component {
                 </DlHorizontal>
               </UICard>
             )}
-
+            {(data.tls?.subject || data.tls?.issuerdn || data.tls?.notbefore || data.tls?.notafter) && (
+              <UICard data-test="alert-card-TLS" title="X509" fullHeight>
+                <DlHorizontal>
+                  <React.Fragment>
+                    <ErrorHandler>
+                      <EventField filter={new Filter('tls.subject', data.tls.subject)} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField filter={new Filter('tls.issuerdn', data.tls.issuerdn)} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField filter={new Filter('tls.notbefore', data.tls.notbefore)} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField filter={new Filter('tls.notafter', data.tls.notafter)} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField filter={new Filter('tls.fingerprint', data.tls.fingerprint)} />
+                    </ErrorHandler>
+                  </React.Fragment>
+                </DlHorizontal>
+              </UICard>
+            )}
             {data.app_proto === 'smtp' && (
               <UICard data-test="alert-card-SMTP" title="SMTP" fullHeight>
                 <DlHorizontal>
