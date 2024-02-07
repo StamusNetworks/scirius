@@ -184,7 +184,7 @@ const HelpMenu = () => {
         block
         type="link"
         icon={<ReadOutlined />}
-        onClick={() => window.open(`${isEnterpriseEdition ? '/static/doc/stamus-central-server/security-posture.html' : '/static/doc/hunt.html'}`)}
+        onClick={() => window.open(`${isEnterpriseEdition ? '/static/doc/stamus-security-platform/security-posture.html' : '/static/doc/hunt.html'}`)}
       >
         User manual
       </Item>
