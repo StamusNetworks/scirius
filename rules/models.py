@@ -2213,9 +2213,9 @@ class Category(models.Model, Transformable, Cache):
                                 rav.rev = 0 if rev is None else rev
                                 rav.parse_metadata()
                                 rav.parse_flowbits(source, flowbits)
+                                rav.updated_date = creation_date
                                 rav.save()
 
-                                rule.updated_date = creation_date
                                 if rule.category != self:
                                     rule.category = self
 
