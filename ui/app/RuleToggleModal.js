@@ -132,7 +132,6 @@ class RuleToggleModal extends React.Component {
 
   submit() {
     this.setState({ submitting: true });
-
     if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
       if (this.state.rulesets.length === 0) {
         this.setState({ errors: { rulesets: ['Please select a rule set'] } });
@@ -203,6 +202,7 @@ class RuleToggleModal extends React.Component {
           this.setState({ errors: error.response.data, submitting: false });
         });
     }
+    this.props.reload();
   }
 
   handleChange(event) {
@@ -387,6 +387,7 @@ RuleToggleModal.propTypes = {
   systemSettings: PropTypes.any,
   filterParams: PropTypes.any,
   history: PropTypes.any,
+  reload: PropTypes.func,
 };
 
 export default withRouter(RuleToggleModal);
