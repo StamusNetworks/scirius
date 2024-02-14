@@ -314,3 +314,7 @@ def rules_at_version_from_ruleset(ruleset):
 
 def filter_event_types(request, queryset, view):
     return queryset
+
+
+def update_rule_analysis(_):
+    pass
