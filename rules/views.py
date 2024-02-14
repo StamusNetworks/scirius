@@ -1101,8 +1101,11 @@ def activate_source(request, source_id, ruleset_id):
 
 @permission_required('rules.source_view', raise_exception=True)
 def test_source(request, source_id):
+    from scirius.utils import get_middleware_module
     source = get_object_or_404(Source, pk=source_id)
-    return JsonResponse(source.test(), safe=True)
+    test_results = source.test()
+    get_middleware_module('common').update_rule_analysis(source.pk, request.user)
+    return JsonResponse(test_results, safe=True)
 
 
 def build_source_diff(request, diff):
