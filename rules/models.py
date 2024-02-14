@@ -922,8 +922,19 @@ class Source(models.Model):
         file_content += "\n".join(rules_content)
         return file_content
 
-    def test_rule_buffer(self, rule_buffer):
+    def test_rule_buffer(self, rule_buffer, engine_analysis=False):
         testor = TestRules()
+        related_files, cats_content, iprep_content = self.prepare_tests_files()
+
+        return testor.check_rule_buffer(
+            rule_buffer,
+            related_files=related_files,
+            cats_content=cats_content,
+            iprep_content=iprep_content,
+            engine_analysis=engine_analysis
+        )
+
+    def prepare_tests_files(self):
         tmpdir = tempfile.mkdtemp()
         cats_content, iprep_content = self.export_files(tmpdir)
         related_files = {}
@@ -934,14 +945,31 @@ class Source(models.Model):
                 if os.path.getsize(fullpath) < 50 * 1024:
                     with open(fullpath, 'r') as cf:
                         related_files[f] = cf.read()
-        shutil.rmtree(tmpdir)
 
-        return testor.check_rule_buffer(
-            rule_buffer,
-            related_files=related_files,
-            cats_content=cats_content,
-            iprep_content=iprep_content
-        )
+        shutil.rmtree(tmpdir)
+        return related_files, cats_content, iprep_content
+
+    def analyse_rules(self):
+        testor = TestRules()
+        related_files, cats_content, iprep_content = self.prepare_tests_files()
+
+        all_versions = RuleAtVersion.get_versions_to_analyse()
+        for version in all_versions:
+            contents = RuleAtVersion.objects. \
+                filter(
+                    rule__category__source=self,
+                    updated_date__gte=self.updated_date,
+                    version=version
+                ).distinct().values_list('content', flat=True)
+
+            if contents:
+                content = testor.rules_infos(
+                    '\n'.join(contents),
+                    related_files=related_files,
+                    cats_content=cats_content,
+                    iprep_content=iprep_content
+                )
+                RuleAtVersion.write_analyse(content, version)
 
     def test(self):
         rule_buffer = self.to_buffer()
@@ -2850,6 +2878,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
     updated_date = models.DateTimeField(default=timezone.now)
     created = models.DateField(blank=True, null=True)
     updated = models.DateField(blank=True, null=True)
+    analysis = models.TextField(blank=True, null=True)
 
     BITSREGEXP = {
         'flowbits': re.compile("flowbits *: *(isset|set),(.*?) *;"),
@@ -2857,8 +2886,34 @@ class RuleAtVersion(RangeCheckIntegerFields):
         'xbits': re.compile("xbits *: *(isset|set),(.*?) *;"),
     }
 
+    MANAGER_VERSION = None
+
     class Meta:
         unique_together = ('rule', 'version')
+
+    @classmethod
+    def write_analyse(cls, content, version):
+        ravs = cls.objects.select_related('rule'). \
+            filter(
+                rule__sid__in=content.keys(),
+                version=version
+        ).all()
+
+        for rav in ravs:
+            msg = content[rav.rule.sid]
+            msg.pop('raw')
+            rav.analysis = json.dumps(msg)
+
+        if ravs:
+            RuleAtVersion.objects.bulk_update(ravs, ['analysis'], batch_size=1000)
+
+    @classmethod
+    def get_versions_to_analyse(cls):
+        max_version = cls.MANAGER_VERSION
+        all_versions = {0}
+        if max_version and max_version >= 39:
+            all_versions |= set(range(39, max_version + 1))
+        return all_versions
 
     def is_active(self, ruleset):
         return self.state and \
@@ -3487,24 +3542,53 @@ class Ruleset(models.Model, Transformable):
         result = {'rules_count': self.rules_count}
         return result
 
-    def test_rule_buffer(self, rule_buffer):
+    def test_rule_buffer(self, rule_buffer, engine_analysis=False):
         testor = TestRules()
-        tmpdir = tempfile.mkdtemp()
-        cats_content, iprep_content = self.export_files(tmpdir)
-        related_files = {}
-        for root, _, files in os.walk(tmpdir):
-            for f in files:
-                fullpath = os.path.join(root, f)
-                with open(fullpath, 'r') as cf:
-                    related_files[f] = cf.read(50 * 1024)
-        shutil.rmtree(tmpdir)
+        related_files, cats_content, iprep_content = self.prepare_tests_files()
 
         return testor.check_rule_buffer(
             rule_buffer,
             related_files=related_files,
             cats_content=cats_content,
-            iprep_content=iprep_content
+            iprep_content=iprep_content,
+            engine_analysis=engine_analysis
         )
+
+    def prepare_tests_files(self):
+        tmpdir = tempfile.mkdtemp()
+        cats_content, iprep_content = self.export_files(tmpdir)
+        related_files = {}
+
+        for root, _, files in os.walk(tmpdir):
+            for f in files:
+                fullpath = os.path.join(root, f)
+                with open(fullpath, 'r') as cf:
+                    related_files[f] = cf.read(50 * 1024)
+
+        shutil.rmtree(tmpdir)
+        return related_files, cats_content, iprep_content
+
+    def analyse_rules(self):
+        testor = TestRules()
+        related_files, cats_content, iprep_content = self.prepare_tests_files()
+
+        all_versions = RuleAtVersion.get_versions_to_analyse()
+        for version in all_versions:
+            for source in self.sources.all():
+                contents = RuleAtVersion.objects.filter(
+                    rule__category__source=source,
+                    updated_date__gte=source.updated_date,
+                    version=version
+                ).distinct().values_list('content', flat=True)
+
+                if contents:
+                    content = testor.rules_infos(
+                        '\n'.join(contents),
+                        related_files=related_files,
+                        cats_content=cats_content,
+                        iprep_content=iprep_content
+                    )
+                    RuleAtVersion.write_analyse(content, version)
 
     def test(self):
         self.need_test = False
