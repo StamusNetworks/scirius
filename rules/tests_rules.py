@@ -45,13 +45,26 @@ class TestRules():
 
         return buffers
 
-    def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, cats_content='', iprep_content=''):
+    def rules_infos(self, rule_buffer, **kwargs):
+        extra_buffers = self.build_iprep_buffers(
+            kwargs.pop('cats_content', None),
+            kwargs.pop('iprep_content', None)
+        )
+        kwargs['extra_buffers'] = extra_buffers
+        testor = LangServer(conn=None)
+
+        return testor.rules_tester.rules_infos(
+            rule_buffer,
+            **kwargs
+        )
+
+    def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, cats_content='', iprep_content='', engine_analysis=False):
         extra_buffers = self.build_iprep_buffers(cats_content, iprep_content)
         testor = LangServer(conn=None)
 
         result = testor.rules_tester.check_rule_buffer(
             rule_buffer,
-            engine_analysis=False,
+            engine_analysis=engine_analysis,
             **{
                 'config_buffer': config_buffer,
                 'related_files': related_files,
@@ -78,7 +91,7 @@ class TestRules():
 
             result = testor.rules_tester.check_rule_buffer(
                 r_buffer if r_buffer else rule_buffer,
-                engine_analysis=False,
+                engine_analysis=engine_analysis,
                 **{
                     'config_buffer': config_buffer,
                     'related_files': related_files,
@@ -93,7 +106,7 @@ class TestRules():
             f_tmp.flush()
             status, diags = testor.analyse_file(
                 f_tmp.name,
-                engine_analysis=False,
+                engine_analysis=engine_analysis,
                 **{
                     'config_buffer': config_buffer,
                     'related_files': related_files,
