@@ -409,9 +409,16 @@ class ProbeEntry(serializers.Serializer):
 
 
 class RuleAtVersionSerializer(serializers.ModelSerializer):
+    analysis = serializers.SerializerMethodField()
+
     class Meta:
         model = RuleAtVersion
         exclude = ('rule',)
+
+    def get_analysis(self, instance):
+        if instance.analysis:
+            return json.loads(instance.analysis)
+        return None
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -476,6 +483,7 @@ class RuleFilter(filters.FilterSet):
     not_in_msg = ListFilter(field_name="msg", lookup_expr='icontains', exclude=True)
     content = ListFilter(field_name="ruleatversion__content", lookup_expr='icontains')
     not_in_content = ListFilter(field_name="ruleatversion__content", lookup_expr='icontains', exclude=True)
+    analysis_isnull = filters.BooleanFilter(field_name='ruleatversion__analysis', method='filter_analysis')
 
     class Meta:
         model = Rule
@@ -484,6 +492,10 @@ class RuleFilter(filters.FilterSet):
             'not_in_msg': {'source': 'msg'},
             'not_in_content': {'source': 'content'},
         }
+
+    def filter_analysis(self, queryset, name, value):
+        lookup = '__'.join([name, 'isnull'])
+        return queryset.filter(**{lookup: value})
 
 
 class UserActionFilter(filters.FilterSet):
