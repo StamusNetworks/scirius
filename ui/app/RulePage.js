@@ -14,6 +14,7 @@ import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { withStore } from 'ui/mobx/RootStoreProvider';
+import SignatureFlow from 'ui/components/SignatureFlow';
 import Filter from 'ui/utils/Filter';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
@@ -362,6 +363,7 @@ class RulePage extends React.Component {
               </div>
             </div>
           )}
+          <SignatureFlow rule={this.state.rule} />
         </Spin>
 
         <Modal
