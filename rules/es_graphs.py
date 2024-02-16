@@ -608,9 +608,10 @@ class ESTimeline(ESManageMultipleESIndexes):
 
             data = rdata
         except:
-            return {}
-        if data != {}:
+            data = {}
+        finally:
             data['from_date'] = self._from_date()
+            data['to_date'] = self._to_date()
             data['interval'] = self._interval()
         return data
 
