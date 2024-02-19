@@ -1062,9 +1062,18 @@ class ESTimeRangeAllAlerts(ESManageMultipleESIndexes):
 
     def get(self):
         data = super().get()
+        min_timestamp = int(data.get('aggregations', {}).get('min_timestamp', {}).get('value') or self._from_date())
+        max_timestamp = int(data.get('aggregations', {}).get('max_timestamp', {}).get('value') or self._to_date(es_format=False))
+
+        # extend min/max if range < 20secs to avoid
+        # backtrace "[interval] must be 1 or greater for aggregation [date_histogram]"
+        if max_timestamp - min_timestamp < 20000:
+            min_timestamp -= 10000
+            max_timestamp += 10000
+
         return {
-            'min_timestamp': data.get('aggregations', {}).get('min_timestamp', {}).get('value') or self._from_date(),
-            'max_timestamp': data.get('aggregations', {}).get('max_timestamp', {}).get('value') or self._to_date(es_format=False)
+            'min_timestamp': min_timestamp,
+            'max_timestamp': max_timestamp
         }
 
 
