@@ -284,7 +284,7 @@ def add_user(request):
                 else:
                     error = True
             else:
-                ruser.set_password(User.objects.make_random_password(length=20))
+                ruser.set_unusable_password()
 
             if error is False:
                 ruser.save()
