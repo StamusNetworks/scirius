@@ -223,3 +223,8 @@ class SciriusUser(models.Model):
         if hasattr(self, 'sciriususerapp'):
             self.sciriususerapp.method = method
             self.sciriususerapp.save()
+
+
+class SciriusTokenUser(SciriusUser):
+    parent = models.ForeignKey(SciriusUser, on_delete=models.CASCADE, related_name='tokenusers')
+    description = models.CharField(max_length=4096, default='')

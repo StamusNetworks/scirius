@@ -316,7 +316,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     =============================================================================================================================================================
     """
 
-    queryset = SciriusUser.objects.select_related('user').order_by('-user__date_joined')
+    queryset = SciriusUser.objects.filter(sciriustokenuser__parent__isnull=True).select_related('user').order_by('-user__date_joined')
     REQUIRED_GROUPS = {
         'READ': ('rules.configuration_auth',),
         'WRITE': ('rules.configuration_auth',),

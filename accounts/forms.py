@@ -24,7 +24,7 @@ from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChange
 from django.db.models import Max, F
 import pytz
 
-from .models import Group, SciriusUser
+from .models import Group, SciriusTokenUser, SciriusUser
 
 from scirius.utils import get_middleware_module
 from rules.forms import CommentForm
@@ -131,6 +131,32 @@ class GroupEditForm(forms.ModelForm, CommentForm):
         return instance
 
 
+class TokenGroupForm(forms.ModelForm):
+    name = forms.CharField(label='Role name', required=True)
+    permissions = forms.ModelMultipleChoiceField(None, widget=forms.CheckboxSelectMultiple(), label='', required=False)
+
+    class Meta:
+        model = DjangoGroup
+        fields = ('name', 'permissions')
+
+    def __init__(self, req_user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        permissions = req_user.groups.first().permissions
+        instance = kwargs.get('instance')
+
+        self.fields['permissions'].queryset = permissions.all()
+        self.fields['permissions'].choices = permissions.order_by('pk').values_list('pk', 'name')
+
+        if instance:
+            self.initial['permissions'] = instance.permissions.values_list('pk', flat=True)
+            self.fields['name'].initial = instance.name
+
+    def save(self, commit=True):
+        instance = super().save(commit)
+        Group.objects.get_or_create(group=instance)
+        return instance
+
+
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=150, label='')
     password = forms.CharField(widget=forms.PasswordInput, label='')
@@ -188,7 +214,10 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
         if len(get_middleware_module('common').auth_choices()) == 0 or instance:
             self.fields.pop('saml')
 
-        self.fields['groups'].queryset = DjangoGroup.objects.order_by('name')
+        self.fields['groups'].queryset = DjangoGroup.objects.filter(
+            # not token users
+            user__sciriususer__sciriustokenuser__parent__isnull=True
+        ).distinct().order_by('name')
         if instance:
             # self.fields['groups'].initial does not work
             self.initial['groups'] = instance.groups.first().pk if instance.groups.count() > 0 else ''
@@ -202,7 +231,9 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
 
         else:
             self.fields['timezone'].initial = 'UTC'
-            self.initial['groups'] = Group.objects.order_by('-priority').first()
+            self.initial['groups'] = Group.objects.filter(
+                group__user__sciriususer__sciriustokenuser__parent__isnull=True
+            ).order_by('-priority').first()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -236,6 +267,62 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
         instance.save()
         get_middleware_module('common').update_scirius_user_class(instance, self.cleaned_data)
         return instance
+
+
+class TokenUserForm(forms.ModelForm):
+    username = forms.CharField(max_length=150, label='Token name')
+    timezone = forms.ChoiceField(choices=TIMEZONES)
+    tenants = forms.ModelMultipleChoiceField(None, widget=forms.CheckboxSelectMultiple(), label='', required=False)
+    all_tenants = forms.BooleanField(required=False)
+    no_tenant = forms.BooleanField(required=False)
+    description = forms.CharField(max_length=4096)
+
+    class Meta:
+        model = User
+        fields = ['username', 'description', 'timezone', 'is_active', 'no_tenant', 'all_tenants', 'tenants']
+
+    def __init__(self, req_user, instance=None, *args, **kwargs):
+        self.req_user = req_user
+        super().__init__(instance=instance, *args, **kwargs)
+        if not get_middleware_module('common').has_multitenant():
+            self.fields.pop('tenants')
+            self.fields.pop('no_tenant')
+            self.fields.pop('all_tenants')
+        else:
+            if req_user.sciriususer.has_all_tenants():
+                self.fields['tenants'].queryset = get_middleware_module('common').get_tenants()
+            else:
+                self.fields['tenants'].queryset = req_user.sciriususer.get_tenants()
+                self.fields.pop('all_tenants')
+
+            if not req_user.sciriususer.has_no_tenant():
+                self.fields.pop('no_tenant')
+
+            if instance:
+                self.fields['tenants'].initial = instance.sciriususer.get_tenants()
+                if req_user.sciriususer.has_all_tenants():
+                    self.fields['all_tenants'].initial = instance.sciriususer.has_all_tenants()
+                if req_user.sciriususer.has_no_tenant():
+                    self.fields['no_tenant'].initial = instance.sciriususer.has_no_tenant()
+
+        if instance:
+            self.fields['timezone'].initial = instance.sciriususer.timezone
+            self.fields['description'].initial = instance.sciriususer.sciriustokenuser.description
+        self.fields['timezone'].initial = req_user.sciriususer.timezone
+
+    def save(self, commit=True):
+        if not commit:
+            raise NotImplementedError('This method does not support "commit=False"')
+
+        user = super().save()
+        tokenuser, _ = SciriusTokenUser.objects.get_or_create(user=user, parent=self.req_user.sciriususer)
+        tokenuser.description = self.cleaned_data.get('description', '')
+        tokenuser.timezone = self.cleaned_data['timezone']
+        tokenuser.parent = self.req_user.sciriususer
+        tokenuser.save()
+
+        get_middleware_module('common').update_scirius_user_class(user, self.cleaned_data)
+        return user
 
 
 class NormalUserSettingsForm(forms.ModelForm, CommentForm):

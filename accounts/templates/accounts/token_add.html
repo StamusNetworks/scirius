@@ -1,0 +1,85 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+{% block sidebar %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Manage users</h2>
+    </div>
+    <ul class="panel-body">
+        <li>
+            <a href="{% url 'token_list' %}">Token list</a>
+        </li>
+        {% if instance %}
+            <li>
+                <a href="{% url 'token_delete' instance.pk %}">Delete token</a>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock sidebar %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <form method="post" class="form">
+                    {% csrf_token %}
+                    {% bootstrap_form user_form %}
+                    {% bootstrap_field group_form.name %}
+                    <div class="checkbox">
+                        <label for="perms_all">
+                            <input type="checkbox" id="perms_all">
+                            (Un)Select All
+                            <br>
+                            <br>
+                        </label>
+                    </div>
+                    {% bootstrap_field group_form.permissions %}
+
+                    {% buttons %}
+                    <button type="submit" class="btn btn-primary">
+                        {% bootstrap_icon "ok" %} Valid
+                    </button>
+                    {% endbuttons %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script language="JavaScript">
+    {% if user_form.no_tenant or user_form.all_tenants or user_form.tenants %}
+function click_all_tenants() {
+    if ($("#id_all_tenants").is(":checked")) {
+        $('#id_tenants').parents('.form-group').hide(duration=200);
+    } else {
+        if ($('#id_all_tenants').length) {
+            $('#id_tenants').parents('div')[0].style['padding-left'] = '5%';
+        }
+        $('#id_tenants').parents('.form-group').show(duration=200);
+    }
+}
+
+$('document').ready(function() {
+    $("#id_all_tenants").change(click_all_tenants);
+    click_all_tenants();
+});
+    {% endif %}
+
+function select_all_perms() {
+    let checkbox = $('#perms_all');
+    let checked = checkbox[0].checked;
+    for (var idx = 0; idx < 100; idx++) {
+        if (!$(`#id_permissions_${idx}`).length) {
+            break;
+        }
+
+        cb = $(`#id_permissions_${idx}`);
+
+        if (checked !== cb[0].checked) {
+            $(`#id_permissions_${idx}`).trigger('click');
+        }
+    }
+    return true;
+}
+$('#perms_all').click(function() {select_all_perms();});
+
+    </script>
+{% endblock content %}
+

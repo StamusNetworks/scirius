@@ -39,6 +39,10 @@ urlpatterns = [
     re_path(r'^priorities/$', views.edit_priorities, name='edit_priorities'),
     re_path(r'^sort_priorities/$', views.sort_priorities, name='sort_priorities'),
     re_path(r'^current_user/$', views.current_user, name='current_user'),
+    re_path(r'^token_list/$', views.token_list, name='token_list'),
+    re_path(r'^token_add/$', views.token_add, name='token_add'),
+    re_path(r'^token_edit/(?P<user_id>\d+)/$', views.token_edit, name='token_edit'),
+    re_path(r'^token_delete/(?P<user_id>\d+)/$', views.token_delete, name='token_delete'),
 
     # TODO PERMS: split into different views
     re_path(r'^edit/(?P<action>.*)$', views.editview, name='accounts_edit'),

@@ -32,14 +32,18 @@ from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
 from django.utils import timezone
 
 import django_tables2 as tables
+from django.db import transaction
 
 from rules.models import UserAction, get_system_settings
 from rules.forms import CommentForm
 
 from scirius.utils import scirius_render, scirius_listing, get_middleware_module
-from .forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, TokenForm, PasswordChangeForm, GroupEditForm, PasswordCreationForm
+from .forms import (
+    LoginForm, TokenGroupForm, TokenUserForm, UserSettingsForm, NormalUserSettingsForm,
+    PasswordForm, TokenForm, PasswordChangeForm, GroupEditForm, PasswordCreationForm
+)
 from .models import SciriusUser, Group
-from .tables import UserTable, GroupTable
+from .tables import TokenListTable, UserTable, GroupTable
 
 from ipware.ip import get_client_ip
 import logging
@@ -197,37 +201,64 @@ def editview(request, action):
 
 @permission_required('rules.configuration_auth', raise_exception=True)
 def list_accounts(request):
-    template = 'accounts/accounts_list.html'
-    mapping = {'User': UserTable, 'Role': GroupTable}
-    klasses = (User, DjangoGroup)
-
     data = {
         'User': {
             'size': 0,
             'content': None,
             'annotate': {'role': F('groups__name')},
-            'order_by': ('groups__group__priority', '-username')
+            'filter': {'sciriususer__sciriustokenuser__parent__isnull': True},
+            'order_by': ('groups__group__priority', '-username'),
+            'class': User,
+            'table': UserTable
         },
         'Role': {
             'size': 0,
             'content': None,
-            'order_by': ('group__priority',)
+            'order_by': ('group__priority',),
+            'filter': {'user__sciriususer__sciriustokenuser__parent__isnull': True},
+            'class': DjangoGroup,
+            'table': GroupTable
+        },
+        'Token User': {
+            'size': 0,
+            'content': None,
+            'filter': {'sciriustokenuser__parent__isnull': False},
+            'order_by': ('-sciriustokenuser__parent__user__username',),
+            'table_params': {'add_parent': True, 'exclude': ('token',)},
+            'class': SciriusUser,
+            'table': TokenListTable
+        },
+        'Token Role': {
+            'size': 0,
+            'content': None,
+            'filter': {'user__sciriususer__sciriustokenuser__parent__isnull': False},
+            'order_by': ('-user__sciriususer__sciriustokenuser__parent__user__username',),
+            'table_params': {'token_role': True},
+            'class': DjangoGroup,
+            'table': GroupTable
         }
     }
 
     conf = tables.RequestConfig(request)
-    for klass in klasses:
-        klass_name = klass.__name__ if klass != DjangoGroup else 'Role'
-        objects = klass.objects.all()
-        if 'annotate' in data[klass_name]:
-            objects = objects.annotate(**data[klass_name]['annotate'])
 
-        objects = objects.order_by(*data[klass_name]['order_by'])
-        data[klass_name]['content'] = conf.configure(mapping[klass_name](objects))
-        data[klass_name]['size'] = objects.count()
+    for _, values in data.items():
+        objects = values.pop('class').objects.all()
+
+        for item in ('annotate', 'filter'):
+            if item in values.keys():
+                objects = getattr(objects, item)(**values.pop(item))
+
+        objects = objects.order_by(*values.pop('order_by'))
+
+        table_params = {'data': objects}
+        if 'table_params' in values:
+            table_params.update(values.pop('table_params'))
+
+        values['content'] = conf.configure(values.pop('table')(**table_params))
+        values['size'] = objects.distinct().count()
 
     context = {'objects': data, 'extra_auth': get_middleware_module('common').has_ldap_auth()}
-    return scirius_render(request, template, context)
+    return scirius_render(request, 'accounts/accounts_list.html', context)
 
 
 @permission_required('rules.configuration_auth', raise_exception=True)
@@ -266,7 +297,77 @@ def list_users(request):
             'action_links': {}
         }
     }
-    return scirius_listing(request, User, assocfn, adduri="/accounts/user/add")
+    queryset = User.objects.filter(sciriususer__sciriustokenuser__parent__isnull=True)
+    return scirius_listing(request, queryset, assocfn, adduri="/accounts/user/add")
+
+
+def _build_group_and_user_token(request, context, user=None):
+    group_form = TokenGroupForm(
+        data=request.POST,
+        req_user=request.user,
+        instance=user.groups.first() if user and user.groups.exists() else None
+    )
+    user_form = TokenUserForm(data=request.POST, req_user=request.user, instance=user)
+
+    if not group_form.is_valid() or not user_form.is_valid():
+        errors = {}
+        errors.update(group_form.errors)
+        errors.update(user_form.errors)
+        context.update({
+            'group_form': group_form,
+            'user_form': user_form,
+            'error': f'Invalid form: {errors}'
+        })
+        return scirius_render(request, 'accounts/token_add.html', context)
+
+    with transaction.atomic():
+        group = group_form.save()
+        user = user_form.save()
+        user.groups.set([group])
+        Token.objects.get_or_create(user=user)
+    return redirect('token_list')
+
+
+def token_delete(request, user_id):
+    token_user = get_object_or_404(User, pk=user_id)
+    with transaction.atomic():
+        token_user.groups.first().delete()
+        token_user.delete()
+    return redirect('token_list')
+
+
+def token_edit(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    context = {}
+    if request.method == 'POST':
+        return _build_group_and_user_token(request, context, user=user)
+
+    context.update({
+        'group_form': TokenGroupForm(req_user=request.user, instance=user.groups.first()),
+        'user_form': TokenUserForm(req_user=request.user, instance=user),
+        'instance': user
+    })
+    return scirius_render(request, 'accounts/token_add.html', context)
+
+
+def token_list(request):
+    sn_users = request.user.sciriususer.tokenusers.all()
+    token_table = TokenListTable(sn_users)
+    tables.RequestConfig(request).configure(token_table)
+
+    return scirius_render(request, 'accounts/token_list.html', {'token_table': token_table})
+
+
+def token_add(request):
+    context = {}
+    if request.method == 'POST':
+        return _build_group_and_user_token(request, context)
+
+    context.update({
+        'group_form': TokenGroupForm(req_user=request.user),
+        'user_form': TokenUserForm(req_user=request.user)
+    })
+    return scirius_render(request, 'accounts/token_add.html', context)
 
 
 @permission_required('rules.configuration_auth', raise_exception=True)
@@ -275,7 +376,6 @@ def add_user(request):
         form = UserSettingsForm(request.POST)
         password_form = PasswordCreationForm(request.POST)
 
-        error = False
         if form.is_valid() and password_form.is_valid():
             ruser = form.save()
             if form.cleaned_data.get('saml', False) is False:
@@ -383,7 +483,8 @@ def list_groups(request):
             'action_links': {}
         }
     }
-    return scirius_listing(request, DjangoGroup, assocfn, adduri="/accounts/role/add")
+    queryset = DjangoGroup.objects.filter(user__sciriususer__sciriustokenuser__parent__isnull=True).distinct()
+    return scirius_listing(request, queryset, assocfn, adduri="/accounts/role/add")
 
 
 @permission_required('rules.configuration_auth', raise_exception=True)

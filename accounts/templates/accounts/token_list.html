@@ -1,0 +1,18 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+{% block sidebar %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Manage tokens</h2>
+    </div>
+    <ul class="panel-body">
+        <li>
+            <a href="{% url 'token_add' %}">Add token</a>
+        </li>
+    </ul>
+{% endblock sidebar %}
+{% block content %}
+    <h3 class="title">Token list</h3>
+    {% load render_table from django_tables2 %}
+    {% render_table token_table %}
+
+{% endblock content %}
