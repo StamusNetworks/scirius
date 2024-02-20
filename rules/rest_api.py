@@ -410,6 +410,7 @@ class ProbeEntry(serializers.Serializer):
 
 class RuleAtVersionSerializer(serializers.ModelSerializer):
     analysis = serializers.SerializerMethodField()
+    content_html = serializers.SerializerMethodField()
 
     class Meta:
         model = RuleAtVersion
@@ -420,20 +421,8 @@ class RuleAtVersionSerializer(serializers.ModelSerializer):
             return json.loads(instance.analysis)
         return None
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context['request']
-        highlight_str = request.query_params.get('highlight', 'false')
-
-        def is_highlight(value):
-            return bool(value) and value.lower() not in ('false', '0')
-
-        highlight = is_highlight(highlight_str)
-
-        if highlight is True:
-            data['content'] = SuriHTMLFormat(data['content'])
-
-        return data
+    def get_content_html(self, instance):
+        return SuriHTMLFormat(instance.content)
 
 
 class RuleSerializer(serializers.ModelSerializer):
