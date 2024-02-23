@@ -254,7 +254,7 @@ def sort_priorities(request):
 @permission_required('rules.configuration_auth', raise_exception=True)
 def list_users(request):
     assocfn = {
-        'Users': {
+        'User': {
             'table': UserTable,
             'annotate': {'role': F('groups__name')},
             'order_by': ('groups__group__priority', '-username'),
