@@ -276,27 +276,23 @@ def add_user(request):
         password_form = PasswordCreationForm(request.POST)
 
         error = False
-        if form.is_valid():
+        if form.is_valid() and password_form.is_valid():
             ruser = form.save()
             if form.cleaned_data.get('saml', False) is False:
-                if password_form.is_valid():
-                    ruser.set_password(password_form.cleaned_data['password1'])
-                else:
-                    error = True
+                ruser.set_password(password_form.cleaned_data['password1'])
             else:
                 ruser.set_unusable_password()
 
-            if error is False:
-                ruser.save()
+            ruser.save()
 
-                UserAction.create(
-                    action_type='create_user',
-                    comment=form.cleaned_data['comment'],
-                    request=request,
-                    new_user=ruser
-                )
+            UserAction.create(
+                action_type='create_user',
+                comment=form.cleaned_data['comment'],
+                request=request,
+                new_user=ruser
+            )
 
-                return redirect('list_accounts')
+            return redirect('list_accounts')
 
         context = {
             'error': 'Username and/or password are not valid',
