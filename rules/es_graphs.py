@@ -401,6 +401,7 @@ class ESIPFlowTimeline(ESQuery):
     INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX + 'flow-'
 
     def _get_query(self, target, ip):
+        offset = self._from_date() % self._interval()
         q = {
             'size': 0,
             'query': {
@@ -426,6 +427,7 @@ class ESIPFlowTimeline(ESQuery):
                     'date_histogram': {
                         'field': ES_TIMESTAMP,
                         self._es_interval_kw(): self._es_interval(),
+                        'offset': '+%sms' % offset,
                         'min_doc_count': 0,
                         'extended_bounds': {
                             'min': self._from_date(),
@@ -456,6 +458,7 @@ class ESFlowTimeline(ESQuery):
 
     def _get_query(self):
         qfilter = 'event_type:* ' + self._qfilter()
+        offset = self._from_date() % self._interval()
 
         q = {
             'size': 0,
@@ -482,7 +485,12 @@ class ESFlowTimeline(ESQuery):
                     'date_histogram': {
                         'field': ES_TIMESTAMP,
                         self._es_interval_kw(): self._es_interval(),
-                        'min_doc_count': 0
+                        'offset': '+%sms' % offset,
+                        'min_doc_count': 0,
+                        'extended_bounds': {
+                            'min': self._from_date(),
+                            'max': self._to_date()
+                        }
                     },
                     'aggs': {
                         'tx_bytes': {
@@ -506,6 +514,7 @@ class ESFlowTimeline(ESQuery):
 class ESTimeline(ESManageMultipleESIndexes):
     def _get_query(self, tags=False):
         event_type = self.get_event_type(default='event_type:alert')
+        offset = self._from_date() % self._interval()
 
         q = {
             'size': 0,
@@ -532,7 +541,12 @@ class ESTimeline(ESManageMultipleESIndexes):
                     'date_histogram': {
                         'field': ES_TIMESTAMP,
                         self._es_interval_kw(): self._es_interval(),
-                        'min_doc_count': 0
+                        'offset': '+%sms' % offset,
+                        'min_doc_count': 0,
+                        'extended_bounds': {
+                            'min': self._from_date(),
+                            'max': self._to_date()
+                        }
                     },
                     'aggs': {
                         'host': {
@@ -608,6 +622,8 @@ class ESMetricsTimeline(ESQuery):
         query += '%s %s' % (self._hosts(), self._qfilter())
         query += self._qfilter()
 
+        offset = self._from_date() % self._interval()
+
         q = {
             'size': 0,
             'aggs': {
@@ -615,6 +631,7 @@ class ESMetricsTimeline(ESQuery):
                     'date_histogram': {
                         'field': ES_TIMESTAMP,
                         self._es_interval_kw(): self._es_interval(),
+                        'offset': '+%sms' % offset,
                         'min_doc_count': 0,
                         'extended_bounds': {
                             'min': self._from_date(),
@@ -1445,6 +1462,7 @@ class ESSuriLogTail(ESQuery):
 class ESTopRules(ESManageMultipleESIndexes):
     def _get_query(self, count, order='desc'):
         event_type = self.get_event_type(default='event_type:alert')
+        offset = self._from_date() % self._interval()
 
         q = {
             'size': 0,
@@ -1479,7 +1497,12 @@ class ESTopRules(ESManageMultipleESIndexes):
                             'date_histogram': {
                                 'field': ES_TIMESTAMP,
                                 self._es_interval_kw(): self._es_interval(),
-                                'min_doc_count': 0
+                                'offset': '+%sms' % offset,
+                                'min_doc_count': 0,
+                                'extended_bounds': {
+                                    'min': self._from_date(),
+                                    'max': self._to_date()
+                                }
                             }
                         }
                     }
