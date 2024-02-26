@@ -579,7 +579,14 @@ class ESTimeline(ESManageMultipleESIndexes):
         # total number of results
         try:
             data = data['aggregations']["date"]['buckets']
+            # build list of 'host' keys
+            host_keys = set()
+            for elt in data:
+                elt_set = set([item['key'] for item in elt.get('host', {}).get('buckets', [])])
+                host_keys = host_keys.union(elt_set)
             rdata = {}
+            for key in host_keys:
+                rdata[key] = {'entries': []}
             for elt in data:
                 date = elt['key']
                 others = int(elt['host']['sum_other_doc_count'])
@@ -591,10 +598,12 @@ class ESTimeline(ESManageMultipleESIndexes):
                         rdata['others']['entries'].append({"time": date, "count": others})
 
                 for host in elt["host"]['buckets']:
-                    if host["key"] not in rdata:
-                        rdata[host["key"]] = {'entries': [{"time": date, "count": host["doc_count"]}]}
-                    else:
-                        rdata[host["key"]]['entries'].append({"time": date, "count": host["doc_count"]})
+                    rdata[host["key"]]['entries'].append({"time": date, "count": host["doc_count"]})
+                # Fill zero
+                elt_set = set([item['key'] for item in elt.get('host', {}).get('buckets', [])])
+                for key in host_keys.difference(elt_set):
+                    rdata[key]['entries'].append({"time": date, "count": 0})
+
             data = rdata
         except:
             return {}
