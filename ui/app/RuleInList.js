@@ -1,20 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Empty, Spin, Table, Tabs } from 'antd';
-import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { Spin, Table } from 'antd';
 import styled from 'styled-components';
+import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import { sections } from 'ui/constants';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
-import SciriusChart from 'ui/components/SciriusChart';
-import EventValue, { Count } from 'ui/components/EventValue';
+import { Count } from 'ui/components/EventValue';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
-import UICard from 'ui/components/UIElements/UICard';
-import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import 'ui/pygments.css';
 import Filter from 'ui/utils/Filter';
-import SignatureFlow from 'ui/components/SignatureFlow';
+import ExpandedSignature from 'ui/components/ExpandedSignature';
 
 export const SigContent = styled.div`
   & pre {
@@ -139,44 +136,6 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     rule, // we need this to access the rule data in the `expandedRowRender` below
   }));
 
-  const renderContents = rule => {
-    const items = [];
-    if (rule.versions?.length > 1) {
-      rule.versions.forEach((version, i) => {
-        items.push({
-          key: i,
-          label: `Version ${version.version === 0 ? '< 39' : version.version}`,
-          children: <SigContent dangerouslySetInnerHTML={{ __html: version.content }} key={version.id} />,
-        });
-      });
-    }
-    return (
-      <div style={{ width: 'calc(100vw - 271px)' }}>
-        {rule.versions?.length === 1 && <SigContent dangerouslySetInnerHTML={{ __html: rule.versions[0].content }} key={rule.versions[0].id} />}
-        {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
-        <SciriusChart
-          data={rule.timeline}
-          axis={{ x: { min: filterParams.fromDate, max: filterParams.toDate } }}
-          legend={{ show: false }}
-          padding={{ bottom: 10 }}
-        />
-        <UICard
-          title={<div>Probes</div>}
-          style={{ width: '300px' }}
-          headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
-          bodyStyle={{ padding: '8px 10px' }}
-          noPadding
-        >
-          {rule.probes.map(probe => (
-            <EventValue filter={new Filter('host', probe.probe)} count={probe.hits} />
-          ))}
-          {rule.probes.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-        </UICard>
-        <SignatureFlow rule={rule} />
-      </div>
-    );
-  };
-
   return (
     <Table
       data-test="signatures-table"
@@ -187,7 +146,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
       expandable={{
         columnWidth: 5,
         expandRowByClick: true,
-        expandedRowRender: alert => alert.rule.timeline && renderContents(alert.rule),
+        expandedRowRender: alert => alert.rule.timeline && <ExpandedSignature rule={alert.rule} filterParams={filterParams} />,
         rowExpandable: () => true,
       }}
       pagination={false}
