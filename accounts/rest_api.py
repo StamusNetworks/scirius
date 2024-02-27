@@ -15,7 +15,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 
-from accounts.models import SciriusUser
+from accounts.models import SciriusUser, SciriusTokenUser
 from rules.rest_api import CommentSerializer
 from rules.models import UserAction, get_system_settings
 from rules.rest_permissions import has_group_permission
@@ -107,6 +107,25 @@ class AccountLightSerializer(serializers.ModelSerializer):
         instance.save()
         user.save()
         return instance
+
+
+class TokenUserSerializer(serializers.ModelSerializer):
+    token_name = serializers.CharField(source='user.username')
+    token_role = serializers.CharField(source='user.groups.first.name')
+    token = serializers.SerializerMethodField()
+    description = serializers.CharField()
+    permissions = serializers.SerializerMethodField()
+    is_active = serializers.BooleanField(source='user.is_active')
+
+    class Meta:
+        model = SciriusTokenUser
+        fields = ('pk', 'token_name', 'token_role', 'token', 'description', 'is_active', 'permissions')
+
+    def get_permissions(self, instance):
+        return instance.user.groups.first().permissions.values('name', 'codename')
+
+    def get_token(self, instance):
+        return Token.objects.filter(user=instance.user).first().key
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -271,6 +290,43 @@ class ChangePasswordSuperUserSerializer(serializers.Serializer):
 
 class ChangePasswordSerializer(ChangePasswordSuperUserSerializer):
     old_password = serializers.CharField(required=True)
+
+
+class TokenUserViewSet(viewsets.ReadOnlyModelViewSet):
+    '''
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show all Token Users from request user with a global token or token user:\n
+        curl -k https://x.x.x.x/rest/accounts/tokenuser/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"count":1,"next":null,"previous":null,"results":[{"pk":2,"token_name":"scirius_events_all","token_role":"scirius_events_all","token":"<token>","description":"events all role","is_active":true,"permissions":[{"name":"Events Edit","codename":"events_edit"},{"name":"Events Evebox","codename":"events_evebox"},{"name":"Events Kibana","codename":"events_kibana"},{"name":"Events Ryod","codename":"events_ryod"},{"name":"Events View","codename":"events_view"}]}]}%
+
+    Show a specific Token User from request user with a global token or token user:\n
+        curl -k https://x.x.x.x/rest/accounts/tokenuser/<token_user_pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"pk":2,"token_name":"scirius_events_all","token_role":"scirius_events_all","token":"<token>","description":"events all role","is_active":true,"permissions":[{"name":"Events Edit","codename":"events_edit"},{"name":"Events Evebox","codename":"events_evebox"},{"name":"Events Kibana","codename":"events_kibana"},{"name":"Events Ryod","codename":"events_ryod"},{"name":"Events View","codename":"events_view"}]}%
+
+    =============================================================================================================================================================
+    '''
+    queryset = SciriusTokenUser.objects.all()
+    serializer_class = TokenUserSerializer
+    ordering = ('pk',)
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        suser = self.request.user.sciriususer
+
+        if SciriusTokenUser.objects.filter(parent=suser).exists():
+            return suser.tokenusers.all()
+        else:
+            if hasattr(suser, 'sciriustokenuser'):
+                return suser.sciriustokenuser.parent.tokenusers.all()
+
+        return SciriusTokenUser.objects.none()
 
 
 class AccountViewSet(viewsets.ModelViewSet):
@@ -501,3 +557,4 @@ class AccountViewSet(viewsets.ModelViewSet):
 
 router = DefaultRouter()
 router.register('accounts/sciriususer', AccountViewSet, basename='sciriususer')
+router.register('accounts/tokenuser', TokenUserViewSet, basename='tokenuser')
