@@ -1,7 +1,13 @@
 {% extends "rules/base.html" %}
 {% block sidebar %}
     <div class="panel-heading">
-        <h2 class="panel-title">{{ name }}</h2>
+        <h2 class="panel-title">
+            {% if name|slice:'-1:' == 'y' %}
+                {{ name|slice:':-1' }}{{ size|pluralize:"y,ies" }}
+            {% else %}
+                {{ name }}{{ size|pluralize }}
+            {% endif %}
+        </h2>
     </div>
     <ul class="panel-body">
         <li>{{ size }} object{{ size|pluralize }}</li>

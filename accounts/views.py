@@ -472,7 +472,7 @@ def delete_user(request, user_id):
 @permission_required('rules.configuration_auth', raise_exception=True)
 def list_groups(request):
     assocfn = {
-        'Roles': {
+        'Role': {
             'table': GroupTable,
             'order_by': ('group__priority',),
             'manage_links': {

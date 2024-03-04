@@ -161,7 +161,7 @@ def source(request, source_id, error=None, update=False, activate=False, ruleset
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def categories(request):
     assocfn = {
-        'Categories': {
+        'Category': {
             'table': CategoryTable,
             'manage_links': {},
             'action_links': {}
