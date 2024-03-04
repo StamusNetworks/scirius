@@ -78,7 +78,7 @@ class RulePage extends React.Component {
       this.fetchRuleStatus(rule.sid);
     } else {
       axios
-        .get(`${config.API_URL}${config.RULE_PATH}${sid}/?highlight=true`)
+        .get(`${config.API_URL}${config.RULE_PATH}${sid}`)
         .then(res => {
           updateHitsStats([res.data], filterParams, this.updateRuleState, qfilter, this.props.store.tenantStore.tenant);
           axios
@@ -175,7 +175,7 @@ class RulePage extends React.Component {
         items.push({
           key: i,
           label: `Version ${version.version === 0 ? '< 39' : version.version}`,
-          children: <SigContent dangerouslySetInnerHTML={{ __html: version.content }} key={version.id} />,
+          children: <SigContent dangerouslySetInnerHTML={{ __html: version.content_html }} key={version.id} />,
         });
       });
     }
@@ -197,7 +197,7 @@ class RulePage extends React.Component {
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
                   {this.state.rule?.versions?.length === 1 && (
-                    <SigContent dangerouslySetInnerHTML={{ __html: this.state.rule.versions[0].content }} key={this.state.rule.versions[0].id} />
+                    <SigContent dangerouslySetInnerHTML={{ __html: this.state.rule.versions[0].content_html }} key={this.state.rule.versions[0].id} />
                   )}
                   {this.state.rule?.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
 

@@ -199,12 +199,12 @@ class CommonStore {
   }
 
   async fetchSignatures(listParams) {
-    const response = await api.get(`${endpoints.SIGNATURES.url}?highlight=true&${listParams}`);
+    const response = await api.get(`${endpoints.SIGNATURES.url}?${listParams}`);
     return response;
   }
 
   async fetchSignature(sid) {
-    const response = await api.get(`${endpoints.SIGNATURE.url}/?highlight=true`, { sid });
+    const response = await api.get(`${endpoints.SIGNATURE.url}`, { sid });
     return response;
   }
 
