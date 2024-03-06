@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Menu, Popover, Tooltip } from 'antd';
-import { ClockCircleOutlined, QuestionCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, QuestionCircleOutlined, UserOutlined, ReloadOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
 // icon select: https://fonts.google.com/icons?selected=Material+Icons
 // React name for icon: select checkbox, click the icon and see the name for the import: https://mui.com/components/material-icons
@@ -14,7 +14,7 @@ import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import moment from 'moment';
-import { HeaderStyled, Logo, RangePreview } from './styles';
+import { HeaderStyled, Logo, RangePreview, ReloadButton } from './styles';
 
 const { DATE_TIME_FORMAT } = constants;
 
@@ -31,6 +31,13 @@ const Header = ({ menuItems = [] }) => {
       </Logo>
 
       <Menu theme="dark" mode="horizontal">
+        <Menu.Item key="reload">
+          <Tooltip title="Reload now">
+            <ReloadButton onClick={() => commonStore.reload()} icon={<ReloadOutlined />} type="ghost">
+              Reload
+            </ReloadButton>
+          </Tooltip>
+        </Menu.Item>
         {menuItems.map(menuItem => (
           <Menu.Item key={menuItem.key} className="tenant-dropdown">
             {menuItem.content}
