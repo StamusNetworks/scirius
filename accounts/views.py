@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
+from django.core.exceptions import PermissionDenied
 
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -42,7 +43,7 @@ from .forms import (
     LoginForm, TokenGroupForm, TokenUserForm, UserSettingsForm, NormalUserSettingsForm,
     PasswordForm, TokenForm, PasswordChangeForm, GroupEditForm, PasswordCreationForm
 )
-from .models import SciriusUser, Group
+from .models import SciriusTokenUser, SciriusUser, Group
 from .tables import TokenListTable, UserTable, GroupTable
 
 from ipware.ip import get_client_ip
@@ -338,6 +339,10 @@ def token_delete(request, user_id):
 
 def token_edit(request, user_id):
     user = get_object_or_404(User, pk=user_id)
+    token_user = SciriusTokenUser.objects.filter(user=user).first()
+    if not token_user or token_user.parent.user != request.user:
+        raise PermissionDenied()
+
     context = {}
     if request.method == 'POST':
         return _build_group_and_user_token(request, context, user=user)
@@ -352,7 +357,7 @@ def token_edit(request, user_id):
 
 def token_list(request):
     sn_users = request.user.sciriususer.tokenusers.all()
-    token_table = TokenListTable(sn_users)
+    token_table = TokenListTable(sn_users, is_owner=True)
     tables.RequestConfig(request).configure(token_table)
 
     return scirius_render(request, 'accounts/token_list.html', {'token_table': token_table})

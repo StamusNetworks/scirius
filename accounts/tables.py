@@ -44,16 +44,19 @@ class TokenListTable(SciriusTable):
         exclude = []
 
     def render_username(self, record):
-        return format_html(
-            '<a href="{}">{}</a>',
-            reverse('token_edit', args=[record['pk']]),
-            record['username']
-        )
+        if self.is_owner:
+            return format_html(
+                '<a href="{}">{}</a>',
+                reverse('token_edit', args=[record['pk']]),
+                record['username']
+            )
+        return record['username']
 
     def __init__(self, data, *args, **kwargs):
         rows = {}
         extra_columns = {}
         add_parent = kwargs.pop('add_parent', False)
+        self.is_owner = kwargs.pop('is_owner', False)
 
         for row in data:
             if row.pk not in rows:
