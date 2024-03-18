@@ -130,7 +130,7 @@ export const ExpandedSignature = ({ rule, filterParams, Flow, stamusIps }) => {
 const Card = ({ card }) => (
   <UICard title={<div>{card.title}</div>} headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }} bodyStyle={{ padding: '8px 10px' }} noPadding>
     {card.data.map(item => (
-      <EventValue filter={new Filter(item.filter, item.key)} count={item.doc_count} />
+      <EventValue filter={new Filter(card.filter, item.key)} count={item.doc_count} />
     ))}
     {card.data.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
   </UICard>
