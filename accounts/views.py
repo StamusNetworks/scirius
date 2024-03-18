@@ -25,6 +25,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.conf import settings
 from django.contrib.auth.models import User, Group as DjangoGroup
 from django.contrib.auth.decorators import permission_required
+from django.views.decorators.cache import never_cache
 from rest_framework.authtoken.models import Token
 from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
@@ -44,6 +45,7 @@ from ipware.ip import get_client_ip
 import logging
 
 
+@never_cache
 def loginview(request, target):
     banner = get_system_settings().custom_login_banner
     if request.method == 'POST':
