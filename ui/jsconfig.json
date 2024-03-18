@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "ui/*": ["app/appliance/*", "app/*"]
+    }
+  },
+  "include": ["app/**/*"]
+}
