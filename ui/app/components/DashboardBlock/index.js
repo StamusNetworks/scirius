@@ -1,14 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { Dropdown, Empty, Menu, message } from 'antd';
+
 import { LoadingOutlined, MenuOutlined } from '@ant-design/icons';
+import { Dropdown, Empty, Menu, message } from 'antd';
+import { isEqual } from 'lodash';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
+import DashboardBlockData from 'ui/components/DashboardBlockData';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
-import DashboardBlockData from 'ui/components/DashboardBlockData';
-import downloadData from 'ui/helpers/downloadData';
-import styled from 'styled-components';
 import DashboardContext from 'ui/context/DashboardContext';
-import { isEqual } from 'lodash';
+import downloadData from 'ui/helpers/downloadData';
 
 const Title = styled.div`
   text-align: center;

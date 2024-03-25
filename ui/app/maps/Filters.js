@@ -1,6 +1,6 @@
-import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 import FilterValidationType from 'ui/maps/FilterValidationType';
 import FilterValueType from 'ui/maps/FilterValueType';
+import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 
 export const FilterCategory = {
   EVENT: 'EVENT',

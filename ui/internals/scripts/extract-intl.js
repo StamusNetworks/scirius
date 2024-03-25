@@ -7,16 +7,16 @@
 require('shelljs/global');
 
 const fs = require('fs');
-const nodeGlob = require('glob');
+
 const { transform } = require('@babel/core');
+const nodeGlob = require('glob');
 const get = require('lodash/get');
 
-const animateProgress = require('./helpers/progress');
-const addCheckmark = require('./helpers/checkmark');
-
 const { appLocales, DEFAULT_LOCALE } = require('../../app/i18n');
-
 const babel = require('../../babel.config.js');
+const addCheckmark = require('./helpers/checkmark');
+const animateProgress = require('./helpers/progress');
+
 const { presets } = babel;
 let plugins = babel.plugins || [];
 

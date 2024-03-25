@@ -1,4 +1,5 @@
 import produce from 'immer';
+
 import constants from 'ui/stores/filterset/constants';
 
 export const initialState = {

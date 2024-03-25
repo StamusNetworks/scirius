@@ -1,8 +1,10 @@
 import React from 'react';
-import { Card, Tooltip, Button } from 'antd';
+
 import { BellOutlined, DashboardOutlined, IdcardOutlined, SafetyOutlined, UploadOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Card, Tooltip, Button } from 'antd';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+
 import { huntTabs } from 'ui/constants';
 
 const getIcons = item => {

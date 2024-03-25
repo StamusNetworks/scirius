@@ -3,7 +3,9 @@
  */
 
 const path = require('path');
+
 const webpack = require('webpack');
+
 const { ANTD_THEME } = require('../../app/constants/antd.json');
 
 module.exports = options => ({
@@ -22,33 +24,26 @@ module.exports = options => ({
     rules: [
       {
         test: /\.jsx?$/, // Transform all .js and .jsx files into ES5
-        exclude: /node_modules/, //everything in node_modules is already ES5
-        use: [{
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              ['@babel/preset-env', { targets: "defaults" }],
-              '@babel/preset-react'
-            ],
-            plugins: [
-              "babel-plugin-styled-components",
-              ["import", { "libraryName": "antd", "libraryDirectory": "es", "style": true }]
-            ]
-          }
-        }],
+        exclude: /node_modules/, // everything in node_modules is already ES5
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [['@babel/preset-env', { targets: 'defaults' }], '@babel/preset-react'],
+              plugins: ['babel-plugin-styled-components', ['import', { libraryName: 'antd', libraryDirectory: 'es', style: true }]],
+            },
+          },
+        ],
       },
       {
         test: /\.css$/,
-        use: [
-          "style-loader",
-          "css-loader",
-        ],
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.less$/,
         use: [
-          "style-loader",
-          "css-loader",
+          'style-loader',
+          'css-loader',
           {
             loader: 'less-loader',
             options: {
@@ -98,7 +93,7 @@ module.exports = options => ({
     // Work around for Buffer is undefined:
     // https://github.com/webpack/changelog-v5/issues/10
     new webpack.ProvidePlugin({
-        Buffer: ['buffer', 'Buffer'],
+      Buffer: ['buffer', 'Buffer'],
     }),
   ]),
   resolve: {
@@ -106,8 +101,8 @@ module.exports = options => ({
     extensions: ['.js', '.jsx', '.react.js'],
     mainFields: ['browser', 'jsnext:main', 'main'],
     alias: {
-      ui: [path.resolve(__dirname, '../../app/appliance/'), path.resolve(__dirname, '../../app/')]
-    }
+      ui: [path.resolve(__dirname, '../../app/appliance/'), path.resolve(__dirname, '../../app/')],
+    },
   },
   devtool: options.devtool,
   target: 'web', // Make web variables accessible to webpack, e.g. window

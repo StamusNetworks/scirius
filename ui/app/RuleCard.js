@@ -1,11 +1,13 @@
 import React from 'react';
+
+import { ZoomInOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Spin, Tooltip, Space } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Card, Row, Col, Spin, Tooltip, Space } from 'antd';
-import { ZoomInOutlined } from '@ant-design/icons';
+
+import ErrorHandler from 'ui/components/Error';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
-import ErrorHandler from 'ui/components/Error';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import Filter from 'ui/utils/Filter';
 

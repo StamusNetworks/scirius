@@ -1,14 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
-import styled from 'styled-components';
-import { Tabs } from 'antd';
+
 import { CheckCircleOutlined, CloseCircleOutlined, SafetyOutlined } from '@ant-design/icons';
+import { Tabs } from 'antd';
+import axios from 'axios';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
 
 import * as config from 'config/Api';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import FilterEditKebab from 'ui/components/FilterEditKebab';
 import UICard from 'ui/components/UIElements/UICard';
-import { buildFilterParams } from 'ui/buildFilterParams';
 
 const { TabPane } = Tabs;
 

@@ -1,7 +1,8 @@
+import React from 'react';
+
+import { DownloadOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
-import React from 'react';
-import { DownloadOutlined } from '@ant-design/icons';
 
 import { makeCsv, formatTable } from './helper';
 

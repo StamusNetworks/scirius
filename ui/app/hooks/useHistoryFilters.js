@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+
 import endpoints from 'ui/config/endpoints';
-import { api } from 'ui/mobx/api';
-import FilterValueType from 'ui/maps/FilterValueType';
 import { FilterCategory } from 'ui/maps/Filters';
+import FilterValueType from 'ui/maps/FilterValueType';
+import { api } from 'ui/mobx/api';
 
 const useHistoryFilters = () => {
   const [result, setResult] = useState([]);

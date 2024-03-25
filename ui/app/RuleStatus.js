@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+
 import {
   CloseCircleOutlined,
   DoubleRightOutlined,
@@ -9,10 +9,12 @@ import {
   TableOutlined,
   CheckCircleOutlined,
 } from '@ant-design/icons';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
 import RuleContentModal from 'ui/components/RuleContentModal';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
-import styled from 'styled-components';
 
 const UICardBody = styled.div`
   display: grid;

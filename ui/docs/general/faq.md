@@ -6,8 +6,8 @@
   - [OS X / Linux:](#os-x--linux)
   - [Windows](#windows)
 - [Issue with local caching when running in production mode (F5 / ctrl+F5 / cmd+r weird behavior)](#issue-with-local-caching-when-running-in-production-mode-f5--ctrlf5--cmdr-weird-behavior)
-    - [Quick fix on your local browser:](#quick-fix-on-your-local-browser)
-    - [Full in-depth explanation](#full-in-depth-explanation)
+  - [Quick fix on your local browser:](#quick-fix-on-your-local-browser)
+  - [Full in-depth explanation](#full-in-depth-explanation)
 - [Local webfonts not working for development](#local-webfonts-not-working-for-development)
 - [Non-route containers](#non-route-containers)
   - [Where do I put the reducer?](#where-do-i-put-the-reducer)
@@ -201,9 +201,7 @@ const MyStyledComponent = styled.div`
 import MyStyledComponent from './MyStyledComponent';
 import './styles.css';
 
-const ContrivedExample = props => (
-  <MyStyledComponent className="alert">{props.children}</MyStyledComponent>
-);
+const ContrivedExample = props => <MyStyledComponent className="alert">{props.children}</MyStyledComponent>;
 ```
 
 With the magic of [webpack](https://webpack.js.org/), both `MyStyledComponent.js` and `styles.css`

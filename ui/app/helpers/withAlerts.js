@@ -1,4 +1,5 @@
 import { cloneDeep } from 'lodash';
+
 import Filter from 'utils/Filter';
 
 const withAlerts = idsFilters => {

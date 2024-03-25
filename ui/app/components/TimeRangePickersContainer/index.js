@@ -1,15 +1,17 @@
 import React from 'react';
+
 import { Row, Col } from 'antd';
-import styled from 'styled-components';
-import DateRangePicker from 'ui/components/DateRangePicker';
-import { PeriodEnum } from 'ui/maps/PeriodEnum';
-import UITabs from 'ui/components/UIElements/UITabs';
-import PeriodsList from 'ui/components/PeriodsList';
-import Refresh from 'ui/components/Refresh';
-import { useStore } from 'ui/mobx/RootStoreProvider';
 import { observer } from 'mobx-react-lite';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import DateRangePicker from 'ui/components/DateRangePicker';
+import PeriodsList from 'ui/components/PeriodsList';
+import Refresh from 'ui/components/Refresh';
+import UITabs from 'ui/components/UIElements/UITabs';
 import actions from 'ui/containers/App/actions';
+import { PeriodEnum } from 'ui/maps/PeriodEnum';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const PickersWrapper = styled.div`
   width: 600px;

@@ -1,6 +1,7 @@
-import { FilterCategory, FiltersList, FilterType } from 'ui/maps/Filters';
 import { makeAutoObservable } from 'mobx';
+
 import uuid from 'ui/helpers/uuid';
+import { FilterCategory, FiltersList, FilterType } from 'ui/maps/Filters';
 
 export default class Filter {
   /* Filter uuid */

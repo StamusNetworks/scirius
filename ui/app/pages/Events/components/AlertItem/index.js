@@ -1,25 +1,27 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
-import ReactJson from 'react-json-view';
-import _ from 'lodash';
-import { Badge, Dropdown, Empty, Spin, Table, Tabs } from 'antd';
+
 import { DownloadOutlined, LinkOutlined } from '@ant-design/icons';
+import { Badge, Dropdown, Empty, Spin, Table, Tabs } from 'antd';
+import axios from 'axios';
+import _ from 'lodash';
+import PropTypes from 'prop-types';
+import ReactJson from 'react-json-view';
+import styled from 'styled-components';
 
 import * as config from 'config/Api';
-import UICard from 'ui/components/UIElements/UICard';
+import AlertRelatedData from 'ui/components/AlertRelatedData';
+import ErrorHandler from 'ui/components/Error';
 import EventField from 'ui/components/EventField';
 import EventsField from 'ui/components/EventsField';
-import ErrorHandler from 'ui/components/Error';
-import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
+import SMBAlertCard from 'ui/components/SMBAlertCard';
+import UICard from 'ui/components/UIElements/UICard';
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
-import AlertRelatedData from 'ui/components/AlertRelatedData';
-import styled from 'styled-components';
-import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
+
 import { getTitle } from './helper';
+import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
 
 const BadgeStyled = styled(Badge)`
   .ant-badge-count {

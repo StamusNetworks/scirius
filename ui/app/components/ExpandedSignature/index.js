@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+
 import { Empty, Tabs } from 'antd';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
-import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';
+import SciriusChart from 'ui/components/SciriusChart';
 import UICard from 'ui/components/UIElements/UICard';
-import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
-import Filter from 'ui/utils/Filter';
-import { api } from 'ui/mobx/api';
 import endpoints from 'ui/config/endpoints';
+import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import useAutorun from 'ui/helpers/useAutorun';
+import { api } from 'ui/mobx/api';
+import Filter from 'ui/utils/Filter';
 
 export const SigContent = styled.div`
   & pre {
