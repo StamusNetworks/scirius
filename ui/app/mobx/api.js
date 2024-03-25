@@ -1,5 +1,6 @@
 import { create } from 'apisauce';
 import { cloneDeep } from 'lodash';
+
 import map from 'ui/mobx/map';
 
 const apiInstance = create({

@@ -1,11 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Dropdown, List, Menu } from 'antd';
-import { MenuOutlined } from '@ant-design/icons';
 
+import { MenuOutlined } from '@ant-design/icons';
+import { Dropdown, List, Menu } from 'antd';
+import PropTypes from 'prop-types';
+
+import { buildQFilter } from 'ui/buildQFilter';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
-import { buildQFilter } from 'ui/buildQFilter';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';

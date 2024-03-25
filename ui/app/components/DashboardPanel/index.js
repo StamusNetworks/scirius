@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+
 import DashboardBlock from 'ui/components/DashboardBlock';
-import useAutorun from 'ui/helpers/useAutorun';
+import DashboardBlockMore from 'ui/components/DashboardBlockMore';
 import endpoints from 'ui/config/endpoints';
 import dashboardSanitizer from 'ui/helpers/dashboardSanitizer';
-import DashboardBlockMore from 'ui/components/DashboardBlockMore';
+import useAutorun from 'ui/helpers/useAutorun';
 import { api } from 'ui/mobx/api';
 
 const Title = styled.h2`

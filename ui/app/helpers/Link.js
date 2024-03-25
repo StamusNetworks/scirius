@@ -1,13 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Link as RouterLink } from 'react-router-dom';
+
 import { omit } from 'lodash';
-import { createStructuredSelector } from 'reselect';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Link as RouterLink } from 'react-router-dom';
+import { createStructuredSelector } from 'reselect';
+
+import { APP_URL } from 'ui/config';
 import selectors from 'ui/containers/App/selectors';
 import { getQueryObject } from 'ui/helpers/getQueryObject';
 import { parseObjectToUrl } from 'ui/helpers/parseObjectToUrl';
-import { APP_URL } from 'ui/config';
 
 const CustomLink = props => {
   const { app, to, replaceParams, extendParams } = props;

@@ -1,8 +1,10 @@
 import React from 'react';
-import moment from 'moment';
+
 import { Table } from 'antd';
-import ReactJson from 'react-json-view';
+import moment from 'moment';
 import PropTypes from 'prop-types';
+import ReactJson from 'react-json-view';
+
 import columns from 'ui/components/AlertRelatedData/columns';
 import constants from 'ui/constants';
 

@@ -1,15 +1,16 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { observer } from 'mobx-react-lite';
+
 import { Switch, Row, Empty } from 'antd';
+import { observer } from 'mobx-react-lite';
 import styled, { createGlobalStyle } from 'styled-components';
 
-import { dashboard } from 'ui/config/Dashboard';
 import DashboardPanel from 'ui/components/DashboardPanel';
-import useKeyPress from 'ui/hooks/useKeyPress';
-import DashboardContext from 'ui/context/DashboardContext';
-import { useStore } from 'ui/mobx/RootStoreProvider';
-import UISwitchLabel from 'ui/components/UIElements/UISwitchLabel';
 import UICard from 'ui/components/UIElements/UICard';
+import UISwitchLabel from 'ui/components/UIElements/UISwitchLabel';
+import { dashboard } from 'ui/config/Dashboard';
+import DashboardContext from 'ui/context/DashboardContext';
+import useKeyPress from 'ui/hooks/useKeyPress';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const GlobalStyle = createGlobalStyle`
   .item-enter {
