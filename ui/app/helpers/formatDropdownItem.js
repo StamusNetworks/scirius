@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { Space } from 'antd';
+
 import { FiltersList } from 'ui/maps/Filters';
 import FilterValueType from 'ui/maps/FilterValueType';
 

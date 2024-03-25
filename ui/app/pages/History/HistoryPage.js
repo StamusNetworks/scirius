@@ -19,23 +19,26 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React, { useEffect, useState } from 'react';
+
 import { Table } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { sections } from 'ui/constants';
+import moment from 'moment';
+import { useDispatch } from 'react-redux';
+
+import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
 import HistoryItem from 'ui/components/HistoryItem';
-import ErrorHandler from 'ui/components/Error';
-import moment from 'moment';
+import { sections } from 'ui/constants';
+import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import buildListParams from 'ui/helpers/buildListParams';
-import { useDispatch } from 'react-redux';
-import { useInjectSaga } from 'ui/utils/injectSaga';
-import { useInjectReducer } from 'ui/utils/injectReducer';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import filtersActions from 'ui/stores/filters/actions';
 import reducer from 'ui/stores/filters/reducer';
 import saga from 'ui/stores/filters/saga';
-import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import history from 'ui/utils/history';
-import { useStore } from 'ui/mobx/RootStoreProvider';
+import { useInjectReducer } from 'ui/utils/injectReducer';
+import { useInjectSaga } from 'ui/utils/injectSaga';
+
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
 import HuntPaginationRow from '../../HuntPaginationRow';
 

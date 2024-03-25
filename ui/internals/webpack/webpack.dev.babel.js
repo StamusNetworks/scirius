@@ -3,11 +3,13 @@
  */
 
 const path = require('path');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 const CircularDependencyPlugin = require('circular-dependency-plugin');
-const getClientEnvironment = require('./env');
 const Dotenv = require('dotenv-webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
+
+const getClientEnvironment = require('./env');
 
 module.exports = require('./webpack.base.babel')({
   mode: 'development',

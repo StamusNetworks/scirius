@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import styled from 'styled-components';
+
 import { Cascader, Input, message, Switch, Tooltip } from 'antd';
-import FilterValueType from 'ui/maps/FilterValueType';
-import Filter from 'ui/utils/Filter';
-import { useStore } from 'ui/mobx/RootStoreProvider';
-import capitalize from 'ui/helpers/capitalize';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
+import capitalize from 'ui/helpers/capitalize';
+import formatDropdownItem from 'ui/helpers/formatDropdownItem';
 import isIP from 'ui/helpers/isIP';
-import FilterValidationType from 'ui/maps/FilterValidationType';
+import useHistoryFilters from 'ui/hooks/useHistoryFilters';
+import useNetworkDefs from 'ui/hooks/useNetworkDefs';
 import { FilterCategory } from 'ui/maps/Filters';
 import FiltersDropdownItems from 'ui/maps/FiltersDropdownItems';
-import useNetworkDefs from 'ui/hooks/useNetworkDefs';
-import useHistoryFilters from 'ui/hooks/useHistoryFilters';
-import formatDropdownItem from 'ui/helpers/formatDropdownItem';
+import FilterValidationType from 'ui/maps/FilterValidationType';
+import FilterValueType from 'ui/maps/FilterValueType';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+import Filter from 'ui/utils/Filter';
 
 const CascaderStyled = styled(Cascader)`
   width: max-content;

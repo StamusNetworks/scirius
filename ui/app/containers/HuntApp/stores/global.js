@@ -1,6 +1,7 @@
 import produce from 'immer';
 // CONSTANTS
 import { createSelector } from 'reselect';
+
 import { sections } from 'ui/constants';
 
 export const ADD_FILTER = 'Hunt/HuntApp/ADD_FILTER';
@@ -151,7 +152,9 @@ export const reducer = (state = initialState, action) =>
         const idx = indexOfFilter(action.filter, globalFilters);
 
         /* eslint-disable-next-line */
-        const updatedGlobalFilters = globalFilters.map((filter, i) => (i === idx) ? {
+        const updatedGlobalFilters = globalFilters.map((filter, i) =>
+          i === idx
+            ? {
                 ...filter,
                 ...action.filterUpdated,
               }

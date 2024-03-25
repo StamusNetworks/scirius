@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
-import axios from 'axios';
-import { Empty, Modal, Spin } from 'antd';
-import moment from 'moment';
+
 import { CheckCircleOutlined, CloseCircleOutlined, DownloadOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import { Empty, Modal, Spin } from 'antd';
+import axios from 'axios';
+import moment from 'moment';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import * as config from 'config/Api';

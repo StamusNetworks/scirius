@@ -1,6 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+
 import { Modal, Tabs } from 'antd';
+import PropTypes from 'prop-types';
+
 import { SigContent } from 'ui/RuleInList';
 
 const RuleContentModal = props => {

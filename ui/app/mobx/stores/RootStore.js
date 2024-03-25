@@ -1,6 +1,6 @@
 import CommonStore from './CommonStore';
-import HistoryStore from './HistoryStore';
 import EsStore from './EsStore';
+import HistoryStore from './HistoryStore';
 
 class RootStore {
   commonStore = null;

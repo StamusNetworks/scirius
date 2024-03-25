@@ -1,8 +1,10 @@
 import React from 'react';
+
 import { SearchOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
 import { Input } from 'antd';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
 const { Search } = Input;
 
 const SearchStyled = styled(Search)`

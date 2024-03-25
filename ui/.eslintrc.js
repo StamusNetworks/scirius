@@ -1,14 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const prettierOptions = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, '.prettierrc'), 'utf8'),
-);
+const prettierOptions = JSON.parse(fs.readFileSync(path.resolve(__dirname, '.prettierrc'), 'utf8'));
 
 module.exports = {
   parser: 'babel-eslint',
-  extends: ['airbnb-base', 'airbnb/rules/react', 'plugin:prettier/recommended'],
-  plugins: ['redux-saga', 'react', 'react-hooks'],
+  extends: ['airbnb-base', 'airbnb/rules/react', 'plugin:prettier/recommended', 'plugin:import/warnings'],
+  plugins: ['redux-saga', 'react', 'react-hooks', 'import'],
   env: {
     jest: true,
     browser: true,
@@ -23,12 +21,12 @@ module.exports = {
     },
   },
   rules: {
-    // 'prettier/prettier': ['error', prettierOptions],
+    'prettier/prettier': ['error', prettierOptions],
     'arrow-body-style': [2, 'as-needed'],
     'class-methods-use-this': 0,
     'import/no-named-default': 0,
     'import/imports-first': 0,
-    'import/newline-after-import': 0,
+    'import/newline-after-import': ['error', { count: 1 }],
     'import/no-dynamic-require': 0,
     'import/no-extraneous-dependencies': 0,
     'import/no-named-as-default': 0,
@@ -67,6 +65,25 @@ module.exports = {
     'prefer-object-spread': 0,
     'no-trailing-spaces': 2,
     'no-underscore-dangle': 0,
+    'import/order': [
+      'error',
+      {
+        groups: ['builtin', 'external', 'internal', ['sibling', 'parent'], 'index'],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+        pathGroups: [
+          {
+            pattern: 'react',
+            group: 'external',
+            position: 'before',
+          },
+        ],
+        pathGroupsExcludedImportTypes: ['react'],
+      },
+    ],
   },
   settings: {
     'import/resolver': {

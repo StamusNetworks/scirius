@@ -1,7 +1,8 @@
 import { call, put, takeEvery } from 'redux-saga/effects';
+
 import NetworkService from 'ui/services/NetworkService';
-import constants from 'ui/stores/filters/constants';
 import actions from 'ui/stores/filters/actions';
+import constants from 'ui/stores/filters/constants';
 
 function* getRuleSets() {
   try {

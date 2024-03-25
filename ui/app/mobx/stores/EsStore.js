@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import qs from 'qs';
 
-import { api } from 'ui/mobx/api';
 import endpoints from 'ui/config/endpoints';
+import { api } from 'ui/mobx/api';
 
 // Es stands for Elasticsearch
 // this is where we house all the requests `/rest/rules/es/*`
