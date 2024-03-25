@@ -1,9 +1,10 @@
 import React from 'react';
+
 import PropTypes from 'prop-types';
 
-import SciriusChart from 'ui/components/SciriusChart';
-import ErrorHandler from 'ui/components/Error';
 import { buildQFilter } from 'ui/buildQFilter';
+import ErrorHandler from 'ui/components/Error';
+import SciriusChart from 'ui/components/SciriusChart';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 
 class HuntTimeline extends React.Component {

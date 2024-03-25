@@ -1,15 +1,17 @@
 /* eslint-disable react/no-access-state-in-setstate */
 import React from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
+
 import { Button, Checkbox, Form, Input, InputNumber, Modal, Select } from 'antd';
-import styled from 'styled-components';
-import * as config from 'config/Api';
-import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'ui/buildFilterParams';
-import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
-import { withRouter } from 'react-router-dom';
+import axios from 'axios';
 import { cloneDeep } from 'lodash';
+import PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
+import styled from 'styled-components';
+
+import * as config from 'config/Api';
+import { buildFilterParams } from 'ui/buildFilterParams';
+import { buildQFilter } from 'ui/buildQFilter';
+import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
 
 const RulesetMsg = styled.div`
   color: #ff4d4f;

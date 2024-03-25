@@ -1,6 +1,8 @@
 import React from 'react';
+
 import UIBreadcrumb from 'ui/components/UIElements/UIBreadcrumb';
 import { Link } from 'ui/helpers/Link';
+
 import EventsPage from './EventsPage';
 
 const Events = () => (

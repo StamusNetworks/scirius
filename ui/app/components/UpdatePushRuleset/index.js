@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
+
 import { UploadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Button, message } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
-import { useDispatch, useSelector } from 'react-redux';
 
 const UpdatePushRuleset = () => {
   const dispatch = useDispatch();

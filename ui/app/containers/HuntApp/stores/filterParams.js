@@ -1,5 +1,6 @@
-import { default as globalSelectors } from 'ui/containers/App/selectors';
 import { createSelector } from 'reselect';
+
+import { default as globalSelectors } from 'ui/containers/App/selectors';
 
 export const selectFilterParamsStore = state => state.filterParams || {};
 export const makeSelectFilterParam = paramName => createSelector(selectFilterParamsStore, globalState => globalState[paramName]);

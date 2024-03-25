@@ -1,5 +1,5 @@
-import styled from 'styled-components';
 import { Spin } from 'antd';
+import styled from 'styled-components';
 
 const AppSpinner = styled(Spin)`
   height: 100vh;

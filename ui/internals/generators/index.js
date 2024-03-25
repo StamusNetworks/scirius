@@ -4,9 +4,10 @@
  * Exports the generators so plop knows them
  */
 
+const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+
 const componentGenerator = require('./component/index.js');
 const containerGenerator = require('./container/index.js');
 const languageGenerator = require('./language/index.js');

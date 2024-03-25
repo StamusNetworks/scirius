@@ -19,8 +19,9 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React from 'react';
-import PropTypes from 'prop-types';
+
 import _ from 'lodash';
+import PropTypes from 'prop-types';
 
 const c3 = require('c3');
 

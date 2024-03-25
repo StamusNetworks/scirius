@@ -1,8 +1,10 @@
 import React from 'react';
+
 import UIBreadcrumb from 'ui/components/UIElements/UIBreadcrumb';
 import { Link } from 'ui/helpers/Link';
-import PoliciesPage from './PoliciesPage';
+
 import UpdatePushRuleset from '../../components/UpdatePushRuleset';
+import PoliciesPage from './PoliciesPage';
 
 const Policies = () => (
   <div>

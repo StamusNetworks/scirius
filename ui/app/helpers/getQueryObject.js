@@ -1,5 +1,6 @@
-import store from 'store';
 import { isEqual, isEmpty } from 'lodash';
+import store from 'store';
+
 import { parseUrl } from 'ui/helpers/parseUrl';
 import { StorageEnum } from 'ui/maps/StorageEnum';
 

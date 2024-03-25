@@ -1,11 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-import { Dropdown } from 'antd';
 import { InfoCircleFilled, RobotOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { Dropdown } from 'antd';
 import _ from 'lodash';
-import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
+import styled from 'styled-components';
+
 import isIP from 'ui/helpers/isIP';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';

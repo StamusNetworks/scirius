@@ -1,5 +1,7 @@
 import React from 'react';
+
 import PropTypes from 'prop-types';
+
 import EventValue from 'ui/components/EventValue';
 import Filter from 'ui/utils/Filter';
 
