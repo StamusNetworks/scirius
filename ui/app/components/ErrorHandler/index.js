@@ -1,7 +1,8 @@
 import React from 'react';
+
+import { BugOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { BugOutlined } from '@ant-design/icons';
 
 const ErrorMessage = styled.h3`
   width: 100%;

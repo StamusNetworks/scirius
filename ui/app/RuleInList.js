@@ -1,17 +1,19 @@
 import React from 'react';
+
+import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { Spin, Table } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Spin, Table } from 'antd';
 import styled from 'styled-components';
-import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
-import { sections } from 'ui/constants';
-import RuleEditKebab from 'ui/components/RuleEditKebab';
+
 import { Count } from 'ui/components/EventValue';
+import ExpandedSignature from 'ui/components/ExpandedSignature';
+import RuleEditKebab from 'ui/components/RuleEditKebab';
+import { sections } from 'ui/constants';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import 'ui/pygments.css';
 import Filter from 'ui/utils/Filter';
-import ExpandedSignature from 'ui/components/ExpandedSignature';
 
 export const SigContent = styled.div`
   & pre {

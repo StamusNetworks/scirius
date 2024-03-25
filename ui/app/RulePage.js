@@ -1,25 +1,27 @@
 /* eslint-disable react/no-access-state-in-setstate */
 import React from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
+
 import { List, Modal, Spin, Tabs } from 'antd';
+import axios from 'axios';
 import { cloneDeep } from 'lodash';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
+import EventValue from 'ui/components/EventValue';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
-import EventValue from 'ui/components/EventValue';
+import SignatureFlow from 'ui/components/SignatureFlow';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { withStore } from 'ui/mobx/RootStoreProvider';
-import SignatureFlow from 'ui/components/SignatureFlow';
 import Filter from 'ui/utils/Filter';
-import RuleStatus from './RuleStatus';
-import HuntStat from './HuntStat';
+
 import { updateHitsStats } from './helpers/updateHitsStats';
+import HuntStat from './HuntStat';
 import { SigContent } from './RuleInList';
+import RuleStatus from './RuleStatus';
 
 const Row = styled.div`
   display: grid;

@@ -79,9 +79,7 @@ const Wrapper = styled.section`
 function Button() {
   return (
     <Wrapper>
-      <Title>
-        Hello {this.props.name}, this is your first styled component!
-      </Title>
+      <Title>Hello {this.props.name}, this is your first styled component!</Title>
       ...
     </Wrapper>
   );

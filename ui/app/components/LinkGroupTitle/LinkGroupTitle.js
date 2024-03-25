@@ -1,7 +1,10 @@
 import React from 'react';
+
 import PropTypes from 'prop-types';
-import icons from 'ui/images/icons';
+
 import { NormalToCamelCase } from 'ui/helpers';
+import icons from 'ui/images/icons';
+
 import StyledLinkGroupTitle from './StyledLinkGroupTitle';
 
 const LinkGroupTitle = ({ title }) => {

@@ -1,6 +1,8 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
+
 import NetworkService from 'ui/services/NetworkService';
 import constants from 'ui/stores/filterset/constants';
+
 import actions from './actions';
 
 function* getFilterSets() {

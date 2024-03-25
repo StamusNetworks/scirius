@@ -1,10 +1,13 @@
 import React from 'react';
-import styled from 'styled-components';
+
 import { Radio } from 'antd';
-import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 
