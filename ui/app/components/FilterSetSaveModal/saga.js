@@ -1,8 +1,10 @@
 import { call, put, takeEvery } from 'redux-saga/effects';
+
 import NetworkService from 'ui/services/NetworkService';
 import filtersActions from 'ui/stores/filters/actions';
-import constants from './constants';
+
 import actions from './actions';
+import constants from './constants';
 
 function* postFilterSetData(action) {
   try {

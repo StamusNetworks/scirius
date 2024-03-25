@@ -19,22 +19,25 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React, { useEffect, useState } from 'react';
+
 import { Radio, Row, Col } from 'antd';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { Helmet } from 'react-helmet';
 import store from 'store';
 import styled from 'styled-components';
-import { Helmet } from 'react-helmet';
-import { STAMUS } from 'ui/config';
+
 import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
-import { useStore } from 'ui/mobx/RootStoreProvider';
+import UICard from 'ui/components/UIElements/UICard';
+import { STAMUS } from 'ui/config';
+import useFilterParams from 'ui/hooks/useFilterParams';
 import HuntTimeline from 'ui/HuntTimeline';
 import HuntTrend from 'ui/HuntTrend';
-import useFilterParams from 'ui/hooks/useFilterParams';
-import UICard from 'ui/components/UIElements/UICard';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+
 import 'react-resizable/css/styles.css';
 import '../../../../rules/static/rules/c3.min.css';
-import { toJS } from 'mobx';
 import DashboardMosaic from '../../components/DashboardMosaic';
 
 const TimelineCard = styled(UICard)`
