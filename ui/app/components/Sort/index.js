@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Dropdown, Menu } from 'antd';
+
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { Dropdown, Menu } from 'antd';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
 import options from 'ui/components/Sort/options';
 
 const iconSelectedProps = {

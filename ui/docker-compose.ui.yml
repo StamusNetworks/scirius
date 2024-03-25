@@ -2,7 +2,7 @@
 # docker-compose up
 # docker-compose -f docker-compose.ui.yml up --build
 
-version: "3"
+version: '3'
 services:
   # ui container
   ui:
@@ -11,7 +11,7 @@ services:
       dockerfile: ./ui/Dockerfile.ui.dev
     restart: always
     ports:
-      - "3003:3000"
+      - '3003:3000'
     stdin_open: true # React dev server exits without this
     # Any changes inside the Scirius project folder will be reflected in the corresponding Scirius folder inside the Container(/app):
     volumes:

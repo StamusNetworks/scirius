@@ -1,6 +1,8 @@
 import React from 'react';
-import pages from 'ui/pages';
+
 import { Route, Switch } from 'react-router-dom';
+
+import pages from 'ui/pages';
 
 const ProxyRoute = () => (
   <Switch>

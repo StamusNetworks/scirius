@@ -1,13 +1,15 @@
 /* eslint-disable react/no-this-in-sfc */
 import React, { useRef } from 'react';
-import { Button, Space, Select, Tooltip, Progress } from 'antd';
-import { ReloadPeriodEnum } from 'ui/maps/ReloadPeriodEnum';
+
 import { ReloadOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { Button, Space, Select, Tooltip, Progress } from 'antd';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { useStore } from 'ui/mobx/RootStoreProvider';
-import actions from 'ui/containers/App/actions';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import actions from 'ui/containers/App/actions';
+import { ReloadPeriodEnum } from 'ui/maps/ReloadPeriodEnum';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const SpaceStyled = styled(Space)`
   margin-left: 10px;

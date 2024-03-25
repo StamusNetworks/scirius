@@ -6,31 +6,32 @@
  * contain code that should be seen on all pages. (e.g. navigation bar)
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Switch, Redirect, Route } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import { bindActionCreators, compose } from 'redux';
-import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
+
 import { Layout } from 'antd';
 import { observer } from 'mobx-react-lite';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { Switch, Redirect, Route } from 'react-router-dom';
+import { bindActionCreators, compose } from 'redux';
+import { createStructuredSelector } from 'reselect';
 
-import withSaga from 'utils/injectSaga';
-import pages from 'ui/pages';
-import { APP_URL } from 'ui/config';
-import { CamelCaseToDashCase } from 'ui/helpers';
 import { Content } from 'ui/components';
+import AppSpinner from 'ui/components/AppSpinner';
+import ErrorHandler from 'ui/components/ErrorHandler';
+import FilterSets from 'ui/components/FilterSets';
 import Header from 'ui/components/Header';
 import LeftNav from 'ui/components/LeftNav';
-import GlobalStyle from 'ui/global-styles';
-import actions from 'ui/containers/App/actions';
-import selectors from 'ui/containers/App/selectors';
-import ErrorHandler from 'ui/components/ErrorHandler';
 import ProxyRoute from 'ui/components/ProxyRoute';
+import { APP_URL } from 'ui/config';
+import actions from 'ui/containers/App/actions';
 import saga from 'ui/containers/App/saga';
-import FilterSets from 'ui/components/FilterSets';
-import AppSpinner from 'ui/components/AppSpinner';
+import selectors from 'ui/containers/App/selectors';
+import GlobalStyle from 'ui/global-styles';
+import { CamelCaseToDashCase } from 'ui/helpers';
 import useAutorun from 'ui/helpers/useAutorun';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import pages from 'ui/pages';
+import withSaga from 'utils/injectSaga';
 
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
