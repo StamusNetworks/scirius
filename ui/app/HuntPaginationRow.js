@@ -1,6 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+
 import { Pagination } from 'antd';
+import PropTypes from 'prop-types';
 
 export default class HuntPaginationRow extends React.Component {
   constructor(props) {

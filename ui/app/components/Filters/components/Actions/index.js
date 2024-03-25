@@ -1,17 +1,20 @@
 import React from 'react';
-import styled from 'styled-components';
-import { useDispatch, useSelector } from 'react-redux';
+
 import PropTypes from 'prop-types';
-import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import strGlobalActions from 'ui/containers/App/actions';
+import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import ruleSetsActions from 'ui/stores/filters/actions';
 import ruleSetsSelectors from 'ui/stores/filters/selectors';
-import { useStore } from 'ui/mobx/RootStoreProvider';
-import SaveFilterSetButton from '../SaveFilterSetButton';
-import LoadFilterSetButton from '../LoadFilterSetButton';
-import ClearFiltersButton from '../ClearFiltersButton';
-import ActionsButtons from '../ActionsButtons';
+
 import Title from '../../Title.styled';
+import ActionsButtons from '../ActionsButtons';
+import ClearFiltersButton from '../ClearFiltersButton';
+import LoadFilterSetButton from '../LoadFilterSetButton';
+import SaveFilterSetButton from '../SaveFilterSetButton';
 
 const ActionsContainer = styled.div`
   display: flex;

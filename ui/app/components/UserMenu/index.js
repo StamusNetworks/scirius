@@ -1,7 +1,8 @@
 import React from 'react';
+
+import { PoweroffOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import styled from 'styled-components';
-import { PoweroffOutlined, SettingOutlined } from '@ant-design/icons';
 
 const Wrapper = styled.div`
   display: grid;

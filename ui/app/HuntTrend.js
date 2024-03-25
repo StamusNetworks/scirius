@@ -1,9 +1,10 @@
 import React from 'react';
+
 import PropTypes from 'prop-types';
 
-import ErrorHandler from 'ui/components/Error';
-import DonutChart from 'ui/components/DonutChart';
 import { buildQFilter } from 'ui/buildQFilter';
+import DonutChart from 'ui/components/DonutChart';
+import ErrorHandler from 'ui/components/Error';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 
 class HuntTrend extends React.Component {

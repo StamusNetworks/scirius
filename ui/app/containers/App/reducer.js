@@ -1,15 +1,15 @@
 import produce from 'immer';
-import store from 'store';
 import moment from 'moment';
-import history from 'utils/history';
 import { combineReducers } from 'redux';
+import store from 'store';
 
-import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
-import { StorageEnum } from 'ui/maps/StorageEnum';
-import { ReloadPeriodEnum } from 'ui/maps/ReloadPeriodEnum';
-import { parseUrl } from 'ui/helpers/parseUrl';
 import constants from 'ui/containers/App/constants';
 import { getCurrentUser } from 'ui/helpers/getCurrentUser';
+import { parseUrl } from 'ui/helpers/parseUrl';
+import { ReloadPeriodEnum } from 'ui/maps/ReloadPeriodEnum';
+import { StorageEnum } from 'ui/maps/StorageEnum';
+import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
+import history from 'utils/history';
 
 const initialTimeSpanStorage = {
   startDate: moment().subtract(1, 'day').format(),

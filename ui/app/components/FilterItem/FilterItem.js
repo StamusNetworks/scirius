@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+
 import { EditOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
 import { message, Tooltip } from 'antd';
-import { useStore } from 'ui/mobx/RootStoreProvider';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
 import FilterButton from 'ui/components/FilterButton';
 import FilterEditModal from 'ui/components/FilterEditModal';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const FilterContainer = styled.li`
   display: flex !important;

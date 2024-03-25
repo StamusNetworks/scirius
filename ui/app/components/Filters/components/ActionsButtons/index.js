@@ -1,15 +1,18 @@
 import React, { useMemo, useState } from 'react';
-import { Dropdown, Menu } from 'antd';
+
 import { DownOutlined, TagOutlined } from '@ant-design/icons';
-import RuleToggleModal from 'ui/RuleToggleModal';
+import { Dropdown, Menu } from 'antd';
+import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+
+import ErrorHandler from 'ui/components/Error';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import RuleToggleModal from 'ui/RuleToggleModal';
 import filtersSelectors from 'ui/stores/filters/selectors';
-import { createStructuredSelector } from 'reselect';
-import { connect } from 'react-redux';
-import ErrorHandler from 'ui/components/Error';
-import { observer } from 'mobx-react-lite';
+
 import { ActionButton } from '../styles';
 
 const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {

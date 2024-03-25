@@ -19,27 +19,29 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React from 'react';
-import PropTypes from 'prop-types';
+
+import { Table } from 'antd';
 import axios from 'axios';
 import _ from 'lodash';
 import moment from 'moment';
-import styled from 'styled-components';
-import { createStructuredSelector } from 'reselect';
+import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
-import { Table } from 'antd';
+import { createStructuredSelector } from 'reselect';
+import styled from 'styled-components';
 
 import * as config from 'config/Api';
-import constants from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import FilterEditKebab from 'ui/components/FilterEditKebab';
+import { STAMUS } from 'ui/config';
+import constants from 'ui/constants';
+import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import buildListParams from 'ui/helpers/buildListParams';
 import PolicyParameters from 'ui/pages/Policies/PolicyParameters';
-import { STAMUS } from 'ui/config';
-import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
-import HuntPaginationRow from '../../HuntPaginationRow';
+
 import ActionItem from '../../ActionItem';
 import { buildListUrlParams } from '../../helpers/common';
+import HuntPaginationRow from '../../HuntPaginationRow';
 
 const DescriptionItem = styled.div`
   padding: 0 10px;

@@ -1,15 +1,18 @@
 import React, { useCallback, useMemo } from 'react';
+
+import { LinkOutlined } from '@ant-design/icons';
 import { Menu, Spin } from 'antd';
+import { observer } from 'mobx-react-lite';
 import { useLocation, withRouter } from 'react-router-dom';
+
 import { default as Icon } from 'ui/components/IconAntd';
-import pages from 'ui/pages';
 import { APP_URL } from 'ui/config';
 import { CamelCaseToNormal } from 'ui/helpers';
-import { LeftNavMap } from 'ui/maps/LeftNavMap';
 import { Link } from 'ui/helpers/Link';
-import { LinkOutlined } from '@ant-design/icons';
-import { observer } from 'mobx-react-lite';
+import { LeftNavMap } from 'ui/maps/LeftNavMap';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import pages from 'ui/pages';
+
 import { LeftNavStyled, LeftNavLink } from './styles';
 
 const { SubMenu } = Menu;

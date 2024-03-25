@@ -1,5 +1,7 @@
 import { makeAutoObservable } from 'mobx';
+
 import * as config from 'config/Api';
+
 import { api } from '../api';
 
 class HistoryStore {

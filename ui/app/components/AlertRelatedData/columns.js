@@ -1,11 +1,13 @@
 import React from 'react';
-import moment from 'moment';
-import axios from 'axios';
-import { Dropdown } from 'antd';
-import { LinkOutlined } from '@ant-design/icons';
 
-import constants from 'ui/constants';
+import { LinkOutlined } from '@ant-design/icons';
+import { Dropdown } from 'antd';
+import axios from 'axios';
+import moment from 'moment';
+
 import * as config from 'config/Api';
+import constants from 'ui/constants';
+
 const { DATE_TIME_FORMAT } = constants;
 
 const showMitreInfo = (mtn, mti) => {

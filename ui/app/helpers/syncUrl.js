@@ -1,5 +1,5 @@
-import { parseObjectToUrl } from './parseObjectToUrl';
 import { getQueryObject } from './getQueryObject';
+import { parseObjectToUrl } from './parseObjectToUrl';
 
 export const syncUrl = () => {
   const { protocol, host, pathname } = window.location;

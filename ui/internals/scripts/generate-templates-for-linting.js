@@ -6,13 +6,15 @@
  * 'rbgen' extension so it can be easily excluded from the test coverage reports.
  */
 
-const chalk = require('chalk');
 const fs = require('fs');
-const nodePlop = require('node-plop');
 const path = require('path');
+
+const chalk = require('chalk');
+const nodePlop = require('node-plop');
 const rimraf = require('rimraf');
 const shell = require('shelljs');
 
+const { BACKUPFILE_EXTENSION } = require('../generators/index');
 const addCheckmark = require('./helpers/checkmark');
 const xmark = require('./helpers/xmark');
 
@@ -20,7 +22,6 @@ const xmark = require('./helpers/xmark');
  * Every generated component/container is preceded by this
  * @type {string}
  */
-const { BACKUPFILE_EXTENSION } = require('../generators/index');
 
 process.chdir(path.join(__dirname, '../generators'));
 

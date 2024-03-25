@@ -7,15 +7,17 @@ import '@babel/polyfill';
 
 // Import all the third party stuff
 import React from 'react';
+
+import LanguageProvider from 'containers/LanguageProvider';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+
+import App from 'containers/App';
 import history from 'utils/history';
 
 // Import root app
-import App from 'containers/App';
 
 // Import Language Provider
-import LanguageProvider from 'containers/LanguageProvider';
 
 // Load the favicon and the .htaccess file
 /* eslint-disable import/no-unresolved, import/extensions */

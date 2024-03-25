@@ -19,9 +19,10 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Button, Dropdown, Menu } from 'antd';
+
 import { DownOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Menu } from 'antd';
+import PropTypes from 'prop-types';
 
 export class HuntSort extends React.Component {
   constructor(props) {
