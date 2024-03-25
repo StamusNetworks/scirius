@@ -1,7 +1,10 @@
 import React from 'react';
+
 import { CloseOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
+
 import { useStore } from 'ui/mobx/RootStoreProvider';
+
 import { ActionButton } from '../styles';
 
 const ClearFiltersButton = ({ onClick }) => {

@@ -1,13 +1,13 @@
-import NotFoundPage from './NotFound/NotFound';
 import { Appliances, Users, Sources, Rulesets, Other } from './Administration/Administration';
-import Kibana from './Kibana/Kibana';
-import EveBox from './EveBox/EveBox';
 import CyberChef from './CyberChef/CyberChef';
-import Events from './Events/Events';
 import Dashboards from './Dashboards/Dashboards';
+import EveBox from './EveBox/EveBox';
+import Events from './Events/Events';
+import History from './History/History';
+import Kibana from './Kibana/Kibana';
+import NotFoundPage from './NotFound/NotFound';
 import Policies from './Policies/Policies';
 import Signatures from './Signatures/Signatures';
-import History from './History/History';
 
 export default {
   NotFoundPage,

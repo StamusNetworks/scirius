@@ -1,6 +1,7 @@
-import styled from 'styled-components';
 import { Layout, Button } from 'antd';
 import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { COLOR_ANT_MENU } from 'ui/constants/colors';
 
 const { Header } = Layout;

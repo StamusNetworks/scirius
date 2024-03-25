@@ -1,10 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Dropdown, Menu } from 'antd';
+
 import { MenuOutlined } from '@ant-design/icons';
+import { Dropdown, Menu } from 'antd';
+import PropTypes from 'prop-types';
+
 import RuleToggleModal from 'RuleToggleModal';
-import { APP_NAME_SHORT } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
+import { APP_NAME_SHORT } from 'ui/constants';
 
 export default class RuleEditKebab extends React.Component {
   constructor(props) {

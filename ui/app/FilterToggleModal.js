@@ -1,7 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
+
 import { Button, Col, Form, Input, InputNumber, Modal, Row } from 'antd';
+import axios from 'axios';
+import PropTypes from 'prop-types';
+
 import * as config from 'config/Api';
 import HuntRestError from 'ui/components/HuntRestError';
 

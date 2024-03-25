@@ -19,22 +19,25 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React, { useState } from 'react';
-import { Table } from 'antd';
+
 import { BellFilled } from '@ant-design/icons';
-import { Helmet } from 'react-helmet';
+import { Table } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { STAMUS } from 'ui/config';
-import ErrorHandler from 'ui/components/Error';
-import HuntRestError from 'ui/components/HuntRestError';
-import Filters from 'ui/components/Filters';
 import moment from 'moment';
+import { Helmet } from 'react-helmet';
+
+import ErrorHandler from 'ui/components/Error';
+import Filters from 'ui/components/Filters';
+import HuntRestError from 'ui/components/HuntRestError';
+import { STAMUS } from 'ui/config';
 import buildListParams from 'ui/helpers/buildListParams';
-import { useStore } from 'ui/mobx/RootStoreProvider';
 import useAutorun from 'ui/helpers/useAutorun';
 import useFilterParams from 'ui/hooks/useFilterParams';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+
 import { buildListUrlParams } from '../../helpers/common';
-import AlertItem from './components/AlertItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
+import AlertItem from './components/AlertItem';
 
 const EventsPage = () => {
   const { commonStore, esStore } = useStore();

@@ -1,30 +1,32 @@
 import React, { useEffect } from 'react';
-import { Divider, Space, Switch, Affix } from 'antd';
+
 import { PushpinOutlined, PushpinFilled } from '@ant-design/icons';
+import { Divider, Space, Switch, Affix } from 'antd';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import UICard from 'ui/components/UIElements/UICard';
-import styled from 'styled-components';
-import { useInjectSaga } from 'utils/injectSaga';
-import { useInjectReducer } from 'utils/injectReducer';
+import PropTypes from 'prop-types';
 import { useHotkeys } from 'react-hotkeys-hook';
-import ruleSetReducer from 'ui/stores/filters/reducer';
-import ruleSetSaga from 'ui/stores/filters/saga';
-import ruleSetsActions from 'ui/stores/filters/actions';
-import ruleSetsSelectors from 'ui/stores/filters/selectors';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import AdditionalFilters from 'ui/components/AdditionalFilters';
 import FilterList from 'ui/components/FilterList/index';
+import FiltersDropdown from 'ui/components/FiltersDropdown';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
+import Sort from 'ui/components/Sort';
+import UICard from 'ui/components/UIElements/UICard';
 import UISwitch from 'ui/components/UIElements/UISwitch';
 import UISwitchLabel from 'ui/components/UIElements/UISwitchLabel';
-import AdditionalFilters from 'ui/components/AdditionalFilters';
 import { useStore } from 'ui/mobx/RootStoreProvider';
-import Sort from 'ui/components/Sort';
-import FiltersDropdown from 'ui/components/FiltersDropdown';
+import ruleSetsActions from 'ui/stores/filters/actions';
+import ruleSetReducer from 'ui/stores/filters/reducer';
+import ruleSetSaga from 'ui/stores/filters/saga';
+import ruleSetsSelectors from 'ui/stores/filters/selectors';
+import { useInjectReducer } from 'utils/injectReducer';
+import { useInjectSaga } from 'utils/injectSaga';
 
-import { useDispatch, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
-import { toJS } from 'mobx';
-import Title from './Title.styled';
 import Actions from './components/Actions';
+import Title from './Title.styled';
 
 const FilterContainer = styled.div`
   display: grid;
