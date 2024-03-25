@@ -1,7 +1,9 @@
 import React from 'react';
+
 import PropTypes from 'prop-types';
-import EventValue from 'ui/components/EventValue';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+
+import EventValue from 'ui/components/EventValue';
 import Filter from 'ui/utils/Filter';
 
 const DashboardBlockData = ({ block, data, copyMode }) => (

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+
 import { CopyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import { message } from 'antd';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
 
 import TypedValue from 'ui/components/TypedValue';
-import styled from 'styled-components';
 import { COLOR_BOX_HEADER } from 'ui/constants/colors';
-import Filter from 'ui/utils/Filter';
-import { useStore } from 'ui/mobx/RootStoreProvider';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+import Filter from 'ui/utils/Filter';
 
 const Container = styled.div`
   display: grid;

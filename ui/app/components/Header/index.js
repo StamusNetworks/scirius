@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Menu, Popover, Tooltip } from 'antd';
+
 import { ClockCircleOutlined, QuestionCircleOutlined, UserOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Menu, Popover, Tooltip } from 'antd';
 import { observer } from 'mobx-react-lite';
 // icon select: https://fonts.google.com/icons?selected=Material+Icons
 // React name for icon: select checkbox, click the icon and see the name for the import: https://mui.com/components/material-icons
+import moment from 'moment';
+import PropTypes from 'prop-types';
 
-import StamusLogo from 'ui/images/stamus.png';
-import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import HelpMenu from 'ui/components/HelpMenu';
+import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import UserMenu from 'ui/components/UserMenu';
 import constants from 'ui/constants';
+import StamusLogo from 'ui/images/stamus.png';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
-import moment from 'moment';
-import actions from 'ui/containers/App/actions';
-import { useDispatch } from 'react-redux';
+
 import { HeaderStyled, Logo, RangePreview, ReloadButton } from './styles';
 
 const { DATE_TIME_FORMAT } = constants;
@@ -25,7 +25,6 @@ const Header = ({ menuItems = [] }) => {
   const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
   const { commonStore } = useStore();
-  const dispatch = useDispatch();
 
   return (
     <HeaderStyled>
@@ -36,14 +35,7 @@ const Header = ({ menuItems = [] }) => {
       <Menu theme="dark" mode="horizontal">
         <Menu.Item key="reload">
           <Tooltip title="Reload now">
-            <ReloadButton
-              onClick={() => {
-                dispatch(actions.doReload());
-                commonStore.reload();
-              }}
-              icon={<ReloadOutlined />}
-              type="ghost"
-            >
+            <ReloadButton onClick={() => commonStore.reload()} icon={<ReloadOutlined />} type="ghost">
               Reload
             </ReloadButton>
           </Tooltip>

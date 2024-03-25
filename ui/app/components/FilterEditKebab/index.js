@@ -1,19 +1,21 @@
 /* eslint-disable react/no-access-state-in-setstate */
 import React from 'react';
+
+import { MenuOutlined } from '@ant-design/icons';
+import { Dropdown, Menu } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { Dropdown, Menu } from 'antd';
-import { MenuOutlined } from '@ant-design/icons';
-import { createStructuredSelector } from 'reselect';
-import { withStore } from 'ui/mobx/RootStoreProvider';
-import { sections } from 'ui/constants';
 import { compose } from 'redux';
-import FilterToggleModal from 'ui/FilterToggleModal';
+import { createStructuredSelector } from 'reselect';
+
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
-import filterSetActions from 'ui/stores/filterset/actions';
+import { sections } from 'ui/constants';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
+import FilterToggleModal from 'ui/FilterToggleModal';
+import { withStore } from 'ui/mobx/RootStoreProvider';
+import filterSetActions from 'ui/stores/filterset/actions';
 import Filter from 'ui/utils/Filter';
 
 class FilterEditKebab extends React.Component {

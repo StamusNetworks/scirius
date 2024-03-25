@@ -1,13 +1,14 @@
 // Important modules this config uses
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const WebpackPwaManifest = require('webpack-pwa-manifest');
-const TerserPlugin = require('terser-webpack-plugin');
-const CompressionPlugin = require('compression-webpack-plugin');
-const BundleTracker = require('webpack-bundle-tracker');
-const webpack = require('webpack');
-
 const fs = require('fs');
+const path = require('path');
+
+const CompressionPlugin = require('compression-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
+const BundleTracker = require('webpack-bundle-tracker');
+const WebpackPwaManifest = require('webpack-pwa-manifest');
+
 const appDirectory = fs.realpathSync(process.cwd());
 const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 const getClientEnvironment = require('./env');
@@ -19,9 +20,7 @@ module.exports = require('./webpack.base.babel')({
 
   // In production, we skip all hot-reloading stuff
   entry: {
-    ui: [
-      path.join(process.cwd(), 'app/app.js'),
-    ],
+    ui: [path.join(process.cwd(), 'app/app.js')],
   },
 
   // Utilize long-term caching by adding content hashes (not compilation hashes) to compiled assets
@@ -35,7 +34,8 @@ module.exports = require('./webpack.base.babel')({
   optimization: {
     minimize: true,
     minimizer: [
-      new TerserPlugin({ //delete comments, uglify & minify JS
+      new TerserPlugin({
+        // delete comments, uglify & minify JS
         terserOptions: {
           warnings: false,
           compress: {
@@ -61,12 +61,11 @@ module.exports = require('./webpack.base.babel')({
       chunks: 'all',
       maxInitialRequests: 10,
       cacheGroups: {
-        vendor: { //this extracts the 3rd party libraries in their own bundle.js files
+        vendor: {
+          // this extracts the 3rd party libraries in their own bundle.js files
           test: /[\\/]node_modules[\\/]/,
           name(module) {
-            const packageName = module.context.match(
-              /[\\/]node_modules[\\/](.*?)([\\/]|$)/,
-            )[1];
+            const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
             return `npm.${packageName.replace('@', '')}`;
           },
         },
@@ -133,7 +132,6 @@ module.exports = require('./webpack.base.babel')({
   ],
 
   performance: {
-    assetFilter: assetFilename =>
-      !/(\.map$)|(^(ui\.|npm\.|favicon\.))/.test(assetFilename),
+    assetFilter: assetFilename => !/(\.map$)|(^(ui\.|npm\.|favicon\.))/.test(assetFilename),
   },
 });

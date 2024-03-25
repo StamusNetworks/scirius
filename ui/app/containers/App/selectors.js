@@ -1,10 +1,11 @@
-import { createSelector } from 'reselect';
 import moment from 'moment';
-import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
-import { PeriodEnum } from 'ui/maps/PeriodEnum';
-import { parseObjectToUrl } from 'ui/helpers/parseObjectToUrl';
+import { createSelector } from 'reselect';
+
 import { initialState } from 'ui/containers/App/reducer';
 import { getCurrentUser } from 'ui/helpers/getCurrentUser';
+import { parseObjectToUrl } from 'ui/helpers/parseObjectToUrl';
+import { PeriodEnum } from 'ui/maps/PeriodEnum';
+import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 
 const selectGlobal = state => state.global.ce || initialState;
 

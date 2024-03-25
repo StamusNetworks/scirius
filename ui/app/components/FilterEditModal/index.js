@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Checkbox, Form, Input, Modal, Space } from 'antd';
+
 import { InfoCircleOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { Button, Checkbox, Form, Input, Modal, Space } from 'antd';
 import PropTypes from 'prop-types';
-import Filter from 'ui/utils/Filter';
+import styled from 'styled-components';
+
 import isNumeric from 'ui/helpers/isNumeric';
+import Filter from 'ui/utils/Filter';
+
 import FilterValueType from '../../maps/FilterValueType';
 
 const ModalHuntFilter = styled(Modal)`

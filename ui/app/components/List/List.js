@@ -1,6 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+
 import { List as ListView } from 'antd';
+import PropTypes from 'prop-types';
+
 import CardView from 'ui/components/CardView';
 import ErrorHandler from 'ui/components/Error';
 
