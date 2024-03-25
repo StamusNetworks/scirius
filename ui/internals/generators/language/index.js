@@ -1,8 +1,8 @@
 /**
  * Language Generator
  */
-const fs = require('fs');
 const { exec } = require('child_process');
+const fs = require('fs');
 
 function languageIsSupported(language) {
   try {

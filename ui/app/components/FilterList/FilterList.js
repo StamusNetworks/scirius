@@ -1,7 +1,9 @@
 import React from 'react';
+
 import PropTypes from 'prop-types';
-import FilterItem from 'ui/components/FilterItem';
 import styled from 'styled-components';
+
+import FilterItem from 'ui/components/FilterItem';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const ListInline = styled.ul`

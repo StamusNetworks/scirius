@@ -19,27 +19,29 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
-import { useHotkeys } from 'react-hotkeys-hook';
-import { Drawer, Collapse, Empty, Modal } from 'antd';
+
 import { DeleteOutlined, InfoCircleOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Drawer, Collapse, Empty, Modal } from 'antd';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import styled from 'styled-components';
+
+import FilterSetItem from 'ui/components/FilterSetItem';
+import FilterSetSearch from 'ui/components/FilterSetSearch';
+import LoadingIndicator from 'ui/components/LoadingIndicator';
+import { sections, huntUrls } from 'ui/constants';
+import actions from 'ui/containers/App/actions';
+import selectors from 'ui/containers/App/selectors';
+import { addFilter, clearFilters, setTag } from 'ui/containers/HuntApp/stores/global';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+import filterSetActions from 'ui/stores/filterset/actions';
+import reducer from 'ui/stores/filterset/reducer';
+import saga from 'ui/stores/filterset/saga';
+import filterSetSelectors from 'ui/stores/filterset/selectors';
+import Filter from 'ui/utils/Filter';
 import { useInjectReducer } from 'ui/utils/injectReducer';
 import { useInjectSaga } from 'ui/utils/injectSaga';
-import { sections, huntUrls } from 'ui/constants';
-import FilterSetItem from 'ui/components/FilterSetItem';
-import LoadingIndicator from 'ui/components/LoadingIndicator';
-import actions from 'ui/containers/App/actions';
-import { addFilter, clearFilters, setTag } from 'ui/containers/HuntApp/stores/global';
-import { useHistory } from 'react-router-dom';
-import FilterSetSearch from 'ui/components/FilterSetSearch';
-import selectors from 'ui/containers/App/selectors';
-import filterSetActions from 'ui/stores/filterset/actions';
-import filterSetSelectors from 'ui/stores/filterset/selectors';
-import saga from 'ui/stores/filterset/saga';
-import reducer from 'ui/stores/filterset/reducer';
-import { useStore } from 'ui/mobx/RootStoreProvider';
-import Filter from 'ui/utils/Filter';
 
 const NoResults = styled.div`
   color: #6d6d6d;

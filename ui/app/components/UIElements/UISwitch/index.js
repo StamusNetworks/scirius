@@ -1,7 +1,8 @@
 import React from 'react';
+
 import { Switch } from 'antd';
-import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 
 const SwitchHandler = styled.div`
   .ant-switch-checked {

@@ -1,17 +1,19 @@
 import React, { useEffect, useMemo } from 'react';
-import PropTypes from 'prop-types';
+
 import { Checkbox, Form, Input, Modal, Select } from 'antd';
-import { huntTabs, PAGE_STATE } from 'ui/constants';
-import HuntRestError from 'ui/components/HuntRestError';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { useInjectSaga } from 'utils/injectSaga';
-import { useInjectReducer } from 'utils/injectReducer';
+
+import HuntRestError from 'ui/components/HuntRestError';
+import { huntTabs, PAGE_STATE } from 'ui/constants';
 import { useStore } from 'ui/mobx/RootStoreProvider';
-import saga from './saga';
-import reducer from './reducer';
-import selectors from './selectors';
+import { useInjectReducer } from 'utils/injectReducer';
+import { useInjectSaga } from 'utils/injectSaga';
 
 import actions from './actions';
+import reducer from './reducer';
+import saga from './saga';
+import selectors from './selectors';
 
 const layout = {
   labelCol: {

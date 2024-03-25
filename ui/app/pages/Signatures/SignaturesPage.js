@@ -19,26 +19,28 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
-import styled from 'styled-components';
-import { Switch } from 'antd';
-import { Helmet } from 'react-helmet';
-import { observer } from 'mobx-react-lite';
 
+import { Switch } from 'antd';
+import axios from 'axios';
+import { toJS } from 'mobx';
+import { observer } from 'mobx-react-lite';
+import { Helmet } from 'react-helmet';
+import styled from 'styled-components';
+
+import { buildQFilter } from 'ui/buildQFilter';
 import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
-import buildListParams from 'ui/helpers/buildListParams';
-import useFilterParams from 'ui/hooks/useFilterParams';
-import useAutorun from 'ui/helpers/useAutorun';
 import { STAMUS } from 'ui/config';
-import { buildQFilter } from 'ui/buildQFilter';
+import buildListParams from 'ui/helpers/buildListParams';
+import useAutorun from 'ui/helpers/useAutorun';
+import useFilterParams from 'ui/hooks/useFilterParams';
 import { useStore } from 'ui/mobx/RootStoreProvider';
-import { toJS } from 'mobx';
-import HuntPaginationRow from '../../HuntPaginationRow';
-import RulePage from '../../RulePage';
-import RuleInList from '../../RuleInList';
-import { updateHitsStats } from '../../helpers/updateHitsStats';
+
 import { buildListUrlParams } from '../../helpers/common';
+import { updateHitsStats } from '../../helpers/updateHitsStats';
+import HuntPaginationRow from '../../HuntPaginationRow';
+import RuleInList from '../../RuleInList';
+import RulePage from '../../RulePage';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';

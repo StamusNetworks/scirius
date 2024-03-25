@@ -1,12 +1,14 @@
+import { message } from 'antd';
+import { isEqual } from 'lodash';
 import { makeAutoObservable, toJS } from 'mobx';
 import moment from 'moment';
-import { message } from 'antd';
+
 import endpoints from 'ui/config/endpoints';
-import { isEqual } from 'lodash';
 import isInViewport from 'ui/helpers/IsInViewport';
 import Filter from 'ui/utils/Filter';
-import { api } from '../api';
+
 import { PeriodEnum } from '../../maps/PeriodEnum';
+import { api } from '../api';
 
 class CommonStore {
   root = null;
