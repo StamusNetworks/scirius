@@ -6,6 +6,8 @@ import { ReloadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import actions from 'ui/containers/App/actions';
+import { useDispatch } from 'react-redux';
 
 const SpaceStyled = styled(Space)`
   margin-left: 10px;
@@ -13,6 +15,7 @@ const SpaceStyled = styled(Space)`
 `;
 const Refresh = () => {
   const { commonStore } = useStore();
+  const dispatch = useDispatch();
 
   const timer = useLocalObservable(() => ({
     secondsPassed: 0,
@@ -20,6 +23,7 @@ const Refresh = () => {
       if (this.secondsPassed < commonStore.refreshTime) {
         this.secondsPassed += 1000;
         if (this.secondsPassed === commonStore.refreshTime) {
+          dispatch(actions.doReload());
           commonStore.reload();
         }
       } else {
@@ -61,7 +65,13 @@ const Refresh = () => {
           ))}
         </Select>
         <Tooltip title="Reload now">
-          <Button onClick={() => commonStore.reload()} icon={<ReloadOutlined />} />
+          <Button
+            onClick={() => {
+              dispatch(actions.doReload());
+              commonStore.reload();
+            }}
+            icon={<ReloadOutlined />}
+          />
         </Tooltip>
       </SpaceStyled>
       {commonStore.refreshTime && (
