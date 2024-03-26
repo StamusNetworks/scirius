@@ -7,11 +7,13 @@ import { observer } from 'mobx-react-lite';
 // React name for icon: select checkbox, click the icon and see the name for the import: https://mui.com/components/material-icons
 import moment from 'moment';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 
 import HelpMenu from 'ui/components/HelpMenu';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import UserMenu from 'ui/components/UserMenu';
 import constants from 'ui/constants';
+import actions from 'ui/containers/App/actions';
 import StamusLogo from 'ui/images/stamus.png';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
@@ -25,6 +27,7 @@ const Header = ({ menuItems = [] }) => {
   const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
   const { commonStore } = useStore();
+  const dispatch = useDispatch();
 
   return (
     <HeaderStyled>
@@ -35,7 +38,14 @@ const Header = ({ menuItems = [] }) => {
       <Menu theme="dark" mode="horizontal">
         <Menu.Item key="reload">
           <Tooltip title="Reload now">
-            <ReloadButton onClick={() => commonStore.reload()} icon={<ReloadOutlined />} type="ghost">
+            <ReloadButton
+              onClick={() => {
+                dispatch(actions.doReload());
+                commonStore.reload();
+              }}
+              icon={<ReloadOutlined />}
+              type="ghost"
+            >
               Reload
             </ReloadButton>
           </Tooltip>
