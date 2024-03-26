@@ -14,6 +14,8 @@ import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import moment from 'moment';
+import actions from 'ui/containers/App/actions';
+import { useDispatch } from 'react-redux';
 import { HeaderStyled, Logo, RangePreview, ReloadButton } from './styles';
 
 const { DATE_TIME_FORMAT } = constants;
@@ -23,6 +25,7 @@ const Header = ({ menuItems = [] }) => {
   const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
   const { commonStore } = useStore();
+  const dispatch = useDispatch();
 
   return (
     <HeaderStyled>
@@ -33,7 +36,14 @@ const Header = ({ menuItems = [] }) => {
       <Menu theme="dark" mode="horizontal">
         <Menu.Item key="reload">
           <Tooltip title="Reload now">
-            <ReloadButton onClick={() => commonStore.reload()} icon={<ReloadOutlined />} type="ghost">
+            <ReloadButton
+              onClick={() => {
+                dispatch(actions.doReload());
+                commonStore.reload();
+              }}
+              icon={<ReloadOutlined />}
+              type="ghost"
+            >
               Reload
             </ReloadButton>
           </Tooltip>
