@@ -113,7 +113,7 @@ const FilterItem = props => {
           )}
           {props.children}
           {props.filter.category !== 'HISTORY' && (
-            <Tooltip title="Suspend filter">
+            <Tooltip title={props.filter.suspended ? 'Enable filter' : 'Suspend filter'}>
               <FilterButton
                 color="#8a8382"
                 icon={props.filter.suspended ? <CheckCircleOutlined /> : <StopOutlined />}
