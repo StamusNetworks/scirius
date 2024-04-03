@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import EventValue from 'ui/components/EventValue';
+import { Signature } from 'ui/components/Signature';
 import UICard from 'ui/components/UIElements/UICard';
 import endpoints from 'ui/config/endpoints';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
@@ -52,7 +53,7 @@ export const ExpandedSignature = ({ rule, Flow, stamusIps }) => {
       items.push({
         key: i,
         label: `Version ${version.version === 0 ? '< 39' : version.version}`,
-        children: <SigContent dangerouslySetInnerHTML={{ __html: version.content }} key={version.id} />,
+        children: <Signature rule={version} key={version.id} />,
       });
     });
   }
@@ -112,11 +113,12 @@ export const ExpandedSignature = ({ rule, Flow, stamusIps }) => {
 
   return (
     <div style={{ width: 'calc(100vw - 271px)' }}>
-      {rule.versions?.length === 1 && <SigContent dangerouslySetInnerHTML={{ __html: rule.versions[0].content }} key={rule.versions[0].id} />}
+      {rule.versions?.length === 1 && <Signature rule={rule.versions[0]} key={rule.versions[0].id} />}
       {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
       <SignatureTimeline sid={rule.sid} />
       <Row>
-        {cards.map(card => (card.key === 'probes' || card.data?.length > 0) && <Card card={card} />)} {/* Probes needs to be displayed if empty */}
+        {cards.map(card => (card.key === 'probes' || card.data?.length > 0) && <Card card={card} key={card.key} />)}
+        {/* Probes needs to be displayed if empty */}
       </Row>
       {Flow}
     </div>
