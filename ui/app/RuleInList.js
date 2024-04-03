@@ -4,7 +4,6 @@ import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/ico
 import { Spin, Table } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import styled from 'styled-components';
 
 import { Count } from 'ui/components/EventValue';
 import ExpandedSignature from 'ui/components/ExpandedSignature';
@@ -14,32 +13,6 @@ import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import 'ui/pygments.css';
 import Filter from 'ui/utils/Filter';
-
-export const SigContent = styled.div`
-  & pre {
-    white-space: pre-wrap;
-    display: block;
-    padding: 10px;
-    height: 100%;
-    font-size: 14px;
-    line-height: 1.66667;
-    word-break: break-all;
-    word-wrap: break-word;
-    color: #747276;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 1px;
-    margin-bottom: 0;
-  }
-
-  & .highlight {
-    height: 100%;
-  }
-
-  & .highlight .err {
-    border: none;
-  }
-`;
 
 const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
   const { commonStore } = useStore();
