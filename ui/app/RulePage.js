@@ -11,8 +11,8 @@ import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import EventValue from 'ui/components/EventValue';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
+import { Signature } from 'ui/components/Signature';
 import SignatureFlow from 'ui/components/SignatureFlow';
-import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import { SignatureTimeline } from 'ui/pages/Signatures/components';
@@ -20,7 +20,6 @@ import Filter from 'ui/utils/Filter';
 
 import { updateHitsStats } from './helpers/updateHitsStats';
 import HuntStat from './HuntStat';
-import { SigContent } from './RuleInList';
 import RuleStatus from './RuleStatus';
 
 const Row = styled.div`
@@ -175,7 +174,7 @@ class RulePage extends React.Component {
         items.push({
           key: i,
           label: `Version ${version.version === 0 ? '< 39' : version.version}`,
-          children: <SigContent dangerouslySetInnerHTML={{ __html: version.content_html }} key={version.id} />,
+          children: <Signature rule={version} id={version.id} />,
         });
       });
     }
@@ -196,30 +195,8 @@ class RulePage extends React.Component {
 
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
-                  {this.state.rule?.versions?.length === 1 && (
-                    <SigContent dangerouslySetInnerHTML={{ __html: this.state.rule.versions[0].content_html }} key={this.state.rule.versions[0].id} />
-                  )}
+                  {this.state.rule?.versions?.length === 1 && <Signature rule={this.state.rule.versions[0]} />}
                   {this.state.rule?.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
-
-                  {this.state.rule_references && this.state.rule_references.length > 0 && (
-                    <UICard
-                      title={<div>References</div>}
-                      headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
-                      bodyStyle={{ display: 'grid', padding: '8px 10px' }}
-                      noPadding
-                    >
-                      {this.state.rule_references.map(reference => {
-                        if (reference.url !== undefined) {
-                          return (
-                            <a key={reference.url} href={reference.url} target="_blank">{`${
-                              reference.key[0].toUpperCase() + reference.key.substring(1)
-                            }: ${reference.value.substring(0, 45)}...`}</a>
-                          );
-                        }
-                        return null;
-                      })}
-                    </UICard>
-                  )}
                 </div>
 
                 {this.state.rule.timeline && <SignatureTimeline sid={this.state.sid} />}
@@ -334,7 +311,7 @@ class RulePage extends React.Component {
                       eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
-                      title="SNI"
+                      // title="SNIe
                       config={this.props.config}
                       filters={this.props.filters}
                       item="tls.sni"
