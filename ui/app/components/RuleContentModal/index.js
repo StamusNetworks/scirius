@@ -3,7 +3,7 @@ import React from 'react';
 import { Modal, Tabs } from 'antd';
 import PropTypes from 'prop-types';
 
-import { SigContent } from 'ui/RuleInList';
+import { SigContent } from '../ExpandedSignature';
 
 const RuleContentModal = props => {
   const ruleVersions = Object.keys(props.rule_status.content);
