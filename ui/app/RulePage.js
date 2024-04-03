@@ -11,11 +11,11 @@ import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import EventValue from 'ui/components/EventValue';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
-import SciriusChart from 'ui/components/SciriusChart';
 import SignatureFlow from 'ui/components/SignatureFlow';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { withStore } from 'ui/mobx/RootStoreProvider';
+import { Timeline } from 'ui/pages/Signatures/components';
 import Filter from 'ui/utils/Filter';
 
 import { updateHitsStats } from './helpers/updateHitsStats';
@@ -222,14 +222,7 @@ class RulePage extends React.Component {
                   )}
                 </div>
 
-                {this.state.rule.timeline && (
-                  <SciriusChart
-                    data={this.state.rule.timeline}
-                    axis={{ x: { min: this.props.filterParams.fromDate, max: this.props.filterParams.toDate } }}
-                    legend={{ show: false }}
-                    padding={{ bottom: 10 }}
-                  />
-                )}
+                {this.state.rule.timeline && <Timeline sid={this.state.sid} />}
 
                 {this.state.rule_status !== undefined && (
                   <Row>
