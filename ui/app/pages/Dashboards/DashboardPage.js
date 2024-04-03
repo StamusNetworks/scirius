@@ -32,17 +32,14 @@ import Filters from 'ui/components/Filters';
 import UICard from 'ui/components/UIElements/UICard';
 import { STAMUS } from 'ui/config';
 import useFilterParams from 'ui/hooks/useFilterParams';
-import HuntTimeline from 'ui/HuntTimeline';
 import HuntTrend from 'ui/HuntTrend';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
 import 'react-resizable/css/styles.css';
 import '../../../../rules/static/rules/c3.min.css';
 import DashboardMosaic from '../../components/DashboardMosaic';
+import * as Style from './style';
 
-const TimelineCard = styled(UICard)`
-  padding-top: 15px;
-`;
 const TrendCard = styled(UICard)`
   display: flex;
   flex-direction: column;
@@ -80,28 +77,26 @@ const DashboardPage = () => {
       </ErrorHandler>
       <Row style={{ marginTop: 10, marginBottom: 10 }}>
         <Col lg={20} md={18} sm={24} xs={24} style={{ paddingRight: '0px' }}>
-          <TimelineCard>
-            <HuntTimeline
-              style={{ marginTop: '15px' }}
-              filterParams={filterParams}
-              chartTarget={chartTarget}
-              filters={[...commonStore.filters.map(f => f.toJSON()), toJS(commonStore.alert)]}
-              systemSettings={commonStore.systemSettings}
-              eventTypes={commonStore.eventTypes}
-            />
-            {hasPermissions && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
-              <div style={{ position: 'absolute', zIndex: 1, top: '8px', right: '8px' }}>
-                <Radio.Group
-                  data-test="hide-empty-tiles-switch"
-                  options={chartOptions}
-                  value={chartTarget}
-                  onChange={({ target: { value } }) => setChartTarget(value)}
-                  optionType="button"
-                  buttonStyle="solid"
-                />
-              </div>
-            )}
-          </TimelineCard>
+          <Style.Timeline
+            style={{ marginTop: '15px' }}
+            filterParams={filterParams}
+            chartTarget={chartTarget}
+            filters={[...commonStore.filters.map(f => f.toJSON()), toJS(commonStore.alert)]}
+            systemSettings={commonStore.systemSettings}
+            eventTypes={commonStore.eventTypes}
+          />
+          {hasPermissions && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
+            <Style.Switch>
+              <Radio.Group
+                data-test="hide-empty-tiles-switch"
+                options={chartOptions}
+                value={chartTarget}
+                onChange={({ target: { value } }) => setChartTarget(value)}
+                optionType="button"
+                buttonStyle="solid"
+              />
+            </Style.Switch>
+          )}
         </Col>
         <Col lg={4} md={6} sm={24} xs={24} style={{ paddingLeft: '0px' }}>
           <TrendCard fullHeight>
