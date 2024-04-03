@@ -14,6 +14,7 @@ import ErrorHandler from 'ui/components/Error';
 import EventField from 'ui/components/EventField';
 import EventsField from 'ui/components/EventsField';
 import PCAPFile from 'ui/components/PCAPFile';
+import { Signature } from 'ui/components/Signature';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import UICard from 'ui/components/UIElements/UICard';
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
@@ -85,7 +86,7 @@ class AlertItem extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchData(this.props.data.flow_id);
+    this.fetchData(this.props.data.flow_id, this.props.data.alert.signature_id);
   }
 
   formatString = (str, ...params) => {
@@ -109,7 +110,7 @@ class AlertItem extends React.Component {
     this.setState({ collapsed });
   }
 
-  fetchData(flowId) {
+  fetchData(flowId, sid) {
     if (!this.state.showTabs) {
       // reset the files state for each event
       this.setState({ files: {}, fileInfo: false, fileInfoLoading: false });
@@ -192,6 +193,12 @@ class AlertItem extends React.Component {
         }
       });
     }
+    this.props.store.commonStore.fetchSignature(sid).then(res => {
+      if (res.ok) {
+        this.setState({ signature: res.data.versions[0] });
+      }
+    });
+
     // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ showTabs: !this.state.showTabs });
   }
@@ -960,6 +967,11 @@ class AlertItem extends React.Component {
           </Tabs.TabPane>
         )}
         {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />} />}
+        {showTabs && !_.isEmpty(this.state.signature) && (
+          <Tabs.TabPane key="signature" tab="Signature">
+            <Signature rule={this.state.signature} />
+          </Tabs.TabPane>
+        )}
       </Tabs>
     );
   }
@@ -967,6 +979,7 @@ class AlertItem extends React.Component {
 AlertItem.propTypes = {
   data: PropTypes.any,
   filterParams: PropTypes.string.isRequired,
+  store: PropTypes.any,
 };
 
 export default withStore(AlertItem);
