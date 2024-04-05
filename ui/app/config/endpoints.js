@@ -92,7 +92,7 @@ const ENDPOINT = {
   },
   ELASTIC_SEARCH: {
     name: 'Fetching elasticsearch data',
-    url: '/rest/rules/es/search/:datesEs',
+    url: '/rest/rules/es/search/:datesEs:tenant',
   },
 };
 
