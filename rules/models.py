@@ -26,6 +26,7 @@ from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation, ValidationError
 from django.core.validators import validate_ipv4_address
 from django.db import transaction
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html, format_html_join
@@ -3562,6 +3563,25 @@ class Ruleset(models.Model, Transformable):
 
         return ruleset
 
+    def get_single_policies(self) -> QuerySet:
+        """
+        Get policies (RuleProcessingFilter) that are only linked to this Ruleset.
+        It is usefull when we need to delete a ruleset to avoid orphan policies.
+        """
+        return (
+            RuleProcessingFilter.objects.annotate(models.Count("rulesets"))
+            .filter(rulesets__pk=self.pk, rulesets__count=1)
+            .order_by("event_type", "action")
+        )
+
+    @transaction.atomic
+    def delete(self):
+        """
+        Delete ruleset and single policies (not linked to another ruleset)
+        """
+        Ruleset.objects.get(pk=self.pk).get_single_policies().delete()
+        super().delete()
+
 
 class RuleTransformation(Transformation):
     ruleset = models.ForeignKey(Ruleset, on_delete=models.CASCADE)
@@ -3640,6 +3660,9 @@ class Threshold(models.Model):
 
 
 class RuleProcessingFilter(models.Model):
+    """
+    Also called policy
+    """
     action = models.CharField(max_length=10)
     options = models.CharField(max_length=512, null=True, blank=True)
     index = models.PositiveIntegerField()
