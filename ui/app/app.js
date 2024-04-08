@@ -4,7 +4,7 @@
 
 // Needed for redux-saga es6 generator support
 import '@babel/polyfill';
-import './fonts/fonts.css';
+import './assets/fonts/fonts.css';
 
 // Import all the third party stuff
 import React from 'react';
@@ -20,7 +20,7 @@ import { SingletonHooksContainer } from 'react-singleton-hook';
 import App from 'ui/containers/App';
 import notify from 'ui/helpers/notify';
 // Load the favicon and the .htaccess file
-import '!file-loader?name=[name].[ext]!./images/favicon.ico';
+import '!file-loader?name=[name].[ext]!./assets/images/favicon.ico';
 import { RootStoreProvider } from 'ui/mobx/RootStoreProvider';
 
 import { store } from './store';
