@@ -1923,7 +1923,8 @@ def delete_ruleset(request, ruleset_id):
             ruleset.delete()
         return redirect("/rules/ruleset/")
     else:
-        context = {'object': ruleset, 'delfn': 'delete_ruleset', 'form': CommentForm()}
+        policies = ruleset.get_single_policies()
+        context = {'object': ruleset, 'delfn': 'delete_ruleset', 'policies': policies, 'form': CommentForm()}
         return scirius_render(request, 'rules/delete.html', context)
 
 
