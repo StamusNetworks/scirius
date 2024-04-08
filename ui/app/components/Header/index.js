@@ -9,12 +9,12 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
+import StamusLogo from 'ui/assets/images/stamus.png';
 import HelpMenu from 'ui/components/HelpMenu';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import UserMenu from 'ui/components/UserMenu';
 import constants from 'ui/constants';
 import actions from 'ui/containers/App/actions';
-import StamusLogo from 'ui/images/stamus.png';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
