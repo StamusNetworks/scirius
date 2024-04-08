@@ -7,6 +7,22 @@
 {% endblock sidebar %}
 {% block content %}
     <h2 class="title">Are you sure you want to delete object {{ object.name|default:object.pk }}?</h2>
+    {% if policies %}
+        <strong>{{ policies|length }}</strong> policies will be deleted along with this ruleset:
+        <ul>
+            {% for p in policies|slice:":10" %}
+                <li>
+                    <strong>{{ p.event_type }}</strong> on <strong>{{ p.action }}</strong>: {{ p.description }}<br>
+                    {% for d in p.filter_defs.all %}
+                        <span class="label label-default">{{ d }}</span>
+                    {% endfor %}
+                </li>
+            {% endfor %}
+            {% if policies|length > 10 %}<li>&#8230;</li>{% endif %}
+        </ul>
+    {% else %}
+        No policy will be deleted. Existing policies are still linked to other(s) ruleset(s).
+    {% endif %}
     <form class="form" action={% url delfn object.id %} method="post">
         {% csrf_token %}
         {% bootstrap_form form %}
