@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 
-import { Timeline as TimelineComponent } from './components';
+import { DashboardTimeline } from './components';
 
-export const Timeline = styled(TimelineComponent)`
+export const Timeline = styled(DashboardTimeline)`
   margin-top: 1.5rem;
 `;
 
