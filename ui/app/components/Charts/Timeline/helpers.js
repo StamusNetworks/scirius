@@ -1,4 +1,4 @@
-import { keyColors } from './config';
+import { keyColors } from '../config';
 
 export const getTimelineData = res => {
   // Server response is an object with keys: from_date, interval, and then a bunch of other keys which contain
@@ -37,7 +37,6 @@ export const getTimelineData = res => {
     data,
     dates: {
       from: parseInt(res.from_date, 10),
-      to: parseInt(res.to_date, 10),
       interval: parseInt(res.interval, 10),
     },
   };

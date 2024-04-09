@@ -10,7 +10,7 @@ import endpoints from 'ui/config/endpoints';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import useAutorun from 'ui/helpers/useAutorun';
 import { api } from 'ui/mobx/api';
-import { Timeline } from 'ui/pages/Signatures/components/Timeline';
+import { SignatureTimeline } from 'ui/pages/Signatures/components';
 import Filter from 'ui/utils/Filter';
 
 export const SigContent = styled.div`
@@ -114,7 +114,7 @@ export const ExpandedSignature = ({ rule, Flow, stamusIps }) => {
     <div style={{ width: 'calc(100vw - 271px)' }}>
       {rule.versions?.length === 1 && <SigContent dangerouslySetInnerHTML={{ __html: rule.versions[0].content }} key={rule.versions[0].id} />}
       {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
-      <Timeline sid={rule.sid} />
+      <SignatureTimeline sid={rule.sid} />
       <Row>
         {cards.map(card => (card.key === 'probes' || card.data?.length > 0) && <Card card={card} />)} {/* Probes needs to be displayed if empty */}
       </Row>
