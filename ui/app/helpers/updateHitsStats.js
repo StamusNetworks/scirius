@@ -44,11 +44,13 @@ function processHitsStats(res, rules, updateCallback) {
   }
 }
 
-export async function updateHitsStats(rules, filterParams, updateCallback, qfilter) {
+export async function updateHitsStats(rules, filterParams, updateCallback, qfilter, tenant) {
   const { stamus, alert, discovery } = store?.commonStore?.eventTypes || {};
 
   const sids = Array.from(rules, x => x.sid).join();
-  const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${filterParams + qfilter}&alert=${alert}&stamus=${stamus}&discovery=${discovery}`;
+  const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${filterParams + qfilter}&alert=${alert}&stamus=${stamus}&discovery=${discovery}${
+    tenant ? `&tenant=${tenant}` : ''
+  }`;
   const res = await axios.get(url);
   processHitsStats(res, rules, updateCallback);
 }
