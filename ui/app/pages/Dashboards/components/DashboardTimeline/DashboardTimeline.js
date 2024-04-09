@@ -3,15 +3,15 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { buildQFilter } from 'ui/buildQFilter';
-import { BarChart, XAxisLabelDateTime } from 'ui/components/Charts';
-import { getTimelineData } from 'ui/components/Charts/helpers';
+import { Timeline, XAxisLabelDateTime } from 'ui/components/Charts';
+import { getTimelineData } from 'ui/components/Charts/Timeline/helpers';
 import notify from 'ui/helpers/notify';
 import useAutorun from 'ui/helpers/useAutorun';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
 import * as Style from './style';
 
-export const Timeline = ({ filterParams, chartTarget, filters, systemSettings, eventTypes }) => {
+export const DashboardTimeline = ({ filterParams, chartTarget, filters, systemSettings, eventTypes }) => {
   const { esStore } = useStore();
   const [loading, setLoading] = useState(true);
   const [chart, setChart] = useState({});
@@ -36,12 +36,12 @@ export const Timeline = ({ filterParams, chartTarget, filters, systemSettings, e
 
   return (
     <Style.Card flex>
-      <BarChart chart={chart} stacked XAxisLabel={XAxisLabelDateTime} />
+      <Timeline chart={chart} stacked XAxisLabel={XAxisLabelDateTime} />
     </Style.Card>
   );
 };
 
-Timeline.propTypes = {
+DashboardTimeline.propTypes = {
   filterParams: PropTypes.object.isRequired,
   chartTarget: PropTypes.string.isRequired,
   filters: PropTypes.array.isRequired,
