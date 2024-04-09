@@ -55,8 +55,8 @@ export function buildQFilter(activeFilters, systemSettings, returnType = 'legacy
         if (tagFilters.length !== 0) {
           qfilter.push(`(${tagFilters.join(' OR ')})`);
         }
-      } else if (filters[i].id === 'msg') {
-        qfilter.push(`${fPrefix}alert.signature:"${filters[i].value}"`);
+      } else if (filters[i].id === 'msg' || filters[i].id === 'not_in_msg') {
+        // continue
       } else if (filters[i].id === 'content' || filters[i].id === 'not_in_content') {
         // continue
       } else if (filters[i].id === 'es_filter') {
@@ -65,8 +65,6 @@ export function buildQFilter(activeFilters, systemSettings, returnType = 'legacy
         qfilter.push(`${fPrefix}(src_port:${filters[i].value} OR dest_port:${filters[i].value})`);
       } else if (filters[i].id === 'alert.category' && filters[i].value === 'Unknown') {
         qfilter.push(`${fPrefix}alert.category${fSuffix}:""`);
-      } else if (filters[i].id === 'not_in_msg') {
-        qfilter.push(`${fPrefix}alert.signature:"${filters[i].value}"`);
       } else if (typeof filters[i].value === 'string') {
         if (filters[i].fullString) {
           const value = filters[i].value.toString().replace(/\\/g, '\\\\').replace(/"/g, '\\"');
