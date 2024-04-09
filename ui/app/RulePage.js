@@ -1,7 +1,7 @@
 /* eslint-disable react/no-access-state-in-setstate */
 import React from 'react';
 
-import { List, Modal, Spin, Tabs } from 'antd';
+import { Empty, List, Modal, Spin, Tabs } from 'antd';
 import axios from 'axios';
 import { cloneDeep } from 'lodash';
 import PropTypes from 'prop-types';
@@ -365,6 +365,7 @@ class RulePage extends React.Component {
               </div>
             </div>
           )}
+          {this.state.rule && !this.state.rule.hits && <Empty description="No hits for this signature" style={{ padding: '3rem 0' }} />}
           <SignatureFlow rule={this.state.rule} />
         </Spin>
 
