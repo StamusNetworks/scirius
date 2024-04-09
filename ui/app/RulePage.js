@@ -67,7 +67,7 @@ class RulePage extends React.Component {
     const qfilter = buildQFilter(this.props.filters, this.props.store.commonStore.systemSettings);
     const { filterParams } = this.props;
     if (typeof rule !== 'undefined') {
-      updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
+      updateHitsStats([rule], filterParams, this.updateRuleState, qfilter, this.props.store.tenantStore.tenant);
       axios
         .get(
           `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${this.props.rule.sid}&alert=${this.props.store.commonStore.eventTypes.alert}&stamus=${this.props.store.commonStore.eventTypes.stamus}&discovery=${this.props.store.commonStore.eventTypes.discovery}`,
@@ -80,7 +80,7 @@ class RulePage extends React.Component {
       axios
         .get(`${config.API_URL}${config.RULE_PATH}${sid}/?highlight=true`)
         .then(res => {
-          updateHitsStats([res.data], filterParams, this.updateRuleState, qfilter);
+          updateHitsStats([res.data], filterParams, this.updateRuleState, qfilter, this.props.store.tenantStore.tenant);
           axios
             .get(
               `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${sid}&alert=${this.props.store.commonStore.eventTypes.alert}&stamus=${this.props.store.commonStore.eventTypes.stamus}&discovery=${this.props.store.commonStore.eventTypes.discovery}`,
@@ -108,7 +108,7 @@ class RulePage extends React.Component {
     ) {
       if (this.state.rule) {
         const rule = cloneDeep(this.state.rule);
-        updateHitsStats([rule], this.props.filterParams, this.updateRuleState, qfilter);
+        updateHitsStats([rule], this.props.filterParams, this.updateRuleState, qfilter, this.props.store.tenantStore.tenant);
       }
     }
   }
