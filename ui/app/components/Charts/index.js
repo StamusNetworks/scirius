@@ -1,2 +1,2 @@
-export { BarChart } from './BarChart';
+export { Timeline } from './Timeline';
 export { XAxisLabelDateTime } from './components';
