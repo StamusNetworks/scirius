@@ -88,7 +88,7 @@ const ENDPOINT = {
   },
   SIGNATURES: {
     name: 'Fetching signature',
-    url: `/rest/rules/rule/:datesEs:filters:qFilter:eventTypes:withAlerts`,
+    url: `/rest/rules/rule/:datesEs:filters:qFilter:eventTypes:withAlerts:tenant`,
   },
   ELASTIC_SEARCH: {
     name: 'Fetching elasticsearch data',
