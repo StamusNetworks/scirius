@@ -3,11 +3,11 @@ import React from 'react';
 import { Empty } from 'antd';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import { ResponsiveContainer, BarChart as ReBarChart, Bar, CartesianGrid, YAxis, XAxis, Tooltip } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, CartesianGrid, YAxis, XAxis, Tooltip } from 'recharts';
 
 import * as Style from './style';
 
-export const BarChart = ({ chart, stacked = false, height, width, XAxisLabel }) => {
+export const Timeline = ({ chart, stacked = false, height, width, XAxisLabel }) => {
   const Wrapper = width ? React.Fragment : ResponsiveContainer;
   return (
     <Wrapper>
@@ -16,15 +16,7 @@ export const BarChart = ({ chart, stacked = false, height, width, XAxisLabel }) 
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         </Style.EmptyWrapper>
       ) : (
-        <ReBarChart
-          height={height}
-          width={width}
-          data={chart.data}
-          barCategoryGap={0}
-          barGap={0}
-          margin={{ bottom: 10 }}
-          barSize={chart.dates.interval}
-        >
+        <BarChart height={height} width={width} data={chart.data} margin={{ bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <Tooltip labelFormatter={label => <TooltipLabel label={label} interval={chart.dates.interval} />} />
           {chart.keys.map(key => (
@@ -32,13 +24,13 @@ export const BarChart = ({ chart, stacked = false, height, width, XAxisLabel }) 
           ))}
           <YAxis />
           <XAxis dataKey="time" tick={XAxisLabel && <XAxisLabel />} />
-        </ReBarChart>
+        </BarChart>
       )}
     </Wrapper>
   );
 };
 
-BarChart.propTypes = {
+Timeline.propTypes = {
   chart: PropTypes.shape({
     data: PropTypes.array.isRequired,
     keys: PropTypes.array.isRequired,
