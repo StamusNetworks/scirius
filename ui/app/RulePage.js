@@ -15,7 +15,7 @@ import SignatureFlow from 'ui/components/SignatureFlow';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { withStore } from 'ui/mobx/RootStoreProvider';
-import { Timeline } from 'ui/pages/Signatures/components';
+import { SignatureTimeline } from 'ui/pages/Signatures/components';
 import Filter from 'ui/utils/Filter';
 
 import { updateHitsStats } from './helpers/updateHitsStats';
@@ -222,7 +222,7 @@ class RulePage extends React.Component {
                   )}
                 </div>
 
-                {this.state.rule.timeline && <Timeline sid={this.state.sid} />}
+                {this.state.rule.timeline && <SignatureTimeline sid={this.state.sid} />}
 
                 {this.state.rule_status !== undefined && (
                   <Row>

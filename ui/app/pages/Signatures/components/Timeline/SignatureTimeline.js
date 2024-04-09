@@ -5,8 +5,8 @@ import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 
 import { buildQFilter } from 'ui/buildQFilter';
-import { BarChart, XAxisLabelDateTime } from 'ui/components/Charts';
-import { getTimelineData } from 'ui/components/Charts/helpers';
+import { Timeline, XAxisLabelDateTime } from 'ui/components/Charts';
+import { getTimelineData } from 'ui/components/Charts/Timeline/helpers';
 import notify from 'ui/helpers/notify';
 import useAutorun from 'ui/helpers/useAutorun';
 import useFilterParams from 'ui/hooks/useFilterParams';
@@ -16,7 +16,7 @@ import Filter from 'ui/utils/Filter';
 
 import * as Style from './style';
 
-export const Timeline = observer(({ sid }) => {
+export const SignatureTimeline = observer(({ sid }) => {
   const { commonStore, esStore } = useStore();
   const [ref, width] = useResizeObserver();
   const filterParams = useFilterParams();
@@ -52,7 +52,7 @@ export const Timeline = observer(({ sid }) => {
   return (
     <Style.Card flex>
       <div ref={ref}>
-        <BarChart chart={chart} height={200} width={width} XAxisLabel={XAxisLabelDateTime} />
+        <Timeline chart={chart} height={200} width={width} XAxisLabel={XAxisLabelDateTime} />
       </div>
     </Style.Card>
   );
