@@ -169,7 +169,11 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
       destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
       onClick={() => commonStore.addFilter(filter)}
     >
-      {children || <Value data-test={filter.displayValue}>{filter.displayValue}</Value>}
+      {children || (
+        <Value title="Right click for more actions" data-test={filter.displayValue}>
+          {filter.displayValue}
+        </Value>
+      )}
     </Dropdown>
   );
 };
