@@ -2043,3 +2043,7 @@ class ModelRulesetTestCase(TestCase):
         ruleset1.delete()
         p = RuleProcessingFilter.objects.filter(pk=id_single_policy)
         self.assertFalse(p.exists())
+
+        # check if there is no gap in policy indexes
+        indexes = list(RuleProcessingFilter.objects.order_by('index').values_list('index', flat=True))
+        self.assertEqual(indexes, [0, 1])
