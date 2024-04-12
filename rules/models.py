@@ -3577,9 +3577,21 @@ class Ruleset(models.Model, Transformable):
     @transaction.atomic
     def delete(self):
         """
-        Delete ruleset and single policies (not linked to another ruleset)
+        Delete ruleset and single policies (not linked to another ruleset).
+
+        Also re-index policies to avoid gaps in indexes.
         """
+        # delete single policies
         Ruleset.objects.get(pk=self.pk).get_single_policies().delete()
+        # rebuild policy index
+        counter = 0
+        objs = []
+        for policy in RuleProcessingFilter.objects.order_by('index').iterator():
+            policy.index = counter
+            objs.append(policy)
+            counter += 1
+        RuleProcessingFilter.objects.bulk_update(objs, ['index'])
+        # finally, delete the ruleset
         super().delete()
 
 
