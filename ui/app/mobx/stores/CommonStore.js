@@ -4,7 +4,6 @@ import { makeAutoObservable, toJS } from 'mobx';
 import moment from 'moment';
 
 import endpoints from 'ui/config/endpoints';
-import isInViewport from 'ui/helpers/IsInViewport';
 import Filter from 'ui/utils/Filter';
 
 import { PeriodEnum } from '../../maps/PeriodEnum';
@@ -312,10 +311,9 @@ class CommonStore {
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
 
     // notify the user only when Filters component is not shown
-    if (!isInViewport('filters-bar'))
-      message.info({
-        content: `Filter added!`,
-      });
+    message.info({
+      content: `Filter added!`,
+    });
   }
 
   addHistoryFilter(filter) {
