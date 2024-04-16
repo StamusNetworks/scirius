@@ -49,13 +49,15 @@ export const Row = styled.div`
 export const ExpandedSignature = ({ rule, Flow, stamusIps }) => {
   const items = [];
   if (rule.versions?.length > 1) {
-    rule.versions.forEach((version, i) => {
-      items.push({
-        key: i,
-        label: `Version ${version.version === 0 ? '< 39' : version.version}`,
-        children: <Signature rule={version} key={version.id} />,
+    rule.versions
+      .sort((a, b) => b.version - a.version)
+      .forEach((version, i) => {
+        items.push({
+          key: i,
+          label: `Version ${version.version === 0 ? '< 39' : version.version}`,
+          children: <Signature rule={version} key={version.id} />,
+        });
       });
-    });
   }
 
   const [ips, setIps] = useState({
