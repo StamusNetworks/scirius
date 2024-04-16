@@ -181,6 +181,7 @@ class RulePage extends React.Component {
     return (
       <div>
         <Spin spinning={this.state.rule === undefined}>
+          {this.state.rule === null && <Empty description="Signature not found" style={{ padding: '3rem 0' }} />}
           {this.state.rule && (
             <div>
               <RuleMsg>
