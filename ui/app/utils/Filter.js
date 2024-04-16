@@ -74,7 +74,7 @@ export default class Filter {
     this._value = value;
     this._title = filterSchema?.title || props?.title || filter;
     this._label = `${props?.title || filterSchema?.title || filter}: ${filterSchema?.format?.(value) || value}`;
-    this._category = filterSchema?.category;
+    this._category = filterSchema?.category || typeof a === 'string' ? a : undefined;
     this._type = filterSchema?.type;
     this._negatable = this.prop(filterSchema?.negatable, true);
     this._wildcardable = this.prop(filterSchema?.wildcardable, true);
