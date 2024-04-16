@@ -8,6 +8,7 @@ import Filter from 'ui/utils/Filter';
 
 import { PeriodEnum } from '../../maps/PeriodEnum';
 import { api } from '../api';
+import { createFilterInstanceFromStorage } from './CommonStore.util';
 
 class CommonStore {
   root = null;
@@ -123,9 +124,7 @@ class CommonStore {
       this._sources = JSON.parse(localStorage.getItem('str-sources') || '[]');
       this._timeRangeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.timePicker || 'relative';
       this._relativeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.duration || 'H1';
-      this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]').map(
-        ({ id, value, negated, fullString, uuid }) => new Filter(id, value, { uuid, negated, fullString }),
-      );
+      this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]').map(createFilterInstanceFromStorage);
       this.history = JSON.parse(localStorage.getItem('history_filters') || '[]').map(
         ({ id, value, negated, fullString, uuid }) => new Filter(id, value, { uuid, negated, fullString }),
       );
