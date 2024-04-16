@@ -113,7 +113,7 @@ class AlertItem extends React.Component {
   fetchData(flowId, sid) {
     if (!this.state.showTabs) {
       // reset the files state for each event
-      this.setState({ files: {}, fileInfo: false, fileInfoLoading: false });
+      this.setState({ files: {}, fileInfo: false, fileInfoLoading: false, signatureLoading: true });
       const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&${this.props.filterParams}`;
       axios.get(url).then(res => {
         if (res.data !== null) {
@@ -196,7 +196,10 @@ class AlertItem extends React.Component {
     this.props.store.commonStore.fetchSignature(sid).then(res => {
       if (res.ok) {
         this.setState({ signature: res.data.versions[0] });
+      } else {
+        this.setState({ signature: {} });
       }
+      this.setState({ signatureLoading: false });
     });
 
     // eslint-disable-next-line react/no-access-state-in-setstate
@@ -967,9 +970,15 @@ class AlertItem extends React.Component {
           </Tabs.TabPane>
         )}
         {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />} />}
-        {showTabs && !_.isEmpty(this.state.signature) && (
+        {showTabs && (
           <Tabs.TabPane key="signature" tab="Signature">
-            <Signature rule={this.state.signature} />
+            {this.state.signatureLoading ? (
+              <Spin size="small" />
+            ) : _.isEmpty(this.state.signature) ? (
+              <Empty />
+            ) : (
+              <Signature rule={this.state.signature} />
+            )}
           </Tabs.TabPane>
         )}
       </Tabs>
