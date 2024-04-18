@@ -42,3 +42,14 @@ export const KillChainToColorMap = {
   'Actions on Objectives': actionsOnObjectivesColor,
   'Policy Violation': policyViolationColor,
 };
+
+export const KillChainToInt = {
+  reconnaissance: 1,
+  weaponization: 2,
+  delivery: 3,
+  exploitation: 4,
+  installation: 5,
+  command_and_control: 6,
+  actions_on_objectives: 7,
+  policy_violation: -1,
+};
