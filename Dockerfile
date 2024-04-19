@@ -57,7 +57,7 @@ RUN echo  "**** COPY Scirius ****"
 COPY . /opt/scirius
 RUN mv /opt/scirius/docker/scirius/scirius/local_settings.py /opt/scirius/scirius/local_settings.py
 RUN chmod ugo+x /opt/scirius/docker/scirius/bin/*
-    
+
 
 # BUILD JS stuff
 FROM base as build_js
@@ -78,7 +78,7 @@ RUN \
     echo "**** install Node.js ****" && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         nodejs
-        
+
 COPY --from=source /opt/scirius/*.js* /opt/scirius/.eslintrc /opt/scirius/
 COPY --from=source /opt/scirius/ui /opt/scirius/ui
 COPY --from=source /opt/scirius/npm /opt/scirius/npm
@@ -179,9 +179,9 @@ RUN \
   DEBIAN_FRONTEND=noninteractive apt-get install -t bullseye-backports suricata -y && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
-  
+
 RUN pip install --no-cache-dir gunicorn
-  
+
 
 COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
 COPY --from=python_modules /root/.local /root/.local
@@ -190,7 +190,7 @@ COPY --from=build_docs /opt/scirius/doc/_build/html /static/doc
 COPY --from=source /opt/kibana7-dashboards /opt/kibana7-dashboards
 COPY --from=source /tmp/cyberchef /static/cyberchef/
 
-  
+
 
 HEALTHCHECK --start-period=3m \
   CMD curl --silent --fail http://127.0.0.1:8000 || exit 1
