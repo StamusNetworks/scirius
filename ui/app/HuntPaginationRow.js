@@ -45,7 +45,7 @@ export default class HuntPaginationRow extends React.Component {
         <Pagination
           current={this.getCurrentPage()}
           pageSize={this.props.itemsList.pagination.perPage}
-          total={this.props.itemsCount - 1}
+          total={this.props.itemsCount}
           showSizeChanger
           onChange={this.onChange}
           style={{ display: 'flex', justifyContent: 'end', marginTop: '10px' }}
