@@ -426,7 +426,7 @@ $(document).ready(function(){
                                                                 <div class="col-md-1">
                                                                     <div class="label space-add {% if rav.instance.state %} label-info{% else %} label-default{% endif %}" style="margin:auto;">
                                                                         <div class="custom-control custom-switch">
-                                                                            <form id="toggle_availability_form_{{ rav.instance.pk}}"
+                                                                            <form id="toggle_availability_form_{{ rav.instance.pk }}"
                                                                                   class="form"
                                                                                   action="{% url 'rav_toggle_availability' rav.instance.pk %}"
                                                                                   method="post">
