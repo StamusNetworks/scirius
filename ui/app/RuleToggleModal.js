@@ -204,7 +204,6 @@ class RuleToggleModal extends React.Component {
           this.setState({ errors: error.response.data, submitting: false });
         });
     }
-    this.props.reload();
   }
 
   handleChange(event) {
@@ -389,7 +388,6 @@ RuleToggleModal.propTypes = {
   systemSettings: PropTypes.any,
   filterParams: PropTypes.any,
   history: PropTypes.any,
-  reload: PropTypes.func,
 };
 
 export default withRouter(RuleToggleModal);
