@@ -15,6 +15,7 @@ import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import UserMenu from 'ui/components/UserMenu';
 import constants from 'ui/constants';
 import actions from 'ui/containers/App/actions';
+import { useThreatsContext } from 'ui/context/ThreatContext';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
@@ -28,6 +29,8 @@ const Header = ({ menuItems = [] }) => {
   const [userPopOver, setUserPopOver] = useState(false);
   const { commonStore } = useStore();
   const dispatch = useDispatch();
+  const threatContext = useThreatsContext();
+  const reloadThreats = threatContext?.reloadThreats || (() => {});
 
   return (
     <HeaderStyled>
@@ -42,6 +45,7 @@ const Header = ({ menuItems = [] }) => {
               onClick={() => {
                 dispatch(actions.doReload());
                 commonStore.reload();
+                reloadThreats();
               }}
               icon={<ReloadOutlined />}
               type="ghost"
