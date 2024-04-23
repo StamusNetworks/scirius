@@ -315,6 +315,22 @@ class CommonStore {
     });
   }
 
+  /**
+   *
+   * @param stack - Set the current filters with the new ones
+   */
+  setFilters(stack) {
+    const toClass = f => (f instanceof Filter ? f : new Filter(f.id, f.value, { negated: f.negated, fullString: f.fullString }));
+    const filters = Array.isArray(stack) ? stack.map(toClass) : [toClass(stack)];
+    this.ids = filters;
+    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
+
+    // notify the user only when Filters component is not shown
+    message.info({
+      content: `Filter${filters.length > 0 ? 's' : ''} set!`,
+    });
+  }
+
   addHistoryFilter(filter) {
     if (filter instanceof Filter) {
       this.history = [...this.history, filter];
