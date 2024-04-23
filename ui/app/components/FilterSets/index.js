@@ -89,12 +89,11 @@ const FilterSets = () => {
   );
 
   const loadFilterSets = row => {
-    commonStore.clearFilters();
     dispatch(clearFilters(sections.GLOBAL));
 
     const filters = row.content.filter(f => f.id !== 'alert.tag');
     dispatch(addFilter(sections.GLOBAL, filters));
-    commonStore.addFilter(
+    commonStore.setFilters(
       filters.map(f => new Filter(f.id, f.value, { negated: f.negated || false, fullString: f.fullString !== undefined ? f.fullString : true })),
     );
     if (row.page === 'RULES_LIST' && filters.find(f => f.id === 'hits_min')) {
