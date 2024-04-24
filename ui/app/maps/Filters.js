@@ -42,7 +42,7 @@ export const FiltersList = [
   {
     title: 'Message',
     id: 'msg',
-    category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
+    category: FilterCategory.SIGNATURE,
     wildcardable: false,
     negatable: true,
     onNegate: () => ({
@@ -55,7 +55,7 @@ export const FiltersList = [
   {
     title: 'Message',
     id: 'not_in_msg',
-    category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
+    category: FilterCategory.SIGNATURE,
     wildcardable: false,
     negatable: true,
     onNegate: () => ({
@@ -65,7 +65,7 @@ export const FiltersList = [
   {
     title: 'Content',
     id: 'content',
-    category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
+    category: FilterCategory.SIGNATURE,
     wildcardable: false,
     onNegate: () => ({
       id: 'not_in_content',
@@ -77,7 +77,7 @@ export const FiltersList = [
   {
     title: 'Content',
     id: 'not_in_content',
-    category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
+    category: FilterCategory.SIGNATURE,
     wildcardable: false,
     onNegate: () => ({
       id: 'content',
