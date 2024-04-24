@@ -44,9 +44,10 @@ export const Row = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 0.5rem;
+  margin-bottom: 0.5rem;
 `;
 
-export const ExpandedSignature = ({ rule, Flow, additionalCards }) => {
+export const ExpandedSignature = ({ rule, Flow, MethodTitle, additionalCards }) => {
   const items = [];
   if (rule.versions?.length > 1) {
     rule.versions
@@ -95,6 +96,7 @@ export const ExpandedSignature = ({ rule, Flow, additionalCards }) => {
 
   return (
     <div style={{ width: 'calc(100vw - 271px)' }}>
+      {MethodTitle}
       {rule.versions?.length === 1 && <Signature rule={rule.versions[0]} key={rule.versions[0].id} />}
       {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
       <SignatureTimeline sid={rule.sid} />
@@ -116,6 +118,7 @@ const Card = ({ card }) => (
 ExpandedSignature.propTypes = {
   rule: PropTypes.object,
   Flow: PropTypes.func,
+  MethodTitle: PropTypes.node,
   additionalCards: PropTypes.arrayOf(
     PropTypes.shape({
       title: PropTypes.string,
