@@ -1,50 +1,14 @@
 import React from 'react';
 
-import { PoweroffOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
-import styled from 'styled-components';
+import { SettingOutlined } from '@ant-design/icons';
 
-const Wrapper = styled.div`
-  display: grid;
-  grid-gap: 10px;
-  width: 240px;
-`;
+import LogoutMenuItem from 'ui/components/LogoutMenuItem';
 
-const Item = styled(Button)`
-  display: grid;
-  grid-template-columns: min-content 1fr;
-  align-items: center;
-  padding: 0;
-  border: none;
-
-  &:hover {
-    background: #f0f2f5;
-  }
-  &:active {
-    background: #bcccd1;
-  }
-  &:hover svg {
-    color: rgba(0, 0, 0, 0.85);
-  }
-
-  & > span {
-    display: flex;
-    padding: 5px 8px;
-    margin: 0px !important;
-    color: rgba(0, 0, 0, 0.85);
-  }
-
-  & svg {
-    height: 22px;
-    width: 22px;
-    color: #d9d9d9;
-    transition: all 0.6s;
-  }
-`;
+import * as Style from './style';
 
 const UserMenu = () => (
-  <Wrapper>
-    <Item
+  <Style.Wrapper>
+    <Style.Item
       block
       type="link"
       icon={<SettingOutlined />}
@@ -53,19 +17,9 @@ const UserMenu = () => (
       }}
     >
       Account Settings
-    </Item>
-    <Item
-      block
-      type="link"
-      icon={<PoweroffOutlined />}
-      onClick={() => {
-        window.location = '/accounts/logout';
-      }}
-      data-test="logout-button"
-    >
-      Log Out
-    </Item>
-  </Wrapper>
+    </Style.Item>
+    <LogoutMenuItem />
+  </Style.Wrapper>
 );
 
 UserMenu.propTypes = {};
