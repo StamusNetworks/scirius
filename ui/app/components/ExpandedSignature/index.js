@@ -79,15 +79,6 @@ export const ExpandedSignature = ({ rule, Flow, additionalCards }) => {
 
   const cards = [
     {
-      title: 'Probes',
-      data: rule.probes.map(probe => ({
-        key: probe.probe,
-        doc_count: probe.hits,
-      })),
-      key: 'probes',
-      filter: 'host',
-    },
-    {
       title: 'Sources',
       data: ips.sources,
       key: 'sources',
@@ -107,10 +98,7 @@ export const ExpandedSignature = ({ rule, Flow, additionalCards }) => {
       {rule.versions?.length === 1 && <Signature rule={rule.versions[0]} key={rule.versions[0].id} />}
       {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
       <SignatureTimeline sid={rule.sid} />
-      <Row>
-        {cards.map(card => (card.key === 'probes' || card.data?.length > 0) && <Card card={card} key={card.key} />)}
-        {/* Probes needs to be displayed if empty */}
-      </Row>
+      <Row>{cards.map(card => card.data?.length > 0 && <Card card={card} key={card.key} />)}</Row>
       {Flow}
     </div>
   );
