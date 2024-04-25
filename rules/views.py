@@ -1372,7 +1372,7 @@ def edit_source(request, source_id):
 
             # do a soft reset of rules in the source if URL changes
             if source.method == 'http' and source.uri != prev_uri:
-                Rule.objects.filter(category__source=source).update(rev=0)
+                RuleAtVersion.objects.filter(rule__category__source=source).update(rev=0)
                 source.version = 1
                 source.save()
 
