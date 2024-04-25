@@ -878,6 +878,11 @@ class Source(models.Model):
         from scirius.utils import get_middleware_module
         self.custom_data_type = get_middleware_module('common').custom_source_datatype()
 
+    def remove_rules_dir(self):
+        dir_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+        if os.path.exists(dir_path):
+            shutil.rmtree(dir_path)
+
     def enable(self, ruleset, request=None, comment=None):
         ruleset.sources.add(self)
 
@@ -1297,17 +1302,7 @@ class Source(models.Model):
                 need_update = self.update_ruleset(f)
 
                 if need_update:
-                    if self.datatype == 'sigs':
-                        self.handle_rules_in_tar(f)
-                    elif self.datatype == 'sig':
-                        self.handle_rules_file(f)
-                    elif self.datatype == 'other':
-                        self.handle_other_file(f)
-                    elif self.datatype == 'b64dataset':
-                        self.handle_b64dataset(f)
-
-                    if self.datatype in self.custom_data_type:
-                        self.handle_custom_file(f)
+                    self._handle_file(f)
 
             if need_update:
                 if (self.datatype in ('sig', 'sigs') or self.datatype in self.custom_data_type) and not firstimport:
@@ -1401,22 +1396,27 @@ class Source(models.Model):
 
         return False
 
+    def _handle_file(self, _file, upload=False):
+        self.remove_rules_dir()
+
+        if self.datatype == 'sigs':
+            self.handle_rules_in_tar(_file)
+        elif self.datatype == 'sig':
+            self.handle_rules_file(_file)
+        elif self.datatype == 'other':
+            self.handle_other_file(_file)
+        elif self.datatype == 'b64dataset':
+            self.handle_b64dataset(_file)
+        elif self.datatype in self.custom_data_type:
+            self.handle_custom_file(_file, upload=upload)
+
     def handle_uploaded_file(self, f):
         dest = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
         for chunk in f.chunks():
             dest.write(chunk)
 
         dest.seek(0)
-        if self.datatype == 'sigs':
-            self.handle_rules_in_tar(dest)
-        elif self.datatype == 'sig':
-            self.handle_rules_file(dest)
-        elif self.datatype == 'other':
-            self.handle_other_file(dest)
-        elif self.datatype == 'b64dataset':
-            self.handle_b64dataset(dest)
-        elif self.datatype in self.custom_data_type:
-            self.handle_custom_file(dest, upload=True)
+        self._handle_file(dest, upload=True)
 
     def new_uploaded_file(self, f):
         firstimport = False
