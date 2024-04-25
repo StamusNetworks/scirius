@@ -2167,9 +2167,7 @@ class Category(models.Model, Transformable, Cache):
                         existing_rules_hash['groups'][rule.category.name] = []
                     existing_rules_hash['groups'][rule.category.name].append(rav)
 
-        rules_list = []
-        for rule in Rule.objects.filter(category=self):
-            rules_list.append(rule)
+        rules_list = Rule.objects.filter(category=self)
 
         for key in ('flowbits', 'hostbits', 'xbits'):
             flowbits[key] = {}
