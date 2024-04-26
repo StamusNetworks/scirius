@@ -3,7 +3,9 @@
 {% block sidebar %}
     <div class="panel-heading">
         <h2 class="panel-title">
-            <a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a>
+            <a {% if perms.rules.ruleset_policy_view %}href="{% url 'ruleset' ruleset.pk %}"{% endif %}>
+                {{ ruleset.name }}
+            </a>
         </h2>
     </div>
     <ul class="panel-body">
