@@ -80,7 +80,7 @@ class PermissionsTestCase(TestCase):
                 found = False
                 for match in re.finditer('@', source[:def_index]):
                     index = match.start()
-                    if source[index:def_index].strip().startswith(('@permission_required', '@tasks_permission_required')):
+                    if source[index:def_index].strip().startswith(('@permission_required', '@tasks_permission_required', '@check_report_perms')):
                         found = True
                         break
             else:
