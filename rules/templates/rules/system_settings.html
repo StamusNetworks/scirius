@@ -1,5 +1,5 @@
 {% extends "rules/base.html" %}
-{% load bootstrap3  %}
+{% load bootstrap3 %}
 {% block sidebar %}
     <div class="panel-heading">
         <h2 class="panel-title">System settings</h2>
@@ -9,7 +9,7 @@
         Submit form to update {{ scirius_short_title }} system settings.
         </p>
     </div>
-{% endblock sidebar%}
+{% endblock sidebar %}
 {% block content %}
     {% if main_form %}
         <h2>System settings edition</h2>
@@ -60,7 +60,7 @@
                                 {% bootstrap_field main_form.custom_cookie_age %}
                                 {% bootstrap_field main_form.session_cookie_age %}
                                 {% if perms.rules.configuration_edit %}
-                                    {% bootstrap_field  main_form.comment %}
+                                    {% bootstrap_field main_form.comment %}
                                     {% buttons %}
                                         <button onclick="show_confirmation(); return false;" class="btn btn-primary">{% bootstrap_icon "ok" %} Submit</button>
                                     {% endbuttons %}
