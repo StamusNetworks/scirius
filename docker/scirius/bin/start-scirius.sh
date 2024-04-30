@@ -49,6 +49,7 @@ create_db() {
     python manage.py addsuricata suricata "Suricata" /rules "Default ruleset"
     python manage.py updatesuricata
     python manage.py collectstatic --noinput
+    touch /data/scirius.data
 }
 
 start() {
@@ -70,7 +71,7 @@ start() {
     fi
 }
 
-if [ ! -e "/data/scirius.sqlite3" ]; then
+if [ ! -e "/data/scirius.data" ]; then
     create_db
     /opt/scirius/docker/scirius/bin/reset_dashboards.sh
     /opt/scirius/docker/scirius/bin/create_ILM_policy.sh
