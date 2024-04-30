@@ -28,7 +28,6 @@ import saga from 'ui/containers/App/saga';
 import selectors from 'ui/containers/App/selectors';
 import GlobalStyle from 'ui/global-styles';
 import { CamelCaseToDashCase } from 'ui/helpers';
-import useAutorun from 'ui/helpers/useAutorun';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import pages from 'ui/pages';
 import withSaga from 'utils/injectSaga';
@@ -45,7 +44,8 @@ const App = ({ setSessionActivity }) => {
 
   const { commonStore } = useStore();
 
-  useAutorun(async () => {
+  useEffect(async () => {
+    /* Do not reload the following endpoints since they don't use and listen to start/end times or other filters */
     await commonStore.fetchSystemSettings();
     await commonStore.fetchSources();
     await commonStore.fetchUser();
