@@ -16,6 +16,7 @@ const ListInline = styled.ul`
   margin-block-start: 0;
   margin-block-end: 0;
   padding-inline-start: 0;
+  gap: 1px;
 `;
 
 const FilterList = props => {
