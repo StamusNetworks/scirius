@@ -22,7 +22,7 @@ const FilterButton = ({ onClick, icon, color, ...props }) => {
 export default FilterButton;
 
 FilterButton.propTypes = {
-  icon: PropTypes.func.isRequired,
+  icon: PropTypes.node.isRequired,
   onClick: PropTypes.func,
   color: PropTypes.func,
 };
