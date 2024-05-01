@@ -250,9 +250,7 @@ class RuleToggleModal extends React.Component {
     let title = null;
     const middleDot = '•'; /* ignore_utf8_check 8226 */
 
-    if (this.props.action === 'threat') {
-      title = 'Define custom Declaration(s) of Compromise';
-    } else if (this.props.config.rule) {
+    if (this.props.config.rule) {
       const action = this.props.action === 'enable' ? 'Enable' : 'Disable';
       title = `${action} rule ${this.props.config.rule.sid}`;
     } else {
@@ -276,9 +274,6 @@ class RuleToggleModal extends React.Component {
           </React.Fragment>
         }
       >
-        {this.props.action === 'threat' && (
-          <div style={{ marginBottom: '30px' }}> These Declaration(s) of Compromise (DoC) will appear in the Custom Threats family</div>
-        )}
         {!this.state.noaction && (
           <Form>
             {this.state.supported_filters &&
