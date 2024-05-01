@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 
 import ErrorHandler from 'ui/components/Error';
+import DocDopvModal from 'ui/components/Modal/DocDopvModal';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import RuleToggleModal from 'ui/RuleToggleModal';
@@ -19,8 +20,8 @@ const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
   const { commonStore } = useStore();
   const { filters } = commonStore;
   const stamusMethodFilterApplied = filters.some(filter => filter.id.startsWith('stamus.'));
-  const [visible, setVisible] = useState(false);
-  const [type, setType] = useState(false);
+  const [type, setType] = useState(null);
+
   const rulesList = {
     pagination: {
       page: 1,
@@ -31,67 +32,63 @@ const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
   };
 
   const actions = useMemo(() => {
-    const result = [];
-    for (let i = 0; i < supportedActions.length; i += 1) {
-      const action = supportedActions[i];
+    let filteredActions = supportedActions;
 
-      // eslint-disable-next-line no-continue
-      if (stamusMethodFilterApplied && action[1] === 'Create DoC events') continue;
-
-      if (action[0] === '-') {
-        result.push(<Menu.Divider key={`divider-${i}`} />);
-      } else {
-        result.push(
-          <Menu.Item
-            key={action[0]}
-            data-test={`policy-actions-${action[1].toLowerCase().replaceAll(' ', '-')}`}
-            onClick={() => {
-              setVisible(true);
-              setType(action[0]);
-            }}
-          >
-            {action[1]}
-          </Menu.Item>,
-        );
-      }
+    if (stamusMethodFilterApplied) {
+      filteredActions = supportedActions.filter(([action]) => action !== 'threat');
     }
-    return result;
-  }, [supportedActions]);
 
-  if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {
-    return (
-      <ErrorHandler>
-        <ActionButton active={actions.length > 0}>
-          <TagOutlined style={{ width: 24 }} />
-          <Dropdown overlay={<Menu>{actions}</Menu>} disabled={actions.length === 0} trigger={['hover']}>
-            {actions.length === 0 ? (
-              <span>Policy Actions</span>
-            ) : (
-              <a
-                onClick={e => e.preventDefault()}
-                style={{ display: 'grid', gridTemplateColumns: '1fr min-content', alignItems: 'center' }}
-                data-test="policy-actions"
-              >
-                Policy Actions <DownOutlined />
-              </a>
-            )}
-          </Dropdown>
-        </ActionButton>
-        <RuleToggleModal
-          show={visible}
-          action={type}
-          config={rulesList}
-          filters={filters}
-          close={() => setVisible(false)}
-          rulesets={rulesets}
-          systemSettings={commonStore.systemSettings}
-          filterParams={filterParams}
-          supportedActions={supportedActions}
-        />
-      </ErrorHandler>
-    );
-  }
-  return <div />;
+    if (filteredActions.length > 0 && filteredActions[filteredActions.length - 1][0] === '-') {
+      filteredActions.pop();
+    }
+
+    return filteredActions.map(([action, label], i) => {
+      if (action === '-') {
+        // eslint-disable-next-line react/no-array-index-key
+        return <Menu.Divider key={`divider${action}${i}`} />;
+      }
+      return (
+        <Menu.Item key={action} data-test={`policy-actions-${action}`} onClick={() => setType(action)}>
+          {label}
+        </Menu.Item>
+      );
+    });
+  }, [supportedActions, stamusMethodFilterApplied]);
+
+  return (
+    <ErrorHandler>
+      <ActionButton active={actions.length > 0}>
+        <TagOutlined style={{ width: 24 }} />
+        <Dropdown overlay={<Menu>{actions}</Menu>} disabled={actions.length === 0} trigger={['hover']}>
+          {actions.length === 0 ? (
+            <span>Policy Actions</span>
+          ) : (
+            <a
+              onClick={e => e.preventDefault()}
+              style={{ display: 'grid', gridTemplateColumns: '1fr min-content', alignItems: 'center' }}
+              data-test="policy-actions"
+            >
+              Policy Actions <DownOutlined />
+            </a>
+          )}
+        </Dropdown>
+      </ActionButton>
+
+      <DocDopvModal show={type === 'threat'} close={() => setType(null)} rulesets={rulesets} />
+
+      <RuleToggleModal
+        show={type && type !== 'threat'}
+        action={type}
+        config={rulesList}
+        filters={filters}
+        close={() => setType(null)}
+        rulesets={rulesets}
+        systemSettings={commonStore.systemSettings}
+        filterParams={filterParams}
+        supportedActions={supportedActions}
+      />
+    </ErrorHandler>
+  );
 };
 
 ActionsButtons.propTypes = {
@@ -105,10 +102,8 @@ const mapStateToProps = createStructuredSelector({
   rulesets: filtersSelectors.makeSelectRuleSets(),
 });
 
-// export default connect(mapStateToProps)(ActionsButtons);
-
 const ActionsButtonsObserver = observer(ActionsButtons);
 
-const Wrapper = props => <ActionsButtonsObserver {...props} />;
+const ConnectedActionsButtons = connect(mapStateToProps)(ActionsButtonsObserver);
 
-export default connect(mapStateToProps)(Wrapper);
+export default ConnectedActionsButtons;
