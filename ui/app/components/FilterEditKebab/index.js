@@ -107,7 +107,7 @@ class FilterEditKebab extends React.Component {
     if (process.env.REACT_APP_HAS_TAG === '1') {
       this.props.setTag(this.generateAlertTag());
     }
-    this.props.history.push(`/stamus/hunting/dashboards/${window.location.search}`);
+    this.props.history.push(`/stamus/hunting/dashboards`);
   }
 
   handleComboChange(value) {
