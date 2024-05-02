@@ -43,7 +43,7 @@ create_db() {
 
     python manage.py createcachetable my_cache_table
     python manage.py addsource "ETOpen Ruleset" https://rules.emergingthreats.net/open/suricata-5.0/emerging.rules.tar.gz http sigs
-    python manage.py addsource "Lateral movement ruleset" https://ti.stamus-networks.io/open/stamus-lateral-rules.tar.gz
+    python manage.py addsource "Lateral movement ruleset" https://ti.stamus-networks.io/open/stamus-lateral-rules.tar.gz http sigs
     python manage.py defaultruleset "Default ruleset"
     python manage.py disablecategory "Default ruleset" stream-events
     python manage.py addsuricata suricata "Suricata" /rules "Default ruleset"
