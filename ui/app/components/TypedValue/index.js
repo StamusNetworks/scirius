@@ -4,10 +4,10 @@ import { InfoCircleFilled, RobotOutlined, ZoomInOutlined, ZoomOutOutlined } from
 import { Dropdown } from 'antd';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 
 import isIP from 'ui/helpers/isIP';
+import { useCustomHistory } from 'ui/hooks/useCustomHistory';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
 
@@ -30,7 +30,7 @@ const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_tech
 
 const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
   const { commonStore } = useStore();
-  const history = useHistory();
+  const history = useCustomHistory();
 
   let listOfLinks = additionalLinks || [];
 
@@ -40,7 +40,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
         if (removeFilters) commonStore.clearFilters();
         commonStore.addFilter(filter);
         // Roles redirection must work regardless of the redirect flag
-        if (location) history.push(`/stamus/hunting/${location}${window.location.search}`);
+        if (location) history.push(`/stamus/hunting/${location}`);
       }}
     >
       <RobotOutlined /> <span>Filter on Role{location && `, go to ${_.capitalize(location)}`}</span>
@@ -77,7 +77,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           <div
             onClick={() => {
               commonStore.addFilter(filter);
-              if (redirect) history.push(`/stamus/hunting/dashboards${window.location.search}`);
+              if (redirect) history.push(`/stamus/hunting/dashboards`);
             }}
           >
             <ZoomInOutlined /> <span>Filter on IP: {filter.displayValue}</span>
@@ -91,7 +91,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
             onClick={() => {
               filter.negated = true;
               commonStore.addFilter(filter);
-              if (redirect) history.push(`/stamus/hunting/dashboards${window.location.search}`);
+              if (redirect) history.push(`/stamus/hunting/dashboards`);
             }}
           >
             <ZoomOutOutlined /> <span>Negated filter on IP: {filter.displayValue}</span>
