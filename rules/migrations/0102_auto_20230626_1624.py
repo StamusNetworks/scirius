@@ -27,12 +27,13 @@ def migration_2(apps, _):
         ruleset.sources.set(Source.objects.filter(pk__in=sources_pk))
 
     # remove git directories
-    for item in os.listdir(settings.GIT_SOURCES_BASE_DIRECTORY):
-        full_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, item)
-        if os.path.isdir(full_path) and item.isdigit():
-            git_path = os.path.join(full_path, '.git')
-            if os.path.exists(git_path):
-                shutil.rmtree(git_path)
+    if os.path.exists(settings.GIT_SOURCES_BASE_DIRECTORY):
+        for item in os.listdir(settings.GIT_SOURCES_BASE_DIRECTORY):
+            full_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, item)
+            if os.path.isdir(full_path) and item.isdigit():
+                git_path = os.path.join(full_path, '.git')
+                if os.path.exists(git_path):
+                    shutil.rmtree(git_path)
 
 
 class Migration(migrations.Migration):
