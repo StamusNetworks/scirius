@@ -30,7 +30,8 @@ migrate_db() {
 
 
 create_db() {
-    python manage.py migrate --noinput
+    python manage.py makemigrations --noinput
+    python manage.py migrate --run-syncdb --noinput
 
     echo "from django.contrib.auth.models import User; User.objects.create_superuser(***)"
     if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_EMAIL" ] ; then
