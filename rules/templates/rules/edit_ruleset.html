@@ -45,13 +45,13 @@
             <li>
                 <a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a>
             </li>
-            {% if perms.rules.configuration_edit %}
-                {% for label, url in extra_links.items %}
-                <li>
-                    <a href={{ url|safe }}>{{ label }}</a>
-                </li>
-                {% endfor %}
-            {% endif %}
+        {% endif %}
+        {% if perms.rules.configuration_view %}
+            {% for label, url in extra_links.items %}
+            <li>
+                <a href={{ url|safe }}>{{ label }}</a>
+            </li>
+            {% endfor %}
         {% endif %}
     </ul>
 {% endblock sidebar %}
