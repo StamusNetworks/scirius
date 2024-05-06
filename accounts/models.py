@@ -224,6 +224,10 @@ class SciriusUser(models.Model):
             self.sciriususerapp.method = method
             self.sciriususerapp.save()
 
+    def update_token_users(self):
+        if self.tokenusers.exists():
+            User.objects.filter(pk__in=self.tokenusers.values_list('user__pk', flat=True)).update(is_active=self.user.is_active)
+
 
 class SciriusTokenUser(SciriusUser):
     parent = models.ForeignKey(SciriusUser, on_delete=models.CASCADE, related_name='tokenusers')

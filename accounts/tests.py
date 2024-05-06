@@ -19,13 +19,14 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from rest_framework.authtoken.models import Token
 
 from accounts.rest_api import router
-from .models import SciriusUser
+from .models import SciriusTokenUser, SciriusUser
 from rules.tests import RestAPITestBase, RestAPIListTestCase
 
 
@@ -47,6 +48,22 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
         self.staff_role.user_set.add(self.sciriususer_staff.user)
         self.assertEqual(self.sciriususer_staff is not None, True)
         self.assertEqual(self.sciriususer_staff.user.username, 'sonic_staff')
+
+        # User tokens
+        params = {'username': 'tokenuser_parent', 'timezone': 'UTC', 'password': '69scirius69'}
+        response = self.http_post(reverse('sciriususer-list'), params, status=status.HTTP_201_CREATED)
+        self.tokenuser_parent = SciriusUser.objects.get(pk=response['pk'])
+        self.superuser_role.user_set.add(self.tokenuser_parent.user)
+        self.assertEqual(self.tokenuser_parent is not None, True)
+        self.assertEqual(self.tokenuser_parent.user.username, 'tokenuser_parent')
+
+        Token.objects.get_or_create(user=User.objects.create(username='tokenuser_child', password='69scirius69'))
+        tokenuser_child = SciriusTokenUser.objects.create(
+            user=User.objects.filter(username='tokenuser_child').first(),
+            parent=self.tokenuser_parent
+        )
+        self.superuser_role.user_set.add(tokenuser_child.user)
+        self.tokenuser_parent.tokenusers.add(tokenuser_child)
 
         # Create scirius user is_active
         params = {'username': 'sonic_active', 'timezone': 'UTC', 'password': '69scirius69'}
@@ -243,6 +260,38 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
         self.client.force_login(self.user)
         r = self.http_post(reverse('sciriususer-list'), {'username': 'scirius', 'password': 'scirius'}, status=status.HTTP_400_BAD_REQUEST)
         self.assertDictEqual(r, {'username': ['This field must be unique.']})
+
+    def test_044_tokenuser_disabled(self):
+        client = APIClient()
+        user = self.tokenuser_parent.tokenusers.first().user
+
+        # Auth works
+        self.assertEqual(user.is_active, True)
+        client.credentials(HTTP_AUTHORIZATION=f'Token {user.auth_token}')
+        res = client.get(reverse('sciriususer-list'))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        # Auth forbidden
+        self.tokenuser_parent.user.is_active = False
+        self.tokenuser_parent.user.save()
+        self.tokenuser_parent.update_token_users()
+        user.refresh_from_db()
+
+        self.assertEqual(user.is_active, False)
+        client.credentials(HTTP_AUTHORIZATION=f'Token {user.auth_token}')
+        res = client.get(reverse('sciriususer-list'))
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Auth works
+        self.tokenuser_parent.user.is_active = True
+        self.tokenuser_parent.user.save()
+        self.tokenuser_parent.update_token_users()
+        user.refresh_from_db()
+
+        self.assertEqual(user.is_active, True)
+        client.credentials(HTTP_AUTHORIZATION=f'Token {user.auth_token}')
+        res = client.get(reverse('sciriususer-list'))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
 
 class RestAPIAccountListTestCase(RestAPIListTestCase):

@@ -266,6 +266,7 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
 
         instance.save()
         get_middleware_module('common').update_scirius_user_class(instance, self.cleaned_data)
+        sciriususer.update_token_users()
         return instance
 
 
