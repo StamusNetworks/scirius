@@ -45,7 +45,7 @@ from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsB
 from rules.es_analytics import ESGetUniqueFields
 from rules.es_analytics import ESGraphAgg, ESFieldUniqAgg, ESGenericSearch
 
-from scirius.rest_utils import SciriusReadOnlyModelViewSet
+from scirius.rest_utils import ESManageMultipleESIndexesViewSet, SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
 from scirius.utils import get_middleware_module
 
@@ -112,23 +112,6 @@ class RulesetSerializer(serializers.ModelSerializer):
         except AttributeError:
             pass
         return data
-
-
-class ESManageMultipleESIndexesViewSet:
-    INDEXES = {
-        'alert': {
-            'index': settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*',
-            'default': 'true'
-        },
-        'stamus': {
-            'index': settings.ELASTICSEARCH_LOGSTASH_INDEX + 'stamus-*',
-            'default': 'false'
-        },
-        'discovery': {
-            'index': settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*',
-            'default': 'false'
-        }
-    }
 
 
 class RulesetViewSet(viewsets.ModelViewSet):
