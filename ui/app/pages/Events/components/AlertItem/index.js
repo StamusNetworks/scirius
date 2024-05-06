@@ -335,7 +335,7 @@ class AlertItem extends React.Component {
       } else if (data.alert.source.net_info) {
         sourceNetwork = (
           <React.Fragment>
-            <dt>Source Network</dt>
+            <dt>Attacker Net</dt>
             <dd>{data.alert.source.net_info.join(', ')}</dd>
           </React.Fragment>
         );
@@ -351,7 +351,7 @@ class AlertItem extends React.Component {
       } else if (data.alert.target.net_info) {
         targetNetwork = (
           <React.Fragment>
-            <dt>Source Network</dt>
+            <dt>Target Net</dt>
             <dd>{data.alert.target.net_info.join(', ')}</dd>
           </React.Fragment>
         );
@@ -400,7 +400,6 @@ class AlertItem extends React.Component {
                   </ErrorHandler>
                 )}
                 <ErrorHandler>
-                  {/* filter{new Filter(src_ip,data.src_ip} />) */}
                   <EventField filter={new Filter('src_ip', data.src_ip)} />
                 </ErrorHandler>
                 <ErrorHandler>
@@ -696,6 +695,11 @@ class AlertItem extends React.Component {
                       {data.tls.ja3s && data.tls.ja3s.hash !== undefined && (
                         <ErrorHandler>
                           <EventField filter={new Filter('tls.ja3s.hash', data.tls.ja3s.hash)} />
+                        </ErrorHandler>
+                      )}
+                      {data.tls.ja4 && data.tls.ja4.hash !== undefined && (
+                        <ErrorHandler>
+                          <EventField filter={new Filter('tls.ja4.hash', data.tls.ja4.hash)} />
                         </ErrorHandler>
                       )}
                       {data.tls.alpn_ts !== undefined && (
