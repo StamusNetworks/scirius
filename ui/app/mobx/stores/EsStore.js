@@ -41,7 +41,7 @@ class EsStore {
   async fetchTimeline(target, qfilter) {
     const response = await api.get(`${endpoints.TIMELINE.url}`, {
       target,
-      ...qs.parse(decodeURIComponent(qfilter)),
+      ...qs.parse(qfilter),
     });
 
     if (response.ok) {
@@ -51,7 +51,7 @@ class EsStore {
   }
 
   async fetchAlertsCount(qfilter) {
-    const response = await api.get(`${endpoints.ALERTS_COUNT.url}`, qs.parse(decodeURIComponent(qfilter)));
+    const response = await api.get(`${endpoints.ALERTS_COUNT.url}`, qs.parse(qfilter));
 
     if (response.ok) {
       this.alertsCount = response.data;
