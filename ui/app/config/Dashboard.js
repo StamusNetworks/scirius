@@ -152,10 +152,33 @@ export const dashboard = [
     ],
   },
   {
+    panelId: 'client_server',
+    title: 'Clients and Servers',
+    position: 9,
+    items: [
+      {
+        i: 'flow.src_ip',
+        title: 'Client IPs',
+      },
+      {
+        i: 'flow.dest_ip',
+        title: 'Server IPs',
+      },
+      {
+        i: 'flow.src_port',
+        title: 'Client Ports',
+      },
+      {
+        i: 'flow.dest_port',
+        title: 'Server Ports',
+      },
+    ],
+  },
+  {
     panelId: 'http',
     id: 'http',
     title: 'HTTP Information',
-    position: 9,
+    position: 10,
     itemsMinWidth: '350px',
     items: [
       {
@@ -183,7 +206,7 @@ export const dashboard = [
   {
     panelId: 'dns',
     title: 'DNS Information',
-    position: 10,
+    position: 11,
     items: [
       {
         i: 'dns.query.rrname',
@@ -198,7 +221,7 @@ export const dashboard = [
   {
     panelId: 'tls',
     title: 'TLS Information',
-    position: 11,
+    position: 12,
     itemsMinWidth: '500px',
     items: [
       {
@@ -238,7 +261,7 @@ export const dashboard = [
   {
     panelId: 'smtp',
     title: 'SMTP Information',
-    position: 12,
+    position: 13,
     items: [
       {
         i: 'smtp.mail_from',
@@ -257,7 +280,7 @@ export const dashboard = [
   {
     panelId: 'smb',
     title: 'SMB Information',
-    position: 13,
+    position: 14,
     items: [
       {
         i: 'smb.command',
@@ -280,7 +303,7 @@ export const dashboard = [
   {
     panelId: 'ssh',
     title: 'SSH Information',
-    position: 14,
+    position: 15,
     items: [
       {
         i: 'ssh.client.software_version',
