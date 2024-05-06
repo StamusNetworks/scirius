@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserViewSet(SciriusModelViewSet):
-    queryset = User.objects.all().order_by('-date_joined')
+    queryset = User.objects.filter(sciriususer__sciriustokenuser__parent__isnull=True).order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
