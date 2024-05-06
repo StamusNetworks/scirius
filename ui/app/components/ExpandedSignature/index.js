@@ -46,7 +46,7 @@ export const Row = styled.div`
   gap: 0.5rem;
 `;
 
-export const ExpandedSignature = ({ rule, Flow, stamusIps }) => {
+export const ExpandedSignature = ({ rule, Flow, additionalCards }) => {
   const items = [];
   if (rule.versions?.length > 1) {
     rule.versions
@@ -99,18 +99,7 @@ export const ExpandedSignature = ({ rule, Flow, stamusIps }) => {
       key: 'destinations',
       filter: 'dest_ip',
     },
-    {
-      title: 'Assets',
-      data: stamusIps.assets,
-      key: 'assets',
-      filter: 'stamus.asset',
-    },
-    {
-      title: 'Offenders',
-      data: stamusIps.sources,
-      key: 'offenders',
-      filter: 'stamus.sources',
-    },
+    ...additionalCards,
   ];
 
   return (
@@ -139,10 +128,14 @@ const Card = ({ card }) => (
 ExpandedSignature.propTypes = {
   rule: PropTypes.object,
   Flow: PropTypes.func,
-  stamusIps: PropTypes.shape({
-    assets: PropTypes.array,
-    sources: PropTypes.array,
-  }),
+  additionalCards: PropTypes.arrayOf(
+    PropTypes.shape({
+      title: PropTypes.string,
+      data: PropTypes.array,
+      key: PropTypes.string,
+      filter: PropTypes.string,
+    }),
+  ),
 };
 
 Card.propTypes = {
