@@ -128,7 +128,7 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Source Network',
+    title: 'Attacker Net',
     id: 'alert.source.net_info_agg',
     category: FilterCategory.EVENT,
   },
@@ -167,7 +167,7 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Source Network',
+    title: 'Source Net',
     id: 'net_info.src_agg',
     category: FilterCategory.EVENT,
   },
@@ -199,7 +199,7 @@ export const FiltersList = [
     validationType: FilterValidationType.POSITIVE_INT,
   },
   {
-    title: 'Destination Network',
+    title: 'Destination Net',
     id: 'net_info.dest_agg',
     category: FilterCategory.EVENT,
   },
@@ -226,7 +226,7 @@ export const FiltersList = [
     convertible: 'host_id.services.proto',
   },
   {
-    title: 'Application protocol',
+    title: 'App protocol',
     id: 'app_proto',
     category: FilterCategory.EVENT,
     convertible: 'host_id.services.values.app_proto',
@@ -242,7 +242,7 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Network interface',
+    title: 'Net interface',
     id: 'in_iface',
     category: FilterCategory.EVENT,
   },
@@ -277,14 +277,14 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Source IP',
+    title: 'Attacker IP',
     id: 'alert.source.ip',
     wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
   {
-    title: 'Source port',
+    title: 'Attacker port',
     id: 'alert.source.port',
     category: FilterCategory.EVENT,
     wildcardable: false,
