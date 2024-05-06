@@ -198,7 +198,6 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
                 self.fields['groups'].required = False
                 for field in ('username', 'groups', 'first_name', 'last_name', 'email'):
                     self.fields[field].widget.attrs['readonly'] = True
-                    self.fields[field].widget.attrs['disabled'] = True
                 self.fields['groups'].help_text = 'Mapping ldap group to a Role is done on Role page for LDAP/AD users'
 
         else:
