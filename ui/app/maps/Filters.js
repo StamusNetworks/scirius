@@ -128,12 +128,12 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Attacker Net',
+    title: 'Attacker Network',
     id: 'alert.source.net_info_agg',
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Target Network',
+    title: 'Victim Network',
     id: 'alert.target.net_info_agg',
     category: FilterCategory.EVENT,
   },
@@ -242,7 +242,7 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Net interface',
+    title: 'Network Interface',
     id: 'in_iface',
     category: FilterCategory.EVENT,
   },
@@ -290,14 +290,14 @@ export const FiltersList = [
     wildcardable: false,
   },
   {
-    title: 'Target IP',
+    title: 'Victim IP',
     id: 'alert.target.ip',
     wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
   {
-    title: 'Target port',
+    title: 'Victim Port',
     id: 'alert.target.port',
     category: FilterCategory.EVENT,
     wildcardable: false,
@@ -481,7 +481,7 @@ export const FiltersList = [
     convertible: 'host_id.services.values.tls.issuerdn',
   },
   {
-    title: 'Server Name Indication',
+    title: 'SNI',
     id: 'tls.sni',
     category: FilterCategory.EVENT,
   },
