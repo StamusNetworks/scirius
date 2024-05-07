@@ -523,18 +523,6 @@ export const FiltersList = [
     convertible: 'host_id.tls.ja4.agent',
   },
   {
-    title: 'Host JA4',
-    id: 'host_id.tls.ja4.hash',
-    category: FilterCategory.EVENT,
-    convertible: 'tls.ja4.hash',
-  },
-  {
-    title: 'Host User-Agent',
-    id: 'host_id.tls.ja4.agent',
-    category: FilterCategory.EVENT,
-    convertible: 'tls.ja4.agent',
-  },
-  {
     title: 'Fingerprint',
     id: 'tls.fingerprint',
     category: FilterCategory.EVENT,
