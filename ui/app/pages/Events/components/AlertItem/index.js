@@ -335,7 +335,7 @@ class AlertItem extends React.Component {
       } else if (data.alert.source.net_info) {
         sourceNetwork = (
           <React.Fragment>
-            <dt>Attacker Net</dt>
+            <dt>Attacker Network</dt>
             <dd>{data.alert.source.net_info.join(', ')}</dd>
           </React.Fragment>
         );
