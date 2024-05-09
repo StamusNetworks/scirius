@@ -2147,7 +2147,15 @@ class ESPostStatsViewSet(ESBaseViewSet):
         return Response(ESPoststats(request).get(value=value))
 
 
-class ESFieldsStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
+class _ESFieldsNoKeyword:
+    NO_KEYWORD_FIELDS = (
+        'src_port', 'dest_port', 'alert.signature_id', 'alert.severity',
+        'http.length', 'http.status', 'vlan', 'geoip.provider.autonomous_system_number',
+        'tunnel.depth', 'flow.dest_port', 'flow.src_port'
+    )
+
+
+class ESFieldsStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet, _ESFieldsNoKeyword):
     """
     """
     REQUIRED_GROUPS = {
@@ -2168,7 +2176,7 @@ class ESFieldsStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
         field_list = fields.split(',')
         tmpl_fields = []
         for field in field_list:
-            if field not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan', 'geoip.provider.autonomous_system_number', 'tunnel.depth']:
+            if field not in self.NO_KEYWORD_FIELDS:
                 tmpl_fields.append({'name': field, 'key': field + '.' + settings.ELASTICSEARCH_KEYWORD})
             else:
                 tmpl_fields.append({'name': field, 'key': field})
@@ -2183,7 +2191,7 @@ class ESFieldsStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
         return Response(values)
 
 
-class ESFieldStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
+class ESFieldStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet, _ESFieldsNoKeyword):
     """
     """
     REQUIRED_GROUPS = {
@@ -2206,7 +2214,7 @@ class ESFieldStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
         filter_ip = request.GET.get('field', 'src_ip')
         count = request.GET.get('page_size', 10)
 
-        if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan', 'geoip.provider.autonomous_system_number', 'tunnel.depth']:
+        if filter_ip not in self.NO_KEYWORD_FIELDS:
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
         hosts = ESFieldStats(request, view=self).get(
