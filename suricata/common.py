@@ -231,7 +231,7 @@ def update_custom_source(source_path):
 
 
 def get_threat_info_from_sid(sid=0):
-    return {}
+    return {'threat_info': {}, 'method': {}}
 
 
 def extract_custom_source(f, source_path):
