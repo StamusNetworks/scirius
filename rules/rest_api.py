@@ -442,7 +442,7 @@ class RuleSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['threat_info'] = get_middleware_module('common').get_threat_info_from_sid(instance.sid)
+        data.update(get_middleware_module('common').get_threat_info_from_sid(instance.sid))
         return data
 
 
