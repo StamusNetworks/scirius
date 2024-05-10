@@ -861,6 +861,40 @@ class AlertItem extends React.Component {
             )}
 
             {data.app_proto === 'smb' && <SMBAlertCard data={data} />}
+
+            {!_.isEmpty(data.discovery) && (
+              <UICard title="Sightings" fullHeight>
+                <DlHorizontal>
+                  <React.Fragment>
+                    {data.discovery.asset_role?.length > 0 && (
+                      <ErrorHandler>
+                        <EventsField filters={data.discovery.asset_role.map(role => new Filter('discovery.asset_role', role))} />
+                      </ErrorHandler>
+                    )}
+                    {data.discovery.key && (
+                      <ErrorHandler>
+                        <EventField filter={new Filter('discovery.key', data.discovery.key)} />
+                      </ErrorHandler>
+                    )}
+                    {data.discovery.asset && (
+                      <ErrorHandler>
+                        <EventField filter={new Filter('discovery.asset', data.discovery.asset)} />
+                      </ErrorHandler>
+                    )}
+                    {data.discovery.value && (
+                      <ErrorHandler>
+                        <EventField filter={new Filter('discovery.value', data.discovery.value)} />
+                      </ErrorHandler>
+                    )}
+                    {data.discovery.asset_net && (
+                      <ErrorHandler>
+                        <EventField filter={new Filter('discovery.asset_net', data.discovery.asset_net)} />
+                      </ErrorHandler>
+                    )}
+                  </React.Fragment>
+                </DlHorizontal>
+              </UICard>
+            )}
           </TabPaneResponsive>
 
           <UICard title="Files" style={{ marginBottom: '10px' }}>
