@@ -1,3 +1,4 @@
+import { EVENT_TYPES } from 'ui/maps/EventTypesEnum';
 import FilterValidationType from 'ui/maps/FilterValidationType';
 import FilterValueType from 'ui/maps/FilterValueType';
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
@@ -29,6 +30,7 @@ export const FiltersList = [
     negatable: false,
     valueType: FilterValueType.NUMBER,
     validationType: FilterValidationType.POSITIVE_INT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Alerts max',
@@ -38,6 +40,7 @@ export const FiltersList = [
     negatable: false,
     valueType: FilterValueType.NUMBER,
     validationType: FilterValidationType.POSITIVE_INT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Message',
@@ -51,6 +54,7 @@ export const FiltersList = [
     defaults: {
       wildcard: true,
     },
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
     title: 'Message',
@@ -61,6 +65,7 @@ export const FiltersList = [
     onNegate: () => ({
       id: 'msg',
     }),
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
     title: 'Content',
@@ -73,6 +78,7 @@ export const FiltersList = [
     defaults: {
       wildcard: true,
     },
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
     title: 'Content',
@@ -82,12 +88,14 @@ export const FiltersList = [
     onNegate: () => ({
       id: 'content',
     }),
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   /* Event filters */
   {
     title: 'Command',
     id: 'smb.command',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Severity',
@@ -106,41 +114,49 @@ export const FiltersList = [
           return value;
       }
     },
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Status',
     id: 'smb.status',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Filename',
     id: 'smb.filename',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Share',
     id: 'smb.share',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Session ID',
     id: 'smb.session_id',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Attacker Network',
     id: 'alert.source.net_info_agg',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Victim Network',
     id: 'alert.target.net_info_agg',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Signature',
     id: 'alert.signature',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
     title: 'Signature ID',
@@ -149,22 +165,26 @@ export const FiltersList = [
     wildcardable: false,
     valueType: FilterValueType.NUMBER,
     validationType: FilterValidationType.POSITIVE_INT,
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
     title: 'Category',
     id: 'alert.category',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
     title: 'Revision',
     id: 'alert.rev',
     category: FilterCategory.EVENT,
     wildcardable: false,
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
     title: 'Tagged',
     id: 'alert.tag',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
     title: 'Source Net',
@@ -602,32 +622,38 @@ export const FiltersList = [
     id: 'stamus.asset',
     category: FilterCategory.EVENT,
     type: FilterType.IP,
+    force: [EVENT_TYPES.STAMUS],
   },
   {
     title: 'Offender',
     id: 'stamus.source',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.STAMUS],
   },
   {
     title: 'Threat',
     id: 'stamus.threat_name',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.STAMUS],
   },
   {
     title: 'Family',
     id: 'stamus.family_name',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.STAMUS],
   },
   {
     title: 'Kill Chain Phase',
     id: 'stamus.kill_chain',
     category: FilterCategory.EVENT,
     format: value => KillChainStepsEnum[value] || value,
+    force: [EVENT_TYPES.STAMUS],
   },
   {
     title: 'Method ID',
     id: 'stamus.threat_id',
     category: FilterCategory.EVENT,
+    force: [EVENT_TYPES.STAMUS],
   },
   {
     title: 'IP',
