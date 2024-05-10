@@ -26,11 +26,15 @@ function display_field(method) {
         $("#id_authkey").parents(".form-group").show(duration=200);
         $("#id_cert_verif").parents(".form-group").show(duration=200);
         $("#id_file").parents(".form-group").hide(duration=200);
+        $('#id_use_sys_proxy').attr("checked", true);
+        $('#id_use_sys_proxy').parent().show(duration=200);
     } else if ($( this ).find("option:selected").text() == "Upload") {
         $("#id_uri").parents(".form-group").hide(duration=200);
         $("#id_authkey").parents(".form-group").hide(duration=200);
         $("#id_cert_verif").parents(".form-group").hide(duration=200);
         $("#id_file").parents(".form-group").show(duration=200);
+        $('#id_use_sys_proxy').attr("checked", false);
+        $('#id_use_sys_proxy').parent().hide(duration=200);
     }
 }
 
@@ -78,14 +82,14 @@ function select_fields() {
 function hide_threat_fields(src_type) {
     if (src_type === 'threat') {
         $('#id_use_iprep').attr("checked", false);
-        $('#id_use_iprep').parent().hide();
+        $('#id_use_iprep').parent().hide(duration=200);
         $('#id_untrusted').attr("checked", false);
-        $('#id_untrusted').parent().hide();
+        $('#id_untrusted').closest('.form-group').hide(duration=200);
     } else {
         $('#id_use_iprep').attr("checked", true);
-        $('#id_use_iprep').parent().show();
+        $('#id_use_iprep').parent().show(duration=200);
         $('#id_untrusted').attr("checked", true);
-        $('#id_untrusted').parent().show();
+        $('#id_untrusted').closest('.form-group').show(duration=200);
     }
 }
 
