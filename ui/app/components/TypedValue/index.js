@@ -78,11 +78,6 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
             onClick={() => {
               commonStore.addFilter(filter);
 
-              // Force stamus tag filter to true
-              if (!commonStore.alert.value.stamus) {
-                commonStore.toggleAlertTag('stamus');
-              }
-
               if (redirect) history.push(`/stamus/hunting/dashboards`);
             }}
           >
