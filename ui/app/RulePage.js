@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import EventValue from 'ui/components/EventValue';
+import { MethodTitle } from 'ui/components/Flow/MethodTitle';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import { Signature } from 'ui/components/Signature';
 import SignatureFlow from 'ui/components/SignatureFlow';
@@ -35,7 +36,7 @@ const RuleMsg = styled.div`
   display: grid;
   grid-template-columns: 1fr max-content min-content;
   grid-column-gap: 30px;
-  padding: 10px;
+  padding: 10px 0;
 `;
 
 const RuleHits = styled.div`
@@ -193,6 +194,8 @@ class RulePage extends React.Component {
                 )}
                 <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus} />
               </RuleMsg>
+
+              {Object.keys(this.state.rule.method).length !== 0 && <MethodTitle method={this.state.rule.method} />}
 
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
