@@ -10,3 +10,10 @@ export const createFilterInstanceFromStorage = ({ id, value, negated, fullString
 
   return new Filter(id, value, { uuid, negated, fullString });
 };
+
+export const getEventTypesToTurnOn = filters => {
+  const eventTypesToTurnOn = filters.map(filter => filter.force || []).flat();
+  const uniqueEventTypes = [...new Set(eventTypesToTurnOn)];
+
+  return uniqueEventTypes;
+};
