@@ -46,7 +46,11 @@ export default class Filter {
   /* Filter temporarily suspended */
   _suspended = false;
 
+  /* Filter schema */
   _schema = null;
+
+  /* Event types that should be toggled ON when adding filter */
+  _force = [];
 
   /**
    * Initialize filter object by given parameters
@@ -81,6 +85,7 @@ export default class Filter {
     this._convertible = this.prop(filterSchema?.convertible, false);
     this._schema = filterSchema;
     this._icon = filterSchema?.icon;
+    this._force = filterSchema?.force || [];
 
     const smartWildcard = this._wildcardable ? !/[\\*?]/.test(value) : null;
     // Overridable properties
@@ -136,6 +141,7 @@ export default class Filter {
       negated: this._negated,
       fullString: this._fullString,
       suspended: this._suspended,
+      force: this._force,
     };
   }
 
@@ -206,6 +212,10 @@ export default class Filter {
 
   get schema() {
     return this._schema;
+  }
+
+  get force() {
+    return this._force;
   }
 
   /* Custom Getters */

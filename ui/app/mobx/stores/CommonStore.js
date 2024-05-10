@@ -8,7 +8,7 @@ import Filter from 'ui/utils/Filter';
 
 import { PeriodEnum } from '../../maps/PeriodEnum';
 import { api } from '../api';
-import { createFilterInstanceFromStorage } from './CommonStore.util';
+import { createFilterInstanceFromStorage, getEventTypesToTurnOn } from './CommonStore.util';
 
 class CommonStore {
   root = null;
@@ -309,6 +309,12 @@ class CommonStore {
     this.ids.push(...filters);
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
 
+    // Set each EVENT_TYPE from force array to true
+    const eventTypesToTurnOn = getEventTypesToTurnOn(filters);
+    eventTypesToTurnOn.forEach(eventType => {
+      this.setAlertTag(eventType, true);
+    });
+
     // notify the user only when Filters component is not shown
     message.info({
       content: `Filter added!`,
@@ -324,6 +330,12 @@ class CommonStore {
     const filters = Array.isArray(stack) ? stack.map(toClass) : [toClass(stack)];
     this.ids = filters;
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
+
+    // Set each EVENT_TYPE from force array to true
+    const eventTypesToTurnOn = getEventTypesToTurnOn(filters);
+    eventTypesToTurnOn.forEach(eventType => {
+      this.setAlertTag(eventType, true);
+    });
 
     // notify the user only when Filters component is not shown
     message.info({
@@ -433,6 +445,11 @@ class CommonStore {
 
   toggleAlertTag(key) {
     this._alert = { ...this._alert, value: { ...this._alert.value, [key]: !this._alert.value[key] } };
+    localStorage.setItem('alert_tag', JSON.stringify(toJS(this._alert)));
+  }
+
+  setAlertTag(alert, value) {
+    this._alert = { ...this._alert, value: { ...this._alert.value, [alert]: value } };
     localStorage.setItem('alert_tag', JSON.stringify(toJS(this._alert)));
   }
 
