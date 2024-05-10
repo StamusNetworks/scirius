@@ -3,18 +3,15 @@ import React from 'react';
 import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import { Spin, Table } from 'antd';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 import { Count } from 'ui/components/EventValue';
 import ExpandedSignature from 'ui/components/ExpandedSignature';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
-import { sections } from 'ui/constants';
-import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import 'ui/pygments.css';
 import Filter from 'ui/utils/Filter';
 
-const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
+const RuleInList = ({ rulesets, rules, filterParams, loading }) => {
   const { commonStore } = useStore();
   const columns = [
     {
@@ -76,7 +73,6 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
             style={{ marginRight: '10px' }}
             onClick={() => {
               commonStore.addFilter(new Filter('alert.signature_id', rule.sid, { negated: false }));
-              addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: false });
             }}
           />
           <ZoomOutOutlined
@@ -84,7 +80,6 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
             onClick={e => {
               e.stopPropagation();
               commonStore.addFilter(new Filter('alert.signature_id', rule.sid, { negated: true }));
-              addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: true });
             }}
           />
         </React.Fragment>
@@ -137,11 +132,6 @@ RuleInList.propTypes = {
   rules: PropTypes.any,
   rulesets: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
-  addFilter: PropTypes.any,
 };
 
-const mapDispatchToProps = {
-  addFilter,
-};
-
-export default connect(null, mapDispatchToProps)(RuleInList);
+export default RuleInList;
