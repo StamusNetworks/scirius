@@ -9,7 +9,7 @@ const options = [
     title: 'Date',
     isNumeric: true,
     defaultAsc: false,
-    page: 'HISTORY',
+    page: ['HISTORY'],
   },
   {
     icon: <UserOutlined />,
@@ -17,7 +17,7 @@ const options = [
     title: 'User',
     isNumeric: false,
     defaultAsc: false,
-    page: 'HISTORY',
+    page: ['HISTORY'],
   },
   {
     icon: <FieldBinaryOutlined />,
@@ -25,7 +25,7 @@ const options = [
     title: 'Client IP',
     isNumeric: false,
     defaultAsc: false,
-    page: 'HISTORY',
+    page: ['HISTORY'],
   },
   {
     icon: <CalendarOutlined />,
@@ -33,7 +33,7 @@ const options = [
     title: 'Created',
     isNumeric: true,
     defaultAsc: false,
-    page: 'RULES_LIST',
+    page: ['RULES_LIST'],
   },
   {
     icon: <AlertOutlined />,
@@ -41,7 +41,7 @@ const options = [
     title: 'Alerts',
     isNumeric: true,
     defaultAsc: false,
-    page: 'RULES_LIST',
+    page: ['RULES_LIST'],
   },
   {
     icon: <MessageOutlined />,
@@ -49,7 +49,7 @@ const options = [
     title: 'Message',
     isNumeric: false,
     defaultAsc: true,
-    page: 'RULES_LIST',
+    page: ['RULES_LIST'],
   },
   {
     icon: <CalendarOutlined />,
@@ -57,7 +57,7 @@ const options = [
     title: 'Updated',
     isNumeric: true,
     defaultAsc: false,
-    page: 'RULES_LIST',
+    page: ['RULES_LIST'],
   },
 ];
 

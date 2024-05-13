@@ -60,7 +60,7 @@ const DirectionContainer = styled.div`
 `;
 
 const Sort = ({ page, onChange, value }) => {
-  const [option, setOption] = useState(options.find(o => o.id === value.option && o.page === page));
+  const [option, setOption] = useState(options.find(o => o.id === value.option && o.page.includes(page)));
   const [direction, setDirection] = useState(value.direction);
 
   const mount = useRef(true);
@@ -79,7 +79,7 @@ const Sort = ({ page, onChange, value }) => {
           overlay={
             <Menu>
               {options
-                .filter(o => o.page === page)
+                .filter(o => o.page.includes(page))
                 .map((o, i) => (
                   // eslint-disable-next-line react/no-array-index-key
                   <Menu.Item icon={o.icon} key={i} onClick={() => setOption(o)} data-test={`sort-by-${o.title}`}>

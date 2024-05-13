@@ -135,7 +135,7 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
           <Space direction="vertical">
             {page !== 'HISTORY' && <AdditionalFilters page={page} />}
             {/* 'INVENTORY' should be included when backend is fixed */}
-            {['RULES_LIST', 'HOSTS_LIST', 'HISTORY'].indexOf(page) > -1 && (
+            {['RULES_LIST', 'HOSTS_LIST', 'HISTORY', 'INVENTORY'].indexOf(page) > -1 && (
               <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
             )}
           </Space>
