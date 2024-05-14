@@ -47,7 +47,7 @@ export const Row = styled.div`
   margin-bottom: 0.5rem;
 `;
 
-export const ExpandedSignature = ({ rule, Flow, MethodTitle, additionalCards }) => {
+export const ExpandedSignature = ({ rule, Flow, MethodTitle, additionalCards = [] }) => {
   const items = [];
   if (rule.versions?.length > 1) {
     rule.versions
