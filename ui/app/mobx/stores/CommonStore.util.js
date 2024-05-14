@@ -17,3 +17,7 @@ export const getEventTypesToTurnOn = filters => {
 
   return uniqueEventTypes;
 };
+
+const toClass = f => (f instanceof Filter ? f : new Filter(f.id, f.value, { negated: f.negated, fullString: f.fullString }));
+
+export const getFilters = stack => (Array.isArray(stack) ? stack.map(toClass) : [toClass(stack)]);
