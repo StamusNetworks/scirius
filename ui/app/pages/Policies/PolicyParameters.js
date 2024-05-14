@@ -1,21 +1,18 @@
 import React from 'react';
 
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
 
-export const Parameter = styled.div`
-  padding: 0 10px;
-`;
+import * as Style from './style';
 
-const PolicyParameters = ({ policy }) =>
-  Object.keys(policy.options).map(option => (
-    <Parameter key={option}>
-      <strong>{option}</strong>: {policy.options[option]}
-    </Parameter>
+const PolicyParameters = ({ options }) =>
+  Object.keys(options).map(option => (
+    <Style.Parameter key={option}>
+      <strong>{option}</strong>: {options[option]}
+    </Style.Parameter>
   ));
 
 PolicyParameters.propTypes = {
-  policy: PropTypes.object.isRequired,
+  options: PropTypes.objectOf(PropTypes.string).isRequired,
 };
 
 export default PolicyParameters;
