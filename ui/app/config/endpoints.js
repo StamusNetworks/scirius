@@ -86,6 +86,10 @@ const ENDPOINT = {
     name: 'Fetch Elasticsearch alerts tail',
     url: '/rest/rules/es/alerts_tail/:datesEs:tenant:eventTypes',
   },
+  PROCESSING: {
+    name: 'Processing filter',
+    url: '/rest/rules/processing-filter/:tenant:datesEs',
+  },
   SIGNATURES: {
     name: 'Fetching signature',
     url: `/rest/rules/rule/:datesEs:filters:qFilter:eventTypes:withAlerts:tenant`,
