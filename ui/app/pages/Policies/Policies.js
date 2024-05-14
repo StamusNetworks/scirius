@@ -12,7 +12,7 @@ const Policies = () => (
       <UIBreadcrumb
         items={[
           'Hunting',
-          <Link app to="hunting/policies">
+          <Link app to="hunting/policies" key="policies-link">
             Policies
           </Link>,
         ]}
@@ -22,11 +22,12 @@ const Policies = () => (
     <PoliciesPage />
   </div>
 );
+
 Policies.metadata = {
   category: 'STAMUS_ND',
   url: 'hunting/policies',
   position: 4,
-  access: permissions => !!permissions.includes('rules.ruleset_policy_view'),
+  access: permissions => permissions.includes('rules.ruleset_policy_view'),
 };
 
 export default Policies;
