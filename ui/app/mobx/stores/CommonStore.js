@@ -8,7 +8,7 @@ import Filter from 'ui/utils/Filter';
 
 import { PeriodEnum } from '../../maps/PeriodEnum';
 import { api } from '../api';
-import { createFilterInstanceFromStorage, getEventTypesToTurnOn } from './CommonStore.util';
+import { createFilterInstanceFromStorage, getEventTypesToTurnOn, getFilters } from './CommonStore.util';
 
 class CommonStore {
   root = null;
@@ -304,8 +304,7 @@ class CommonStore {
 
   // @TODO: Should be handled better (skipCheck)
   addFilter(stack) {
-    const toClass = f => (f instanceof Filter ? f : new Filter(f.id, f.value, { negated: f.negated, fullString: f.fullString }));
-    const filters = Array.isArray(stack) ? stack.map(toClass) : [toClass(stack)];
+    const filters = getFilters(stack);
     this.ids.push(...filters);
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
 
@@ -326,8 +325,7 @@ class CommonStore {
    * @param stack - Set the current filters with the new ones
    */
   setFilters(stack) {
-    const toClass = f => (f instanceof Filter ? f : new Filter(f.id, f.value, { negated: f.negated, fullString: f.fullString }));
-    const filters = Array.isArray(stack) ? stack.map(toClass) : [toClass(stack)];
+    const filters = getFilters(stack);
     this.ids = filters;
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
 
