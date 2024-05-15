@@ -269,7 +269,7 @@ class SourceForm(forms.ModelForm, CommentForm):
 
     class Meta:
         model = Source
-        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source', 'version']
+        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source', 'version', 'is_stamus']
 
     def __init__(self, *args, **kwargs):
         source = kwargs.get('instance', None)
@@ -289,7 +289,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
 
     class Meta:
         model = Source
-        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source', 'version']
+        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source', 'version', 'is_stamus']
 
     def __init__(self, *args, **kwargs):
         super(AddSourceForm, self).__init__(*args, **kwargs)
