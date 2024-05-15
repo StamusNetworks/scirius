@@ -41,10 +41,6 @@ export const generateDefaultRequest = () => ({
   },
 });
 
-export const updateStorage = (filterType, filters) => {
-  localStorage.setItem(filterType, JSON.stringify(filters));
-};
-
 export const loadStorage = filtersType => {
   const initialFilterSet = undefined;
   let result;
@@ -140,7 +136,6 @@ export const reducer = (state = initialState, action) =>
         } else if (validateFilter(filter)) {
           globalFilters.push(filter);
         }
-        updateStorage(action.filterType, globalFilters);
         draft.filters[action.filterType] = globalFilters;
         break;
       }
@@ -172,12 +167,10 @@ export const reducer = (state = initialState, action) =>
         const after = globalFilters.slice(idx + 1);
 
         const updatedGlobalFilters = [...before, ...after];
-        updateStorage(action.filterType, updatedGlobalFilters);
         draft.filters[action.filterType] = updatedGlobalFilters;
         break;
       }
       case CLEAR_FILTERS: {
-        updateStorage(action.filterType, []);
         draft.filters[action.filterType] = [];
         break;
       }
@@ -189,7 +182,6 @@ export const reducer = (state = initialState, action) =>
         } else {
           draft.filters[sections.ALERT].value[action.tagType] = !draft.filters[sections.ALERT].value[action.tagType];
         }
-        updateStorage(sections.ALERT, draft.filters[sections.ALERT]);
         break;
       }
     }
