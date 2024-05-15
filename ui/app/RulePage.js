@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Empty, List, Modal, Spin, Tabs } from 'antd';
 import axios from 'axios';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
@@ -195,7 +195,7 @@ class RulePage extends React.Component {
                 <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus} />
               </RuleMsg>
 
-              {Object.keys(this.state.rule.method).length !== 0 && <MethodTitle method={this.state.rule.method} />}
+              {!isEmpty(this.state.rule.method) && <MethodTitle method={this.state.rule.method} />}
 
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
