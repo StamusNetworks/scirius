@@ -90,6 +90,10 @@ const ENDPOINT = {
     name: 'Fetching signature',
     url: `/rest/rules/rule/:datesEs:filters:qFilter:eventTypes:withAlerts:tenant`,
   },
+  SIGNATURE: {
+    name: 'Fetching signature',
+    url: `/rest/rules/rule/$sid`,
+  },
   ELASTIC_SEARCH: {
     name: 'Fetching elasticsearch data',
     url: '/rest/rules/es/search/:datesEs:tenant',
