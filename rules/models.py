@@ -1206,17 +1206,14 @@ class Source(models.Model):
         self.save()
 
         # category based on filename
-        category = Category.objects.filter(source=self, name=('%s Sigs' % (self.name))[:100])
-        if not category:
+        category = Category.objects.filter(source=self, name=('%s Sigs' % (self.name))[:100]).first()
+        if category is None:
             category = Category.objects.create(
                 source=self,
                 name=('%s Sigs' % (self.name))[:100],
                 created_date=timezone.now(),
                 filename=os.path.join('rules', 'sigs.rules')
             )
-            category.get_rules(self)
-        else:
-            category = category[0]
 
         category.get_rules(self)
         if Rule.objects.filter(category=category).count() == 0:
