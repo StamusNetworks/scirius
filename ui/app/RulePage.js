@@ -9,6 +9,7 @@ import styled from 'styled-components';
 
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
+import { AlgorithmicDetection } from 'ui/components/AlgorithmicDetection';
 import EventValue from 'ui/components/EventValue';
 import { MethodTitle } from 'ui/components/Flow/MethodTitle';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
@@ -198,10 +199,14 @@ class RulePage extends React.Component {
               {!isEmpty(this.state.rule.method) && <MethodTitle method={this.state.rule.method} />}
 
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
-                  {this.state.rule?.versions?.length === 1 && <Signature rule={this.state.rule.versions[0]} />}
-                  {this.state.rule?.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
-                </div>
+                {this.state.rule?.method?.method_type === 'code' ? (
+                  <AlgorithmicDetection rule={this.state.rule} />
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
+                    {this.state.rule?.versions?.length === 1 && <Signature rule={this.state.rule.versions[0]} />}
+                    {this.state.rule?.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
+                  </div>
+                )}
 
                 {this.state.rule.timeline && <SignatureTimeline sid={this.state.sid} />}
 

@@ -4,6 +4,7 @@ import { Empty, Tabs } from 'antd';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import { AlgorithmicDetection } from 'ui/components/AlgorithmicDetection';
 import EventValue from 'ui/components/EventValue';
 import { Signature } from 'ui/components/Signature';
 import UICard from 'ui/components/UIElements/UICard';
@@ -97,8 +98,14 @@ export const ExpandedSignature = ({ rule, Flow, MethodTitle, additionalCards = [
   return (
     <div style={{ width: 'calc(100vw - 271px)' }}>
       {MethodTitle}
-      {rule.versions?.length === 1 && <Signature rule={rule.versions[0]} key={rule.versions[0].id} />}
-      {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
+      {rule.method?.method_type === 'code' ? (
+        <AlgorithmicDetection rule={rule} />
+      ) : (
+        <>
+          {rule.versions?.length === 1 && <Signature rule={rule.versions[0]} key={rule.versions[0].id} />}
+          {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
+        </>
+      )}
       <SignatureTimeline sid={rule.sid} />
       <Row>
         {cards.map(card => (
