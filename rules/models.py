@@ -863,6 +863,7 @@ class Source(models.Model):
     version = models.IntegerField(default=1)
     use_sys_proxy = models.BooleanField(default=True, verbose_name='Use system proxy')
     untrusted = models.BooleanField(default=True, verbose_name='Source sanitization')
+    is_stamus = models.BooleanField(default=False)
 
     editable = True
 
@@ -877,6 +878,15 @@ class Source(models.Model):
 
         from scirius.utils import get_middleware_module
         self.custom_data_type = get_middleware_module('common').custom_source_datatype()
+
+    def set_is_stamus(self):
+        copyright_ = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules', 'COPYRIGHT')
+        if os.path.exists(copyright_):
+            with open(copyright_, 'r') as f:
+                content = f.read()
+            if re.match(r'Copyright \d+ Stamus Networks', content):
+                # used in Rule.clean to know if checking sid ranges
+                self.is_stamus = True
 
     def remove_rules_dir(self):
         dir_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
@@ -1154,6 +1164,7 @@ class Source(models.Model):
 
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         self._tar_extractall(tfile, path=source_git_dir, members=dir_list)
+        self.set_is_stamus()
 
         self.save()
         # Get categories
@@ -1238,6 +1249,7 @@ class Source(models.Model):
 
         f.seek(0)
         get_middleware_module('common').extract_custom_source(f, sources_dir)
+        self.set_is_stamus()
         if upload:
             sources_path = os.path.join(sources_dir, 'rules')
             get_middleware_module('common').update_custom_source(sources_path)
@@ -2546,7 +2558,7 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
     def clean(self):
         super().clean()
         # check stamus ranges
-        if self.category.source.datatype != 'threat':
+        if not self.category.source.is_stamus:
             self.is_in_stamus_range()
 
     def can_drop(self):
