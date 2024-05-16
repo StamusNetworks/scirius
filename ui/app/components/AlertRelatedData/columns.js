@@ -8,6 +8,8 @@ import moment from 'moment';
 import * as config from 'config/Api';
 import constants from 'ui/constants';
 
+import * as Style from './style';
+
 const { DATE_TIME_FORMAT } = constants;
 
 const showMitreInfo = (mtn, mti) => {
@@ -148,7 +150,7 @@ const columns = {
     { title: 'Opnum', dataIndex: ['rawJson', 'smb', 'dcerpc', 'opnum'] },
     { title: 'Status', dataIndex: ['rawJson', 'smb', 'status'] },
     { title: 'Share', dataIndex: ['rawJson', 'smb', 'share'] },
-    { title: 'Filename', dataIndex: ['rawJson', 'smb', 'filename'] },
+    { title: 'Filename', dataIndex: ['rawJson', 'smb', 'filename'], render: val => <Style.BreakAnywhere>{val}</Style.BreakAnywhere> },
     { title: 'Host', dataIndex: ['rawJson', 'smb', 'ntlmssp', 'host'] },
     { title: 'User', dataIndex: ['rawJson', 'smb', 'ntlmssp', 'user'] },
   ],
