@@ -1,12 +1,13 @@
 import React from 'react';
 
-import { Table } from 'antd';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import ReactJson from 'react-json-view';
 
 import columns from 'ui/components/AlertRelatedData/columns';
 import constants from 'ui/constants';
+
+import * as Style from './style';
 
 const AlertRelatedData = ({ type, data }) => {
   const tableColumns = columns[type] ?? [
@@ -18,7 +19,7 @@ const AlertRelatedData = ({ type, data }) => {
     <React.Fragment key="json-related">
       {data?.length === 0 && <strong>No related events detected</strong>}
       {data?.length > 0 && (
-        <Table
+        <Style.Table
           columns={tableColumns}
           dataSource={data}
           expandable={{
