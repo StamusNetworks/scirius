@@ -14,20 +14,6 @@ const ruleSetsFailure = error => ({
   payload: { error },
 });
 
-const huntFilterRequest = () => ({
-  type: constants.HUNT_FILTER_REQUEST,
-});
-
-const huntFilterSuccess = data => ({
-  type: constants.HUNT_FILTER_SUCCESS,
-  payload: { data },
-});
-
-const huntFilterFailure = error => ({
-  type: constants.HUNT_FILTER_FAILURE,
-  payload: { error },
-});
-
 const supportedActionsRequest = filters => ({
   type: constants.SUPPORTED_ACTIONS_REQUEST,
   payload: { filters },
@@ -66,9 +52,6 @@ export default {
   ruleSetsRequest,
   ruleSetsSuccess,
   ruleSetsFailure,
-  huntFilterRequest,
-  huntFilterSuccess,
-  huntFilterFailure,
   supportedActionsRequest,
   supportedActionsSuccess,
   supportedActionsFailure,

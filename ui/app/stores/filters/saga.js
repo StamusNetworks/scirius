@@ -14,15 +14,6 @@ function* getRuleSets() {
   }
 }
 
-function* getHuntFilters() {
-  try {
-    const response = yield call(NetworkService.fetchHuntFilter);
-    yield put(actions.huntFilterSuccess(response || []));
-  } catch (e) {
-    yield put(actions.huntFilterFailure(e));
-  }
-}
-
 function* getSupportedActions(action) {
   const { filters = [] } = action.payload;
   const fields = filters.map(f => f.id);
@@ -47,7 +38,6 @@ function* getHistoryFilters() {
 
 export default function* rootSaga() {
   yield takeEvery(constants.RULE_SETS_REQUEST, getRuleSets);
-  yield takeEvery(constants.HUNT_FILTER_REQUEST, getHuntFilters);
   yield takeEvery(constants.SUPPORTED_ACTIONS_REQUEST, getSupportedActions);
   yield takeEvery(constants.HISTORY_FILTERS_REQUEST, getHistoryFilters);
 }

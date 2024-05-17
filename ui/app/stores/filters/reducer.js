@@ -4,7 +4,6 @@ import constants from 'ui/stores/filters/constants';
 
 export const initialState = {
   filterSet: [],
-  filterList: [],
   supportedActions: [],
   historyFilters: [],
   saveFiltersModal: false,
@@ -19,14 +18,6 @@ const appReducer = (state = initialState, action) =>
         break;
       }
       case constants.RULE_SETS_FAILURE: {
-        draft.filterList = [];
-        break;
-      }
-      case constants.HUNT_FILTER_SUCCESS: {
-        draft.filterList = action.payload.data;
-        break;
-      }
-      case constants.HUNT_FILTER_FAILURE: {
         draft.filterList = [];
         break;
       }
