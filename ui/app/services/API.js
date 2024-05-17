@@ -13,7 +13,6 @@ const API = {
   fetchSources: async params => api.get(ENDPOINT.SOURCES.url, params),
   fetchAllPeriod: async params => api.get(ENDPOINT.ALL_PERIOD.url, params),
   fetchRuleSets: async () => api.get(ENDPOINT.RULE_SETS.url),
-  fetchHuntFilter: async () => api.get(ENDPOINT.HUNT_FILTER.url),
   fetchSupportedActions: async (params, options) => api.post(ENDPOINT.SUPPORTED_ACTIONS.url, params, options),
   fetchHistoryFilters: async () => api.get(ENDPOINT.HISTORY_FILTERS.url),
   fetchFilterSets: async () => api.get(ENDPOINT.FILTER_SETS.url),
