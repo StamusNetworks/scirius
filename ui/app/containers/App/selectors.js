@@ -26,27 +26,30 @@ const makeSelectUpdatePushRuleset = () => createSelector(selectGlobal, subState 
 const makeSelectStartDate = () =>
   createSelector(selectGlobal, subState => {
     if (subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
-      return moment(subState.timespan.startDate);
+      return subState.timespan.startDate;
     }
     const { minTimestamp } = subState.timespan;
     if (subState.timespan.duration === 'All') {
-      // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return !Number.isNaN(parseInt(minTimestamp, 10)) ? moment(minTimestamp) : moment().subtract(7, 'days');
+      return moment.unix(0);
     }
-    return moment(subState.timespan.now).subtract(PeriodEnum[subState.timespan.duration].seconds, 'milliseconds');
+    if (subState.timespan.duration === 'Auto') {
+      // D7 period is the default one if min/max timestamp boundaries are incorrect
+      return !Number.isNaN(parseInt(minTimestamp, 10)) ? moment.unix(minTimestamp) : moment().subtract(7, 'days');
+    }
+    return moment.unix(subState.timespan.now - PeriodEnum[subState.timespan.duration].seconds);
   });
 
 const makeSelectEndDate = () =>
   createSelector(selectGlobal, subState => {
     if (subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
-      return moment(subState.timespan.endDate);
+      return subState.timespan.endDate;
     }
     const { maxTimestamp } = subState.timespan;
-    if (subState.timespan.duration === 'All') {
+    if (subState.timespan.duration === 'Auto') {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return !Number.isNaN(parseInt(maxTimestamp, 10)) ? moment(maxTimestamp) : moment();
+      return !Number.isNaN(parseInt(maxTimestamp, 10)) ? moment.unix(maxTimestamp) : moment.unix(subState.timespan.now);
     }
-    return moment(subState.timespan.now);
+    return moment.unix(subState.timespan.now);
   });
 
 const makeSelectTimePicker = () => createSelector(selectGlobal, familiesState => familiesState.timespan.timePicker);
