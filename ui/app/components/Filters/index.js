@@ -57,9 +57,6 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
   // Effects handlers
   useEffect(() => {
     dispatch(ruleSetsActions.ruleSetsRequest());
-    if (page !== 'HISTORY') {
-      dispatch(ruleSetsActions.huntFilterRequest());
-    }
   }, []);
   useEffect(() => {
     if (supportedActionsPermissions) {

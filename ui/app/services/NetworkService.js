@@ -13,7 +13,6 @@ const NetworkService = {
   fetchSources: async params => Api.get(ENDPOINT.SOURCES, params),
   fetchAllPeriod: async params => Api.get(ENDPOINT.ALL_PERIOD, params),
   fetchRuleSets: async () => Api.get(ENDPOINT.RULE_SETS),
-  fetchHuntFilter: async () => Api.get(ENDPOINT.HUNT_FILTER),
   fetchSupportedActions: async (params, options) => Api.post(ENDPOINT.SUPPORTED_ACTIONS, params, options),
   fetchHistoryFilters: async () => Api.get(ENDPOINT.HISTORY_FILTERS),
   fetchFilterSets: async () => Api.get(ENDPOINT.FILTER_SETS),
