@@ -140,7 +140,7 @@ class CommonStore {
   /* Setters */
   /**
    * Sets a relative time range
-   * @param {'H1','H6','H24','D2','D7','D30','Y1','All'} type
+   * @param {'H1','H6','H24','D2','D7','D30','Y1','All', 'Auto'} type
    */
   setRelativeTimeRange(type) {
     switch (type) {
@@ -166,6 +166,10 @@ class CommonStore {
         this._startDate = moment().subtract(1, 'year').unix();
         break;
       case 'All':
+        this._startDate = 0;
+        this._endDate = moment().unix();
+        break;
+      case 'Auto':
         this._startDate = this._minTimestamp;
         this._endDate = this._maxTimestamp;
         break;
