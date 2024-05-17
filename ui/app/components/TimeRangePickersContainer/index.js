@@ -41,7 +41,8 @@ const TimeRangePickersContainer = () => {
 
   const more = {
     Y1: PeriodEnum.Y1,
-    All: PeriodEnum.ALL,
+    All: PeriodEnum.All,
+    Auto: PeriodEnum.Auto,
   };
 
   return (
@@ -105,6 +106,7 @@ const TimeRangePickersContainer = () => {
                 selectedToDate={commonStore.endDate}
                 onOk={(startDate, endDate) => {
                   commonStore.setAbsoluteTimeRange(startDate, endDate);
+                  dispatch(actions.setTimeSpan(startDate, endDate));
                 }}
               />
             ),

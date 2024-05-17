@@ -43,7 +43,7 @@ const validateTenantURLParam = tenantId => {
 export const initialState = {
   timespan: {
     // #4351 - Case: page load / refresh
-    now: new Date().getTime(),
+    now: moment().unix(),
     ...initialTimeSpanStorage,
   },
   reload: {
@@ -76,7 +76,7 @@ export const appReducer = (state = initialState, action) =>
       }
       case constants.SET_TIME_SPAN: {
         const { startDate, endDate } = action;
-        draft.reload.now = new Date().getTime();
+        draft.reload.now = moment().unix();
         draft.timespan.startDate = startDate;
         draft.timespan.endDate = endDate;
         draft.timespan.timePicker = TimePickerEnum.ABSOLUTE;
@@ -85,7 +85,7 @@ export const appReducer = (state = initialState, action) =>
       case constants.SET_DURATION: {
         const { duration } = action;
         // #4351 - Case: time picker change (H1, H6, D1)
-        draft.timespan.now = new Date().getTime();
+        draft.timespan.now = moment().unix();
         draft.timespan.duration = duration;
         draft.timespan.timePicker = TimePickerEnum.QUICK;
         break;
@@ -96,8 +96,8 @@ export const appReducer = (state = initialState, action) =>
       }
       case constants.DO_RELOAD: {
         // #4351 - Case: reload button case
-        draft.timespan.now = new Date().getTime();
-        draft.reload.now = new Date().getTime();
+        draft.timespan.now = moment().unix();
+        draft.reload.now = moment().unix();
         break;
       }
       case constants.SET_FILTER_SETS: {
@@ -106,7 +106,7 @@ export const appReducer = (state = initialState, action) =>
       }
       case constants.LOCATION_CHANGE: {
         // #4351 - Case: location change
-        draft.timespan.now = new Date().getTime();
+        draft.timespan.now = moment().unix();
         const parsedUrl = parseUrl(history.location.search);
         if (process.env.NODE_ENV === 'production') {
           if (hasMultiTenancy) {
