@@ -100,7 +100,11 @@ export const ExpandedSignature = ({ rule, Flow, MethodTitle, additionalCards = [
       {rule.versions?.length === 1 && <Signature rule={rule.versions[0]} key={rule.versions[0].id} />}
       {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
       <SignatureTimeline sid={rule.sid} />
-      <Row>{cards.map(card => card.data?.length > 0 && <Card card={card} key={card.key} />)}</Row>
+      <Row>
+        {cards.map(card => (
+          <Card card={card} key={card.key} />
+        ))}
+      </Row>
       {Flow}
     </div>
   );
@@ -108,10 +112,10 @@ export const ExpandedSignature = ({ rule, Flow, MethodTitle, additionalCards = [
 
 const Card = ({ card }) => (
   <UICard title={<div>{card.title}</div>} headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }} bodyStyle={{ padding: '8px 10px' }} noPadding>
-    {card.data.map(item => (
+    {card.data?.map(item => (
       <EventValue filter={new Filter(card.filter, item.key)} count={item.doc_count} />
     ))}
-    {card.data.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+    {(!card.data || card.data.length === 0) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
   </UICard>
 );
 
