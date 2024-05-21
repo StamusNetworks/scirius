@@ -15,8 +15,8 @@ import { Switch, Redirect, Route } from 'react-router-dom';
 import { bindActionCreators, compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 
-import { Content } from 'ui/components';
 import AppSpinner from 'ui/components/AppSpinner';
+import Content from 'ui/components/Content';
 import ErrorHandler from 'ui/components/ErrorHandler';
 import FilterSets from 'ui/components/FilterSets';
 import Header from 'ui/components/Header';
