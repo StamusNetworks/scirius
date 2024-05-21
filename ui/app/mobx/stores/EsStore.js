@@ -67,9 +67,9 @@ class EsStore {
 
     if (response.ok) {
       this.alertsTail = response.data;
-    } else throw new Error(response.originalError);
+    }
 
-    return response.data;
+    return response;
   }
 
   async fetchAlertsTailCustomQfilter(qfilter) {
