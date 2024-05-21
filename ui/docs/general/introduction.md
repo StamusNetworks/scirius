@@ -31,7 +31,6 @@ Here's a curated list of packages that you should be at least familiar with befo
 
 - [ ] [ESLint](http://eslint.org/)
 - [ ] [Prettier](https://prettier.io/)
-- [ ] [stylelint](https://stylelint.io/)
 
 Note that while `react-boilerplate` includes a lot of features, many of them are optional and you can find instructions in the docs on how to remove...
 
@@ -162,7 +161,7 @@ The mental model is that a saga is like a separate thread in your application th
 
 ### Linting
 
-This boilerplate includes a complete static code analysis setup. It's composed of [ESLint](http://eslint.org/), [stylelint](https://stylelint.io/), and [Prettier](https://prettier.io/).
+This boilerplate includes a complete static code analysis setup. It's composed of [ESLint](http://eslint.org/), and [Prettier](https://prettier.io/).
 
 We recommend that you install the relevant IDE extensions for each one of these tools. Once you do, every time you'll press save, all your code will be formatted and reviewed for quality automatically. (Read more at [editor.md](./editor.md).)
 

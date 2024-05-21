@@ -19,7 +19,7 @@
 
 ## Where are Babel, Prettier and ESLint configured?
 
-ESLint, Babel and Prettier all have their own config files in the root of the project. Same for Jest and stylelint.
+ESLint, Babel and Prettier all have their own config files in the root of the project. Same for Jest.
 
 ## Where are the files coming from when I run `npm start`?
 
