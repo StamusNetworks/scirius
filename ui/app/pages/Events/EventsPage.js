@@ -67,9 +67,9 @@ const EventsPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await esStore.fetchAlertsTail(paginationParams);
-      setAlerts(data?.results || []);
-      setCount(data?.count || 0);
+      const response = await esStore.fetchAlertsTail(paginationParams);
+      setAlerts(response.data?.results || []);
+      setCount(response.data?.count || 0);
       setLoading(false);
     } catch (error) {
       if (error.response.status === 500) {
