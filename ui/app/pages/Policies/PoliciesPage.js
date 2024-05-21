@@ -88,6 +88,13 @@ const PoliciesPage = () => {
 
   const getRowRuleSets = item => item.rulesets.map(rsId => <Style.DescriptionItem key={rsId}>{rulesets[rsId]?.name}</Style.DescriptionItem>);
 
+  const getThreatType = item => {
+    if (item.action === 'threat' && item.options) {
+      return item.options.kill_chain === 'pre_condition' ? ' (DoPV)' : ' (DoC)';
+    }
+    return '';
+  };
+
   const getRowDescription = item => {
     let description = [];
     if (item.action === 'threshold') {
@@ -143,7 +150,7 @@ const PoliciesPage = () => {
   };
 
   const columns = [
-    { title: 'Action', dataIndex: 'action' },
+    { title: 'Action', render: (_, item) => `${item.action}${getThreatType(item)}`, dataIndex: 'action' },
     { title: 'Parameters', render: (_, item) => getRowDescription(item) },
     { title: 'Filters', render: (_, item) => <Style.FiltersCell>{getRowFilters(item, 1)}</Style.FiltersCell> },
     { title: 'Rulesets', render: (_, item) => getRowRuleSets(item) },
