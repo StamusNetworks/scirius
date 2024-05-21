@@ -1,3 +1,4 @@
+import { notification } from 'antd';
 import { create } from 'apisauce';
 import { cloneDeep } from 'lodash';
 
@@ -44,6 +45,22 @@ apiInstance.addRequestTransform(request => {
     .forEach(match => {
       request.params = { ...request.params, ...map(match, urlParams) };
     });
+});
+
+apiInstance.addResponseTransform(response => {
+  if (!response.ok) {
+    switch (response.status) {
+      case 403:
+        notification.error({
+          message: 'Insufficient permissions',
+          duration: 4.5,
+          description: response.config.url,
+        });
+        break;
+      default:
+        break;
+    }
+  }
 });
 
 export const api = apiInstance;
