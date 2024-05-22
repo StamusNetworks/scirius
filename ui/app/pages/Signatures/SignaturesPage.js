@@ -138,13 +138,14 @@ const SignaturesPage = () => {
             );
           }
           setSignaturesCount(response.data.count || 0);
-          setLoading(false);
         } else {
           setSignatures([]);
           setSignaturesCount(0);
-          setLoading(false);
         }
+      } else {
+        updateSignatureListState({ pagination: { ...listParams.pagination, page: 1 }, sort: listParams.sort });
       }
+      setLoading(false);
     } catch (e) {
       setLoading(false);
       // eslint-disable-next-line no-console
