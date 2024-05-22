@@ -312,6 +312,12 @@ class ESQuery:
     def _search_after(self, *args, **kwargs):
         index = self._get_index()
         body = self._get_query(*args, **kwargs)
+        sort_field = kwargs.get('sort_field')
+
+        offset = 0
+        if sort_field:
+            # offset to get new_timestamp and next_id
+            offset = 1
 
         while True:
             data = self.es.search(
@@ -331,9 +337,14 @@ class ESQuery:
                 break
 
             last_item = data['hits']['hits'][-1]
-            next_timestamp = last_item['sort'][0]
-            next_id = last_item['sort'][1]
-            body['search_after'] = [next_timestamp, next_id]
+            next_timestamp = last_item['sort'][offset]
+            next_id = last_item['sort'][offset + 1]
+
+            if offset == 1:
+                sort_field = last_item['sort'][0]
+                body['search_after'] = [sort_field, next_timestamp, next_id]
+            else:
+                body['search_after'] = [next_timestamp, next_id]
 
     def _delete_by_search(self, *args, **kwargs):
         # https://stackoverflow.com/questions/26808239/elasticsearch-python-api-delete-documents-by-query
