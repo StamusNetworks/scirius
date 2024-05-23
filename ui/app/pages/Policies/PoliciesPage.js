@@ -1,6 +1,6 @@
 /*
 Copyright(C) 2018 Stamus Networks
-Written by Eric Leblond <eleblond@stamus-networks.com>
+Written by Eric Leblond <eleblond@stamus-gnetworks.com>
 
 This file is part of Scirius.
 
@@ -31,7 +31,7 @@ import API from 'ui/services/API';
 import ActionItem from './ActionItem';
 import * as Style from './style';
 
-function PoliciesPage() {
+const PoliciesPage = () => {
   const [data, setData] = useState([]);
   const [count, setCount] = useState(0);
   const [rulesets, setRulesets] = useState({});
@@ -152,11 +152,10 @@ function PoliciesPage() {
       title: 'Ctrl',
       key: 'control',
       render: (_, record) => (
-        <FilterEditKebab key={`${record.pk}-kebab`} data={record} last_index={count} needUpdate={fetchData} setExpand={setExpand} />
+        <FilterEditKebab key={`${record.pk}-kebab`} data={record} lastIndex={count} needUpdate={fetchData} setExpand={setExpand} />
       ),
     },
   ];
-
   return (
     <div>
       <Helmet>
@@ -186,6 +185,6 @@ function PoliciesPage() {
       />
     </div>
   );
-}
+};
 
 export default PoliciesPage;
