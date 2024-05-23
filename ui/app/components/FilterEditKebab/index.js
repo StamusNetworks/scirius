@@ -132,7 +132,16 @@ const FilterEditKebab = observer(({ data, lastIndex, needUpdate, setExpand, aler
         </a>
       </Dropdown>
       <ErrorHandler>
-        <FilterToggleModal show={toggle.show} action={toggle.action} data={data} close={closeAction} last_index={lastIndex} needUpdate={needUpdate} />
+        {toggle.show && (
+          <FilterToggleModal
+            show={toggle.show}
+            action={toggle.action}
+            data={data}
+            close={closeAction}
+            lastIndex={lastIndex}
+            needUpdate={needUpdate}
+          />
+        )}
       </ErrorHandler>
     </React.Fragment>
   );
