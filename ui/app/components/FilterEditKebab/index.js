@@ -1,11 +1,11 @@
 /* eslint-disable react/no-access-state-in-setstate */
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 
 import { MenuOutlined } from '@ant-design/icons';
 import { Dropdown, Menu } from 'antd';
+import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 
@@ -14,254 +14,138 @@ import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import { sections } from 'ui/constants';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
 import FilterToggleModal from 'ui/FilterToggleModal';
-import { withStore } from 'ui/mobx/RootStoreProvider';
+import { useCustomHistory } from 'ui/hooks/useCustomHistory';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import filterSetActions from 'ui/stores/filterset/actions';
 import Filter from 'ui/utils/Filter';
 
-class FilterEditKebab extends React.Component {
-  constructor(props) {
-    super(props);
-    this.displayToggle = this.displayToggle.bind(this);
-    this.hideToggle = this.hideToggle.bind(this);
-    this.state = {
-      toggle: { show: false, action: 'delete' },
-      filterSets: { showModal: false, page: '', shared: false, name: '' },
-    };
-    this.closeAction = this.closeAction.bind(this);
-    this.convertActionToFilters = this.convertActionToFilters.bind(this);
-    this.saveActionToFilterSet = this.saveActionToFilterSet.bind(this);
-    this.handleFieldChange = this.handleFieldChange.bind(this);
-    this.handleComboChange = this.handleComboChange.bind(this);
-    this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
-    this.setSharedFilter = this.setSharedFilter.bind(this);
-  }
+const FilterEditKebab = observer(({ data, lastIndex, needUpdate, setExpand, alertTag, setTag, clearFilters }) => {
+  const [toggle, setToggle] = useState({ show: false, action: 'delete' });
+  const [filterSets, setFilterSets] = useState({ showModal: false, page: '', shared: false, name: '', description: '' });
+  const { commonStore } = useStore();
 
-  setSharedFilter(e) {
-    this.setState({
-      filterSets: {
-        showModal: true,
-        shared: e.target.checked,
-        page: this.state.filterSets.page,
-        name: this.state.filterSets.name,
-        description: this.state.filterSets.description,
-      },
-    });
-  }
+  const history = useCustomHistory();
 
-  closeActionToFilterSet = () => {
-    this.setState({ filterSets: { showModal: false, shared: false, page: 'DASHBOARDS', name: '', errors: undefined, description: '' } });
+  const displayToggle = useCallback(
+    action => {
+      setToggle({ show: true, action });
+      setExpand(false);
+    },
+    [setExpand],
+  );
+
+  const closeAction = useCallback(() => {
+    setToggle({ show: false, action: 'delete' });
+    setExpand(true);
+  }, [setExpand]);
+
+  const closeActionToFilterSet = () => {
+    setFilterSets({ showModal: false, shared: false, page: 'DASHBOARDS', name: '', errors: undefined, description: '' });
   };
 
-  generateAlertTag = () => {
-    const { action } = this.props.data;
+  const generateAlertTag = () => {
+    const { action } = data;
     return process.env.REACT_APP_HAS_TAG === '1' && (action === 'tag' || action === 'tagkeep')
       ? generateAlert(true, true, true, true, true)
-      : this.props.alertTag;
+      : alertTag;
   };
 
-  generateFilterSet = () => {
-    const filters = [];
-    for (let idx = 0; idx < this.props.data.filter_defs.length; idx += 1) {
-      const val = Number(this.props.data.filter_defs[idx].value)
-        ? Number(this.props.data.filter_defs[idx].value)
-        : this.props.data.filter_defs[idx].value;
-      const filter = new Filter(this.props.data.filter_defs[idx].key, val, {
-        negated: this.props.data.filter_defs[idx].operator !== 'equal',
-        fullString: this.props.data.filter_defs[idx].full_string,
+  const generateFilterSet = () =>
+    data.filter_defs.map(filterDef => {
+      const val = Number(filterDef.value) || filterDef.value;
+      const filter = new Filter(filterDef.key, val, {
+        negated: filterDef.operator !== 'equal',
+        fullString: filterDef.full_string,
       });
-      filters.push({
+      return {
         id: filter.id,
         key: filter.id,
         label: filter.label,
         value: filter.value,
         negated: filter.negated,
         fullString: filter.fullString,
-      });
-    }
-    return filters;
+      };
+    });
+
+  const saveActionToFilterSet = () => {
+    setFilterSets({ showModal: true, page: 'DASHBOARDS', shared: false, name: '', description: '' });
+    setExpand(false);
   };
 
-  displayToggle(action) {
-    this.setState({ toggle: { show: true, action } });
-    this.props.setExpand(false);
-  }
-
-  hideToggle() {
-    this.setState({ toggle: { show: false, action: this.state.toggle.action } });
-    this.props.setExpand(true);
-  }
-
-  closeAction() {
-    this.setState({ toggle: { show: false, action: 'delete' } });
-    this.props.setExpand(true);
-  }
-
-  saveActionToFilterSet() {
-    this.setState({ filterSets: { showModal: true, page: 'DASHBOARDS', shared: false, name: '', description: '' } });
-    this.props.setExpand(false);
-  }
-
-  convertActionToFilters() {
-    this.props.clearFilters(sections.GLOBAL);
-    this.props.store.commonStore.addFilter(this.generateFilterSet());
+  const convertActionToFilters = () => {
+    clearFilters(sections.GLOBAL);
+    commonStore.addFilter(generateFilterSet());
     if (process.env.REACT_APP_HAS_TAG === '1') {
-      this.props.setTag(this.generateAlertTag());
+      setTag(generateAlertTag());
     }
-    const searchParams = new URLSearchParams(this.props.history.location.search);
-    const url = '/stamus/hunting/dashboards';
-    const tenant = searchParams.get('tenant');
-    this.props.history.push(tenant ? `${url}?tenant=${searchParams.get('tenant')}` : url);
-  }
+    history.push(`/stamus/hunting/dashboards`);
+  };
 
-  handleComboChange(value) {
-    this.setState({
-      filterSets: {
-        showModal: true,
-        shared: this.state.filterSets.shared,
-        page: value,
-        name: this.state.filterSets.name,
-        description: this.state.filterSets.description,
-      },
-    });
-  }
-
-  handleFieldChange(event) {
-    this.setState({
-      filterSets: {
-        showModal: true,
-        shared: this.state.filterSets.shared,
-        page: this.state.filterSets.page,
-        name: event.target.value,
-        description: this.state.filterSets.description,
-      },
-    });
-  }
-
-  handleDescriptionChange(event) {
-    this.setState({
-      filterSets: {
-        showModal: true,
-        shared: this.state.filterSets.shared,
-        page: this.state.filterSets.page,
-        name: this.state.filterSets.name,
-        description: event.target.value,
-      },
-    });
-  }
-
-  render() {
-    return (
-      <React.Fragment>
-        {this.state.filterSets.showModal && (
-          <FilterSetSaveModal title="Create new Filter Set From Action" close={this.closeActionToFilterSet} content={this.generateFilterSet()} />
-        )}
-        <Dropdown
-          id="filterActions"
-          overlay={
-            <Menu onClick={({ domEvent }) => domEvent.stopPropagation()}>
-              {this.props.store.commonStore.user?.isActive && this.props.store.commonStore.user?.permissions.includes('rules.events_edit') && (
-                <React.Fragment>
-                  {this.props.data.index !== 0 && (
-                    <Menu.Item
-                      key="1"
-                      data-test="send-action-to-top"
-                      onClick={() => {
-                        this.displayToggle('movetop');
-                      }}
-                    >
-                      Send Action to top
-                    </Menu.Item>
-                  )}
-                  <Menu.Item
-                    key="2"
-                    data-test="move-action"
-                    onClick={() => {
-                      this.displayToggle('move');
-                    }}
-                  >
-                    Move Action
+  return (
+    <React.Fragment>
+      {filterSets.showModal && (
+        <FilterSetSaveModal title="Create new Filter Set From Action" close={closeActionToFilterSet} content={generateFilterSet()} />
+      )}
+      <Dropdown
+        id="filterActions"
+        overlay={
+          <Menu onClick={({ domEvent }) => domEvent.stopPropagation()}>
+            {commonStore.user?.isActive && commonStore.user?.permissions.includes('rules.events_edit') && (
+              <React.Fragment>
+                {data.index !== 0 && (
+                  <Menu.Item key="1" data-test="send-action-to-top" onClick={() => displayToggle('movetop')}>
+                    Send Action to top
                   </Menu.Item>
-                  <Menu.Item
-                    key="3"
-                    data-test="send-action-to-bottom"
-                    onClick={() => {
-                      this.displayToggle('movebottom');
-                    }}
-                  >
-                    Send Action to bottom
-                  </Menu.Item>
-                  <Menu.Item
-                    key="4"
-                    data-test="delete-action"
-                    onClick={() => {
-                      this.displayToggle('delete');
-                    }}
-                  >
-                    Delete Action
-                  </Menu.Item>
-                </React.Fragment>
-              )}
-
-              <Menu.Item
-                key="5"
-                data-test="convert-action-to-filters"
-                onClick={() => {
-                  this.convertActionToFilters();
-                }}
-              >
-                Convert Action to Filters
-              </Menu.Item>
-              {this.props.store.commonStore.user?.isActive && (
-                <Menu.Item
-                  key="6"
-                  data-test="save-action-as-filter-set"
-                  onClick={() => {
-                    this.saveActionToFilterSet();
-                  }}
-                >
-                  Save Action as Filter set
+                )}
+                <Menu.Item key="2" data-test="move-action" onClick={() => displayToggle('move')}>
+                  Move Action
                 </Menu.Item>
-              )}
-            </Menu>
-          }
-          trigger={['click']}
+                <Menu.Item key="3" data-test="send-action-to-bottom" onClick={() => displayToggle('movebottom')}>
+                  Send Action to bottom
+                </Menu.Item>
+                <Menu.Item key="4" data-test="delete-action" onClick={() => displayToggle('delete')}>
+                  Delete Action
+                </Menu.Item>
+              </React.Fragment>
+            )}
+            <Menu.Item key="5" data-test="convert-action-to-filters" onClick={convertActionToFilters}>
+              Convert Action to Filters
+            </Menu.Item>
+            {commonStore.user?.isActive && (
+              <Menu.Item key="6" data-test="save-action-as-filter-set" onClick={saveActionToFilterSet}>
+                Save Action as Filter set
+              </Menu.Item>
+            )}
+          </Menu>
+        }
+        trigger={['click']}
+      >
+        <a
+          className="ant-dropdown-link"
+          data-test={`kebab-dropdown-${data.index}`}
+          onClick={e => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
-          <a
-            className="ant-dropdown-link"
-            data-test={`kebab-dropdown-${this.props.data.index}`}
-            onClick={e => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <MenuOutlined />
-          </a>
-        </Dropdown>
-        <ErrorHandler>
-          <FilterToggleModal
-            show={this.state.toggle.show}
-            action={this.state.toggle.action}
-            data={this.props.data}
-            close={this.closeAction}
-            last_index={this.props.last_index}
-            needUpdate={this.props.needUpdate}
-          />
-        </ErrorHandler>
-      </React.Fragment>
-    );
-  }
-}
+          <MenuOutlined />
+        </a>
+      </Dropdown>
+      <ErrorHandler>
+        <FilterToggleModal show={toggle.show} action={toggle.action} data={data} close={closeAction} last_index={lastIndex} needUpdate={needUpdate} />
+      </ErrorHandler>
+    </React.Fragment>
+  );
+});
+
 FilterEditKebab.propTypes = {
   data: PropTypes.any,
-  last_index: PropTypes.any,
+  lastIndex: PropTypes.any,
   needUpdate: PropTypes.any,
-  addFilter: PropTypes.any,
   setTag: PropTypes.func,
   clearFilters: PropTypes.func,
   alertTag: PropTypes.object,
   setExpand: PropTypes.func,
-  history: PropTypes.object,
-  store: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -276,4 +160,4 @@ const mapDispatchToProps = {
 };
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withRouter, withConnect)(withStore(FilterEditKebab));
+export default compose(withConnect)(FilterEditKebab);
