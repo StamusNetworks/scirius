@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import { Button, Col, Form, Input, InputNumber, Modal, Row } from 'antd';
 import axios from 'axios';
@@ -7,181 +7,150 @@ import PropTypes from 'prop-types';
 import * as config from 'config/Api';
 import HuntRestError from 'ui/components/HuntRestError';
 
-export default class FilterToggleModal extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      comment: '',
-      new_index: 0,
-      errors: undefined,
-    };
-    this.close = this.close.bind(this);
-    this.submit = this.submit.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleCommentChange = this.handleCommentChange.bind(this);
-    this.onFieldKeyPress = this.onFieldKeyPress.bind(this);
-  }
+const FilterToggleModal = ({ action, lastIndex, data, show, close, needUpdate }) => {
+  const [comment, setComment] = useState('');
+  const [newIndex, setNewIndex] = useState(0);
+  const [errors, setErrors] = useState(undefined);
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.action !== this.props.action) {
-      // Move to top / Launch dialog init with 0, then event to update new_index
-      // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({ new_index: 0 });
+  useEffect(() => {
+    setNewIndex(action === 'movebottom' ? lastIndex : 0);
+  }, [action, lastIndex]);
 
-      if (this.props.action === 'movebottom') {
-        // eslint-disable-next-line react/no-did-update-set-state
-        this.setState({ new_index: this.props.last_index });
-      }
-    }
-  }
+  const closeHandler = useCallback(() => {
+    setErrors(undefined);
+    close();
+  }, [close]);
 
-  onFieldKeyPress(keyEvent) {
-    if (keyEvent.key === 'Enter') {
-      if (this.state.new_index < 0) {
-        // Propagate event to trigger validation error
-        return;
-      }
-      keyEvent.stopPropagation();
-      keyEvent.preventDefault();
-    }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  onModalClick(e) {
-    // Stopping event propagation is required since the modal is the children of a list item that
-    // will also react to clicks
-    e.stopPropagation();
-  }
-
-  handleChange(value) {
-    const val = parseInt(value, 10);
-    if (val >= 0) {
-      this.setState({ new_index: val });
-    }
-  }
-
-  handleCommentChange(event) {
-    this.setState({ comment: event.target.value });
-  }
-
-  submit() {
-    let data;
-    if (['move', 'movetop', 'movebottom'].indexOf(this.props.action) !== -1) {
-      data = { index: this.state.new_index, comment: this.state.comment };
+  const submitHandler = useCallback(() => {
+    let requestData;
+    if (['move', 'movetop', 'movebottom'].includes(action)) {
+      requestData = { index: newIndex, comment };
       axios
-        .patch(`${config.API_URL}${config.PROCESSING_PATH}${this.props.data.pk}/`, data)
+        .patch(`${config.API_URL}${config.PROCESSING_PATH}${data.pk}/`, requestData)
         .then(() => {
-          this.props.needUpdate();
-          this.close();
+          needUpdate();
+          closeHandler();
         })
         .catch(error => {
-          this.setState({ errors: error.response.data });
+          setErrors(error.response.data);
         });
     }
-    if (this.props.action === 'delete') {
-      data = { comment: this.state.comment };
+    if (action === 'delete') {
+      requestData = { comment };
       axios({
-        url: `${config.API_URL}${config.PROCESSING_PATH}${this.props.data.pk}/`,
-        data,
+        url: `${config.API_URL}${config.PROCESSING_PATH}${data.pk}/`,
+        data: requestData,
         method: 'delete',
       })
         .then(() => {
-          this.props.needUpdate();
-          this.close();
+          needUpdate();
+          closeHandler();
         })
         .catch(error => {
-          this.setState({ errors: error.response.data });
+          setErrors(error.response.data);
         });
     }
-  }
+  }, [action, comment, data, newIndex, needUpdate, closeHandler]);
 
-  close() {
-    this.setState({ errors: undefined });
-    this.props.close();
-  }
-
-  render() {
-    let { action } = this.props;
-    switch (action) {
-      case 'movetop':
-        action = 'Move to top';
-        break;
-      case 'move':
-        action = 'Move';
-        break;
-      case 'movebottom':
-        action = 'Move to bottom';
-        break;
-      case 'delete':
-        action = 'Delete';
-        break;
-      default:
-        break;
+  const handleChange = useCallback(value => {
+    const val = parseInt(value, 10);
+    if (val >= 0) {
+      setNewIndex(val);
     }
-    return (
-      <Modal
-        title={
-          this.props.data && (
-            <div>
-              {action} {this.props.data.action} at current position {this.props.data.index}
-            </div>
-          )
-        }
-        visible={this.props.show}
-        onCancel={this.close}
-        footer={
-          <React.Fragment>
-            <Button className="btn-cancel" onClick={this.close} data-test="policies-cancel">
-              Cancel
-            </Button>
-            <Button onClick={this.submit} data-test="policies-submit">
-              Submit
-            </Button>
-          </React.Fragment>
-        }
-      >
-        <div onClick={this.onModalClick}>
-          <HuntRestError errors={this.state.errors} />
-          <Form>
-            {this.props.action === 'move' && (
-              <Row>
-                <Col span={6}>
-                  <strong>New index</strong>
-                </Col>
-                <Col span={18}>
-                  <Form.Item name="input-number">
-                    <InputNumber
-                      min={0}
-                      max={50000}
-                      defaultValue={0}
-                      onChange={this.handleChange}
-                      onKeyPress={e => this.onFieldKeyPress(e)}
-                      style={{ width: '100%' }}
-                      data-test="new-index"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            )}
+  }, []);
+
+  const handleCommentChange = useCallback(event => {
+    setComment(event.target.value);
+  }, []);
+
+  const onFieldKeyPress = useCallback(
+    keyEvent => {
+      if (keyEvent.key === 'Enter' && newIndex >= 0) {
+        keyEvent.stopPropagation();
+        keyEvent.preventDefault();
+      }
+    },
+    [newIndex],
+  );
+
+  const onModalClick = useCallback(e => {
+    e.stopPropagation();
+  }, []);
+
+  const actionTitle =
+    {
+      movetop: 'Move to top',
+      move: 'Move',
+      movebottom: 'Move to bottom',
+      delete: 'Delete',
+    }[action] || '';
+
+  return (
+    <Modal
+      title={
+        data && (
+          <div>
+            {actionTitle} {data.action} at current position {data.index}
+          </div>
+        )
+      }
+      open={show}
+      onCancel={closeHandler}
+      footer={
+        <>
+          <Button className="btn-cancel" onClick={closeHandler} data-test="policies-cancel">
+            Cancel
+          </Button>
+          <Button onClick={submitHandler} data-test="policies-submit">
+            Submit
+          </Button>
+        </>
+      }
+    >
+      <div onClick={onModalClick}>
+        <HuntRestError errors={errors} />
+        <Form>
+          {action === 'move' && (
             <Row>
-              <Col md={24}>
-                <strong>Optional comment</strong>
+              <Col span={6}>
+                <strong>New index</strong>
               </Col>
-              <Col md={24}>
-                <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />
+              <Col span={18}>
+                <Form.Item name="input-number">
+                  <InputNumber
+                    min={0}
+                    max={50000}
+                    defaultValue={0}
+                    onChange={handleChange}
+                    onKeyPress={onFieldKeyPress}
+                    style={{ width: '100%' }}
+                    data-test="new-index"
+                  />
+                </Form.Item>
               </Col>
             </Row>
-          </Form>
-        </div>
-      </Modal>
-    );
-  }
-}
+          )}
+          <Row>
+            <Col md={24}>
+              <strong>Optional comment</strong>
+            </Col>
+            <Col md={24}>
+              <Input.TextArea value={comment} onChange={handleCommentChange} />
+            </Col>
+          </Row>
+        </Form>
+      </div>
+    </Modal>
+  );
+};
+
 FilterToggleModal.propTypes = {
   action: PropTypes.any,
-  last_index: PropTypes.any,
+  lastIndex: PropTypes.any,
   data: PropTypes.any,
   show: PropTypes.any,
   close: PropTypes.func,
   needUpdate: PropTypes.func,
 };
+
+export default FilterToggleModal;
