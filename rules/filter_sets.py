@@ -28,11 +28,11 @@ FILTER_SETS = [
         'content': [
             {
                 'value': 'TROJAN',
-                'label': 'Message: TROJAN',
+                'label': 'alert.signature: TROJAN',
                 'fullString': False,
                 'query': 'filter',
                 'negated': False,
-                'id': 'msg'
+                'id': 'alert.signature'
             }
         ],
         'name': 'Hunt: Trojan related events',
@@ -43,11 +43,11 @@ FILTER_SETS = [
         'content': [
             {
                 'value': 'MALWARE',
-                'label': 'Message: MALWARE',
+                'label': 'alert.signature: MALWARE',
                 'fullString': False,
                 'query': 'filter',
                 'negated': False,
-                'id': 'msg'
+                'id': 'alert.signature'
             }
         ],
         'name': 'Hunt: Malware related events',
@@ -58,11 +58,11 @@ FILTER_SETS = [
         'content': [
             {
                 'value': 'HUNTING',
-                'label': 'Message: HUNTING',
+                'label': 'alert.signature: HUNTING',
                 'fullString': False,
                 'query': 'filter',
                 'negated': False,
-                'id': 'msg'
+                'id': 'alert.signature'
             }
         ],
         'name': 'Hunt: HUNTING related events',
@@ -73,11 +73,11 @@ FILTER_SETS = [
         'content': [
             {
                 'value': 'Executable',
-                'label': 'Message: Executable',
+                'label': 'alert.signature: Executable',
                 'fullString': False,
                 'query': 'filter',
                 'negated': False,
-                'id': 'msg'
+                'id': 'alert.signature'
             }
         ],
         'name': 'Hunt: Executable related events',
@@ -88,11 +88,11 @@ FILTER_SETS = [
         'content': [
             {
                 'value': 'Executable',
-                'label': 'Message: Executable',
+                'label': 'alert.signature: Executable',
                 'fullString': False,
                 'query': 'filter',
                 'negated': False,
-                'id': 'msg'
+                'id': 'alert.signature'
             },
             {
                 'value': 'http',
@@ -453,11 +453,11 @@ FILTER_SETS = [
         'content': [
             {
                 'value': 'CURRENT_EVENTS',
-                'label': 'Message: CURRENT_EVENTS',
+                'label': 'alert.signature: CURRENT_EVENTS',
                 'fullString': False,
                 'query': 'filter',
                 'negated': False,
-                'id': 'msg'
+                'id': 'alert.signature'
             }
         ],
         'name': 'Hunt: Current events',
