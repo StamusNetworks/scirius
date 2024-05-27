@@ -324,7 +324,7 @@ def filter_event_types(request, queryset, view):
     return queryset
 
 
-def update_rule_analysis(_):
+def update_rule_analysis(source_pk, user):
     pass
 
 
