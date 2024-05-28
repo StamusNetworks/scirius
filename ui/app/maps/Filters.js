@@ -18,6 +18,7 @@ export const FilterType = {
   NAME: 'NAME',
   ROLE: 'ROLE',
   NETWORK_INFO: 'NETWORK_INFO',
+  STAMUS_ASSET: 'STAMUS_ASSET',
   GENERIC: 'GENERIC',
 };
 
@@ -630,7 +631,7 @@ export const FiltersList = [
     title: 'Asset',
     id: 'stamus.asset',
     category: FilterCategory.EVENT,
-    type: FilterType.IP,
+    type: FilterType.STAMUS_ASSET,
     force: [EVENT_TYPES.STAMUS],
   },
   {
