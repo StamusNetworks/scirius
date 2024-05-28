@@ -1,5 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 
+import isEmail from 'ui/helpers/isEmail';
+import isIP from 'ui/helpers/isIP';
+import isUsername from 'ui/helpers/isUsername';
 import uuid from 'ui/helpers/uuid';
 import { FilterCategory, FiltersList, FilterType } from 'ui/maps/Filters';
 
@@ -52,6 +55,9 @@ export default class Filter {
   /* Event types that should be toggled ON when adding filter */
   _force = [];
 
+  /* If filter is an asset it could be IP, EMAIL or USERNAME type  */
+  _assetType = [];
+
   /**
    * Initialize filter object by given parameters
    *
@@ -86,6 +92,7 @@ export default class Filter {
     this._schema = filterSchema;
     this._icon = filterSchema?.icon;
     this._force = filterSchema?.force || [];
+    this._assetType = filterSchema?.type === FilterType.STAMUS_ASSET ? this.getAssetType(value, filterSchema?.type) : null;
 
     const smartWildcard = this._wildcardable ? !/[\\*?]/.test(value) : null;
     // Overridable properties
@@ -102,6 +109,22 @@ export default class Filter {
   findSchema(filter, a) {
     const category = typeof a === 'string' ? a : null;
     return FiltersList.find(f => f.id === filter && ((category && f.category === category) || true));
+  }
+
+  getAssetType(value, type) {
+    if (type === FilterType.STAMUS_ASSET) {
+      if (isIP(value)) {
+        return 'IP';
+      }
+      if (isEmail(value)) {
+        return 'EMAIL';
+      }
+      if (isUsername(value)) {
+        return 'USERNAME';
+      }
+      return null;
+    }
+    return type;
   }
 
   /**
@@ -180,6 +203,10 @@ export default class Filter {
 
   get type() {
     return this._type;
+  }
+
+  get assetType() {
+    return this._assetType;
   }
 
   get icon() {
