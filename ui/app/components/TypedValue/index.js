@@ -1,11 +1,12 @@
 import React from 'react';
 
-import { InfoCircleFilled, RobotOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { InfoCircleFilled, RobotOutlined, UserOutlined } from '@ant-design/icons';
 import { Dropdown } from 'antd';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import typedOptions from 'ui/components/TypedValue/options';
 import isIP from 'ui/helpers/isIP';
 import { useCustomHistory } from 'ui/hooks/useCustomHistory';
 import { useStore } from 'ui/mobx/RootStoreProvider';
@@ -64,6 +65,20 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     ];
   }
 
+  if (filter.type === 'USERNAME') {
+    listOfLinks = [
+      ...listOfLinks,
+      {
+        key: 'typedValueUsername',
+        label: (
+          <div onClick={() => commonStore.addFilter(filter)}>
+            <UserOutlined /> <span>Filter on username</span>
+          </div>
+        ),
+      }, // Filter on username
+    ];
+  }
+
   if (filter.type === 'ROLE') {
     listOfLinks = [
       {
@@ -88,62 +103,21 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
   if (filter.type === 'IP') {
     listOfLinks = [
       ...listOfLinks,
-      {
-        key: 'typedValueIP2',
-        label: (
-          <div
-            onClick={() => {
-              commonStore.addFilter(filter);
-
-              if (redirect) history.push(`/stamus/hunting/dashboards`);
-            }}
-          >
-            <ZoomInOutlined /> <span>Filter on IP: {filter.displayValue}</span>
-          </div>
-        ),
-      }, // Filter on IP: 0.0.0.0
-      {
-        key: 'typedValueIP3',
-        label: (
-          <div
-            onClick={() => {
-              filter.negated = true;
-              commonStore.addFilter(filter);
-              if (redirect) history.push(`/stamus/hunting/dashboards`);
-            }}
-          >
-            <ZoomOutOutlined /> <span>Negated filter on IP: {filter.displayValue}</span>
-          </div>
-        ),
-      }, // Negated filter on IP: 0.0.0.0
-      {
-        key: 'typedValueIP4',
-        label: (
-          <a
-            href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(filter.value)) ? 'ip-address' : 'domain'}/${filter.value}`}
-            target="_blank"
-          >
-            <InfoCircleFilled /> <span>External info</span>
-          </a>
-        ),
-      }, // External info
+      typedOptions.FILTER_ON_IP(filter.displayValue, () => {
+        commonStore.addFilter(filter);
+        if (redirect) history.push(`/stamus/hunting/dashboards`);
+      }),
+      typedOptions.NEGATED_FILTER_ON_IP(filter.displayValue, () => {
+        filter.negated = true;
+        commonStore.addFilter(filter);
+        if (redirect) history.push(`/stamus/hunting/dashboards`);
+      }),
+      typedOptions.EXTERNAL_INFO(filter.value),
     ];
   }
 
   if (filter.type === 'PORT') {
-    listOfLinks = [
-      ...listOfLinks,
-      {
-        key: 'typedValuePort',
-        label: (
-          <a href={`https://www.dshield.org/port.html?port=${filter.displayValue}`} target="_blank">
-            <div>
-              <InfoCircleFilled /> <span>External info</span>
-            </div>
-          </a>
-        ),
-      }, // External info
-    ];
+    listOfLinks = [...listOfLinks, typedOptions.EXTERNAL_INFO_PORT(filter.displayValue)];
   }
 
   // additionalLinks apply to all fields - ip, port, hostname, username
@@ -168,7 +142,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
             <InfoCircleFilled /> <span>External info</span>
           </a>
         ),
-      }, // External info
+      },
     ];
   }
 

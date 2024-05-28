@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 
-import { CopyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
-import { message } from 'antd';
+import { ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import TypedValue from 'ui/components/TypedValue';
+import options from 'ui/components/TypedValue/options';
 import { COLOR_BOX_HEADER } from 'ui/constants/colors';
-import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
 
@@ -55,22 +54,7 @@ const EventValue = ({ filter, count, copyMode }) => {
         </div>
       ),
     }, // Negated filter on value
-    {
-      key: 'copyTextToClipboard',
-      label: (
-        <div
-          onClick={() => {
-            copyTextToClipboard(filter.displayValue);
-            message.success({
-              duration: 1,
-              content: 'Copied!',
-            });
-          }}
-        >
-          <CopyOutlined /> <span>Copy text to clipboard</span>
-        </div>
-      ),
-    }, // Copy text to clipboard
+    options.COPY_TO_CLIPBOARD(filter.displayValue),
   ];
 
   return (
