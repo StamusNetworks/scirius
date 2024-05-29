@@ -193,7 +193,7 @@ function FiltersDropdown({ disabled, filterTypes }) {
         /* Create category item */
         makeFilterCategory(category),
         /* Append Network Defs filters in case there are any */
-        ...(category === 'EVENT' ? networkDefs : []),
+        ...(category === 'HOST' ? networkDefs : []),
         /* Append History filters  */
         ...(category === 'HISTORY' ? historyFilters : []),
         /* Append filters */
