@@ -90,18 +90,8 @@ class HasGroupPermission(BasePermission):
             if not getattr(view, 'no_tenant_check', False) and not no_tenant_check:
                 if {'rules.events_view', 'rules.events_edit'} & set(required_groups):
                     tenant = request.query_params.get('tenant', -1)
-                    try:
-                        tenant = int(tenant)
-                    except (ValueError, TypeError):
+                    if not get_middleware_module('common').check_tenant(request.user, tenant):
                         return False
-
-                    if tenant in (-1, 0):
-                        if not request.user.sciriususer.has_no_tenant():
-                            return False
-                    elif tenant > 0:
-                        if not request.user.sciriususer.has_all_tenants():
-                            if tenant not in request.user.sciriususer.get_tenants().values_list('pk', flat=True):
-                                return False
 
         for group in required_groups:
             if request.user.has_perm(group):
