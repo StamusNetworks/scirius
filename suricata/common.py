@@ -170,7 +170,7 @@ def update_processing_filter_action_options(rule_processing):
 def get_homepage_context():
     context = {
         'title': settings.APP_LONG_NAME,
-        'short_title': settings.APP_MEDIUM_NAME,
+        'short_title': settings.APP_SHORT_NAME,
         'common_long_name': settings.APP_LONG_NAME,
         'product_long_name': settings.APP_LONG_NAME,
         'content_lead': '%s is a web application for threat hunting and Suricata ruleset management of one sensor.' % settings.APP_MEDIUM_NAME,
