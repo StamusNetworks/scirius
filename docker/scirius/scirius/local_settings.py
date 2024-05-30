@@ -182,3 +182,10 @@ CSP_INCLUDE_NONCE_IN = os.getenv('CSP_INCLUDE_NONCE_IN', 'script-src').split(' '
 CSP_EXCLUDE_URL_PREFIXES = tuple(os.getenv('CSP_EXCLUDE_URL_PREFIXES', '/evebox').split(' '))
 
 GIT_SOURCES_BASE_DIRECTORY = '/data/git-sources/'
+
+APP_LONG_NAME = 'SELKS by Stamus Networks'
+APP_MEDIUM_NAME = 'SELKS Stamus'
+APP_SHORT_NAME = 'SELKS'
+APP_MNGT_NAME = 'Suricata Management'
+SCIRIUS_VERSION = "40.0.0"
+LOGO = 'rules/selks.png'
