@@ -72,6 +72,14 @@ class ESError(Exception):
 
 
 class ESManageMultipleESIndexes(ESQuery):
+    """
+    This class is usefull when you need to handle multiple indexes.
+
+    You can set the wanted event type(s) (alert, stamus or discovery) in the URL.
+    Then, in your ES query_string `self.get_event_type(default='event_type:alert')` will build the part of the filter.
+
+    To override the default behaviour, you'll mainly need to write your own `ESQuery::_get_query()` and `ESQuery::get()` methods.
+    """
     def __init__(self, request, view=None, *args, **kwargs) -> None:
         self.request = request
         self.view = view
@@ -83,11 +91,18 @@ class ESManageMultipleESIndexes(ESQuery):
         return super()._get_index()
 
     def get_event_type(self, default):
+        """
+        If the event type can be selected in your query, you'll need to call this method instead of hard coding the condition.
+        """
         if self.view:
             return self.build_event_type()
         return default
 
     def _is_enabled(self, value):
+        """
+        Utility method to check the value of a URL parameter. If the value is `0` or `false` (case insensitive), it returns False.
+        All other values parseable with bool() (https://docs.python.org/fr/3/library/functions.html#bool) are obviouly returning True.
+        """
         return bool(value) and value.lower() not in ('false', '0')
 
     def build_index(self):
@@ -101,6 +116,11 @@ class ESManageMultipleESIndexes(ESQuery):
         return ','.join(indexes)
 
     def build_event_type(self):
+        """
+        Build the ES query_string depending on the requested event types.
+
+        Here are some example results: `(event_type:alert AND discovery:*)`, `event_type:stamus` `(event_type:alert OR event_type:stamus)`.
+        """
         alert = self.request.query_params.get('alert', self.view.INDEXES['alert']['default'])
         stamus = self.request.query_params.get('stamus', self.view.INDEXES['stamus']['default'])
         discovery = self.request.query_params.get('discovery', self.view.INDEXES['discovery']['default'])
