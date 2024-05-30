@@ -100,6 +100,7 @@ class RuleToggleModal extends React.Component {
 
               filter.isChecked = true;
               filter.key = filter.id;
+              filter.full_string = !filter.wildcardable;
               filter.id = `filter${i}`;
               suppFilters.push(filter);
               notfound = false;
