@@ -23,6 +23,11 @@
             <li role="kibana" {% if form_id == 'kibana' %}class="active"{% endif %}>
                 <a href="#kibana" aria-controls="kibana" role="tab" data-toggle="tab">Kibana</a>
             </li>
+            {% if ruleset_curator_available %}
+                <li role="curator" {% if form_id == 'curator' %}class="active"{% endif %}>
+                    <a href="#curator" aria-controls="curator" role="tab" data-toggle="tab">Ruleset</a>
+                </li>
+            {% endif %}
         </ul>
         <div class="tab-content">
             <div role="tabpanel"
@@ -231,6 +236,56 @@
                 <!-- container-fluid -->
             </div>
             <!-- tabpanel -->
+            {% if ruleset_curator_available %}
+            <div role="tabpanel"
+                class="tab-pane{% if form_id == 'curator' %} active{% endif %}"
+                id="curator">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form class="form" action="{% url "system_settings" %}" method="post">
+                                {% csrf_token %}
+                                <input type='hidden' name="form_id" value="curator">
+                                {% bootstrap_label "Curator on rulesets" %}
+                                <p class="help-block">
+                                    Schedule a curator on rulesets to avoid lack of space on the disk.<br>
+                                    It will keep only the last ruleset version: <strong>older versions will be
+                                    permanently deleted</strong>.
+                                </p>
+                                {% include "appliances/schedule_recurrence.html" %}
+                                <table class="table table-bordered stabble-stripped table-hover table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Size</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pk, ruleset in rulesets.items %}
+                                            <tr>
+                                                <td>
+                                                    <input type="radio" name="ruleset" value="{{ pk }}" id="rs_{{ pk }}">
+                                                    {% if ruleset.has_curator %}
+                                                        <span class="glyphicon glyphicon-repeat text-muted" aria-hidden="true" title="Already a recurrent curator or is frozen by a probe"></span>
+                                                    {% endif %}
+                                                    <label for="rs_{{ pk }}">{{ ruleset.name }}</label>
+                                                </td>
+                                                <td>{{ ruleset.size }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% buttons %}
+                                    <button type="submit" class="btn btn-danger">{% bootstrap_icon "trash" %} Curate</button>
+                                {% endbuttons %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- container-fluid -->
+            </div>
+        {% endif %}
+        <!-- tabpanel -->
         </div>
         <!-- tab-content -->
         <script type="text/javascript">

@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import pytz
 from importlib import import_module
+from pathlib import Path
 from time import time
 import requests
 
@@ -309,3 +310,19 @@ def convert_to_local(time, user):
     except:
         return time
     return pytz.utc.normalize(pytz.utc.localize(time.replace(tzinfo=None))).astimezone(tz)
+
+
+def sizeof_fmt(num):
+    """
+    Utility function to convert bytes to a more readable format.
+    """
+    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
+        if abs(num) < 1024.0:
+            return f"{num:3.1f} {unit}B"
+        num /= 1024.0
+    return f"{num:.1f}YB"
+
+
+def get_folder_size(folder):
+    # based on: https://stackoverflow.com/a/55659577
+    return sum(file.stat().st_size for file in Path(folder).rglob('*'))

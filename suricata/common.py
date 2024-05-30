@@ -258,6 +258,14 @@ def extra_ruleset_form(request):
     return None
 
 
+def extra_ruleset_curator_form(request):
+    return {}
+
+
+def get_rulesets_with_extra(sizes=False, curators=False):
+    return {}
+
+
 def data_export():
     pass
 

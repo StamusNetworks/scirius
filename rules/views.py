@@ -25,6 +25,7 @@ import json
 import tarfile
 from datetime import date
 
+from dateutil.relativedelta import relativedelta
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
@@ -1970,11 +1971,13 @@ def system_settings(request):
     main_form = SystemSettingsForm(instance=gsettings, request=request)
     kibana_form = KibanaDataForm()
 
+    from scirius.utils import get_middleware_module
     context = {
         'form_id': 'main',
         'main_form': main_form,
         'kibana_form': kibana_form,
-        'use_loggers': PROBE.common.use_stamuslogger()
+        'use_loggers': PROBE.common.use_stamuslogger(),
+        'ruleset_curator_available': False,
     }
 
     if request.method == 'POST':
@@ -2038,6 +2041,12 @@ def system_settings(request):
                     context['error'] = 'Reset failed: %s' % e
             else:
                 context['error'] = 'Invalid operation'
+        elif form_id == 'curator':
+            if not request.user.has_perms(['rules.ruleset_policy_edit', 'rules.configuration_edit']):
+                raise PermissionDenied("You do not have the permission to edit the ruleset policy or to create a recurrent task")
+            result = get_middleware_module('common').extra_ruleset_curator_form(request)
+            if result:  # form.errors
+                context['error'] = f"Invalid curator form: {result}"
         else:
             context['error'] = "Invalid form id."
 
@@ -2052,6 +2061,13 @@ def system_settings(request):
             request=request,
         )
     context['global_settings'] = get_system_settings()
+    if request.user.has_perms(['rules.ruleset_policy_edit', 'rules.configuration_edit']):
+        context['ruleset_curator_available'] = True
+        context['rulesets'] = get_middleware_module('common').get_rulesets_with_extra(sizes=True, curators=True)
+        context['monthly'] = True  # enable monthly choice on recurrent tasks
+        date_time = timezone.now() + relativedelta(days=1, hour=3, minute=0, second=0, microsecond=0)
+        context['schedule_param'] = date_time.strftime('%Y/%m/%d %H:%M')
+        context['recurrence_param'] = 'daily'
     return scirius_render(request, 'rules/system_settings.html', context)
 
 
