@@ -178,7 +178,7 @@ const HelpMenu = () => {
             </Version>
           </VersionsList>
         )}
-        <CopyRight>Copyright 2014-2023, Stamus Networks</CopyRight>
+        <CopyRight>Copyright 2014-2024, Stamus Networks</CopyRight>
       </AboutModal>
       <Item block type="link" icon={<ExportOutlined />} onClick={() => window.open(`https://docs.stamus-networks.com`)}>
         docs.stamus-networks.com
