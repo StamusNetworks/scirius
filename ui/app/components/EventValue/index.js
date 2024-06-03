@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { CopyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { InfoCircleFilled, CopyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import { message } from 'antd';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import TypedValue from 'ui/components/TypedValue';
 import { COLOR_BOX_HEADER } from 'ui/constants/colors';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
+import isIP from 'ui/helpers/isIP';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
 
@@ -71,6 +72,17 @@ const EventValue = ({ filter, count, copyMode }) => {
         </div>
       ),
     }, // Copy text to clipboard
+    {
+      key: 'typedValueHostnameVirus',
+      label: (
+        <a
+          href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(filter.value)) ? 'ip-address' : 'domain'}/${filter.value}`}
+          target="_blank"
+        >
+          <InfoCircleFilled /> <span>External info</span>
+        </a>
+      ),
+    },
   ];
 
   return (
