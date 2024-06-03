@@ -47,6 +47,23 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     </div>
   );
 
+  if (filter.type === 'HOSTNAME') {
+    listOfLinks = [
+      ...listOfLinks,
+      {
+        key: 'typedValueHostnameVirus',
+        label: (
+          <a
+            href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(filter.value)) ? 'ip-address' : 'domain'}/${filter.value}`}
+            target="_blank"
+          >
+            <InfoCircleFilled /> <span>External info</span>
+          </a>
+        ),
+      }, // Virus Total Link
+    ];
+  }
+
   if (filter.type === 'ROLE') {
     listOfLinks = [
       {
