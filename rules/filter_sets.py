@@ -633,8 +633,8 @@ FILTER_SETS = [
     {
         "content": [
             {
-                "label": "Message: adware_pup",
-                "id": "msg",
+                "label": "alert.signature: adware_pup",
+                "id": "alert.signature",
                 "value": "adware_pup",
                 "negated": False,
                 "query": "filter",
@@ -655,8 +655,8 @@ FILTER_SETS = [
     {
         "content": [
             {
-                "label": "Message: web_client",
-                "id": "msg",
+                "label": "alert.signature: web_client",
+                "id": "alert.signature",
                 "value": "web_client",
                 "negated": False,
                 "query": "filter",
@@ -677,8 +677,8 @@ FILTER_SETS = [
     {
         "content": [
             {
-                "label": "Message: web_server",
-                "id": "msg",
+                "label": "alert.signature: web_server",
+                "id": "alert.signature",
                 "value": "web_server",
                 "negated": False,
                 "query": "filter",
@@ -699,8 +699,8 @@ FILTER_SETS = [
     {
         "content": [
             {
-                "label": "Message: shellcode",
-                "id": "msg",
+                "label": "alert.signature: shellcode",
+                "id": "alert.signature",
                 "value": "shellcode",
                 "negated": False,
                 "query": "filter",
@@ -772,8 +772,8 @@ FILTER_SETS = [
     {
         "content": [
             {
-                "label": "Message: url",
-                "id": "msg",
+                "label": "alert.signature: url",
+                "id": "alert.signature",
                 "value": "url",
                 "negated": False,
                 "query": "filter",
@@ -899,16 +899,16 @@ FILTER_SETS = [
     {
         "content": [
             {
-                "label": "Message: password",
-                "id": "msg",
+                "label": "alert.signature: password",
+                "id": "alert.signature",
                 "value": "password",
                 "negated": False,
                 "query": "filter",
                 "fullString": False
             },
             {
-                "label": "Message: unencrypted",
-                "id": "msg",
+                "label": "alert.signature: unencrypted",
+                "id": "alert.signature",
                 "value": "unencrypted",
                 "negated": False,
                 "query": "filter",
