@@ -15,6 +15,7 @@ export const FilterType = {
   MITRE: 'MITRE',
   USERNAME: 'USERNAME',
   HOSTNAME: 'HOSTNAME',
+  NAME: 'NAME',
   ROLE: 'ROLE',
   NETWORK_INFO: 'NETWORK_INFO',
   GENERIC: 'GENERIC',
@@ -340,6 +341,7 @@ export const FiltersList = [
   {
     title: 'Queried Name',
     id: 'dns.query.rrname',
+    type: FilterType.NAME,
     category: FilterCategory.EVENT,
   },
   {
@@ -356,12 +358,24 @@ export const FiltersList = [
   {
     title: 'Client IP',
     id: 'flow.src_ip',
+    type: FilterType.IP,
     category: FilterCategory.EVENT,
   },
   {
     title: 'Server IP',
     id: 'flow.dest_ip',
+    type: FilterType.IP,
     category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Client Ports',
+    id: 'flow.src_port',
+    type: FilterType.PORT,
+  },
+  {
+    title: 'Server Ports',
+    id: 'flow.dest_port',
+    type: FilterType.PORT,
   },
   {
     title: 'Bytes to server',
@@ -750,7 +764,6 @@ export const FiltersList = [
     title: 'Host Subdomain',
     id: 'hostname_info.subdomain',
     category: FilterCategory.EVENT,
-    type: FilterType.HOSTNAME,
   },
   {
     title: 'Host TLD',

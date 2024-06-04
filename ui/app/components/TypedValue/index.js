@@ -47,7 +47,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     </div>
   );
 
-  if (filter.type === 'HOSTNAME') {
+  if (filter.type === 'HOSTNAME' || filter.type === 'NAME') {
     listOfLinks = [
       ...listOfLinks,
       {
