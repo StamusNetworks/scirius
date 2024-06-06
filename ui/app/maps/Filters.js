@@ -515,11 +515,6 @@ export const FiltersList = [
     convertible: 'host_id.services.values.tls.issuerdn',
   },
   {
-    title: 'SNI',
-    id: 'tls.sni',
-    category: FilterCategory.EVENT,
-  },
-  {
     title: 'Not Before',
     id: 'tls.notbefore',
     category: FilterCategory.EVENT,
