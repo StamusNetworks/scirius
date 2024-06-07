@@ -3927,7 +3927,7 @@ class RuleProcessingFilterDef(models.Model):
     }
 
     key = models.CharField(max_length=512)
-    value = models.CharField(max_length=512)
+    value = models.CharField(max_length=1024)
     operator = models.CharField(max_length=10, choices=OPERATOR)
     proc_filter = models.ForeignKey(RuleProcessingFilter, on_delete=models.CASCADE, related_name='filter_defs')
     full_string = models.BooleanField(default=True)
