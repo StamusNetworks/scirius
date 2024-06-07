@@ -102,6 +102,10 @@ const ENDPOINT = {
     name: 'Fetching elasticsearch data',
     url: '/rest/rules/es/search/:datesEs:tenant',
   },
+  EVENTS_FROM_FLOW_ID: {
+    name: 'Fetching events from flow id',
+    url: '/rest/rules/es/events_from_flow_id/:tenant:datesEs',
+  },
 };
 
 export default ENDPOINT;

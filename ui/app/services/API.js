@@ -23,6 +23,7 @@ const API = {
   fetchAlertsTail: async (params, options) => api.get(ENDPOINT.ALERTS_TAIL.url, params, options),
   fetchPoliciesData: async (params, options) => api.get(ENDPOINT.POLICIES_DATA.url, params, options),
   fetchProcessingFilters: async (params, options) => api.get(ENDPOINT.PROCESSING.url, params, options),
+  fetchEventsFromFlowID: async (params, options) => api.get(ENDPOINT.EVENTS_FROM_FLOW_ID.url, params, options),
   // DELETE
   deleteFilterSet: async (params, options) => api.delete(ENDPOINT.FILTER_SET_DELETE.url, params, options),
 };
