@@ -17,8 +17,10 @@ import PCAPFile from 'ui/components/PCAPFile';
 import { Signature } from 'ui/components/Signature';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import UICard from 'ui/components/UIElements/UICard';
+import notify from 'ui/helpers/notify';
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 import { withStore } from 'ui/mobx/RootStoreProvider';
+import API from 'ui/services/API';
 import Filter from 'ui/utils/Filter';
 
 import { getTitle } from './helper';
@@ -110,22 +112,23 @@ class AlertItem extends React.Component {
     this.setState({ collapsed });
   }
 
-  fetchData(flowId, sid) {
+  async fetchData(flowId, sid) {
     if (!this.state.showTabs) {
       // reset the files state for each event
       this.setState({ files: {}, fileInfo: false, fileInfoLoading: false, signatureLoading: true });
-      const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&${this.props.filterParams}`;
-      axios.get(url).then(res => {
-        if (res.data !== null) {
-          if ('Alert' in res.data) {
-            for (let idx = 0; idx < Object.keys(res.data.Alert).length; idx += 1) {
-              const item = res.data.Alert[idx];
+      try {
+        const response = await API.fetchEventsFromFlowID({ qfilter: `flow_id:${flowId}` });
+
+        if (response.data !== null) {
+          if ('Alert' in response.data) {
+            for (let idx = 0; idx < Object.keys(response.data.Alert).length; idx += 1) {
+              const item = response.data.Alert[idx];
 
               if (JSON.stringify(item) === JSON.stringify(this.props.data)) {
-                res.data.Alert.splice(idx, 1);
+                response.data.Alert.splice(idx, 1);
 
-                if (res.data.Alert.length === 0) {
-                  delete res.data.Alert;
+                if (response.data.Alert.length === 0) {
+                  delete response.data.Alert;
                 }
                 break;
               }
@@ -134,19 +137,21 @@ class AlertItem extends React.Component {
 
           // key needed in dataSource for antd table in each tab
           const events = {};
-          Object.keys(res.data).forEach(key => {
-            events[key] = res.data[key].map((obj, i) => ({ key: i, rawJson: obj }));
+          Object.keys(response.data).forEach(key => {
+            events[key] = response.data[key].map((obj, i) => ({ key: i, rawJson: obj }));
           });
           this.setState({ events });
         }
-      });
+      } catch (error) {
+        notify('Fail to fetch events');
+      }
 
-      const fileUrl = `${config.API_URL}${config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId} AND fileinfo.stored:true&${this.props.filterParams}`;
-      axios.get(fileUrl).then(res => {
-        if (res.data !== null) {
-          if ('Fileinfo' in res.data) {
+      try {
+        const response = await API.fetchEventsFromFlowID({ qfilter: `flow_id:${flowId} AND fileinfo.stored:true` });
+        if (response.data !== null) {
+          if ('Fileinfo' in response.data) {
             this.setState({ fileInfo: true, fileInfoLoading: true });
-            res.data.Fileinfo.forEach(async ({ fileinfo, host }, i) => {
+            response.data.Fileinfo.forEach(async ({ fileinfo, host }, i) => {
               if (this.state.files[fileinfo.sha256] !== undefined) {
                 return;
               }
@@ -183,7 +188,7 @@ class AlertItem extends React.Component {
                       },
                     },
                   });
-                  if (res.data.Fileinfo.length - 1 >= i) {
+                  if (response.data.Fileinfo.length - 1 >= i) {
                     this.setState({ fileInfoLoading: false });
                   }
                 }
@@ -191,7 +196,9 @@ class AlertItem extends React.Component {
             });
           } else this.setState({ fileInfo: false, fileInfoLoading: false });
         }
-      });
+      } catch (error) {
+        notify('Fail to fetch events');
+      }
     }
     this.props.store.commonStore.fetchSignature(sid).then(res => {
       if (res.ok) {
@@ -1025,7 +1032,6 @@ class AlertItem extends React.Component {
 }
 AlertItem.propTypes = {
   data: PropTypes.any,
-  filterParams: PropTypes.string.isRequired,
   store: PropTypes.any,
 };
 
