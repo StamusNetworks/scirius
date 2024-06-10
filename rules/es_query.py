@@ -187,6 +187,7 @@ class ESQuery:
     INDEX = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
     ES = None
     ES_ADDRESS = None
+    SEARCH_AFTER_ORDERING_BL = ('host_id.first_seen', 'host_id.last_seen')
 
     def __init__(self, request, es_address=None, from_date=None, to_date=None, interval=None, qfilter=None):
         self.from_date = from_date
@@ -315,7 +316,7 @@ class ESQuery:
         sort_field = kwargs.get('sort_field')
 
         offset = 0
-        if sort_field:
+        if sort_field and sort_field not in self.SEARCH_AFTER_ORDERING_BL:
             # offset to get new_timestamp and next_id
             offset = 1
 
