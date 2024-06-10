@@ -45,7 +45,7 @@ const CETypedOptions = {
         <InfoCircleFilled /> <span>External info</span>
       </a>
     ),
-  }),
+  }), // Virus Total Link
   EXTERNAL_INFO_PORT: value => ({
     key: 'typedValuePort',
     label: (
