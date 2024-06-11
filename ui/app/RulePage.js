@@ -220,66 +220,42 @@ class RulePage extends React.Component {
                 <Row>
                   <HuntStat
                     title="Sources"
-                    config={this.props.config}
                     filters={this.props.filters}
                     item="src_ip"
                     filterParams={this.props.filterParams}
-                    addFilter={this.props.addFilter}
                     loadMore={this.loadMore}
-                    eventTypes={this.props.store.commonStore.eventTypes}
                   />
                   <HuntStat
                     title="Destinations"
-                    config={this.props.config}
                     filters={this.props.filters}
                     item="dest_ip"
                     filterParams={this.props.filterParams}
-                    addFilter={this.props.addFilter}
                     loadMore={this.loadMore}
-                    eventTypes={this.props.store.commonStore.eventTypes}
                   />
-                  <HuntStat
-                    title="Probes"
-                    config={this.props.config}
-                    filters={this.props.filters}
-                    item="host"
-                    filterParams={this.props.filterParams}
-                    addFilter={this.props.addFilter}
-                    loadMore={this.loadMore}
-                    eventTypes={this.props.store.commonStore.eventTypes}
-                  />
+                  <HuntStat title="Probes" filters={this.props.filters} item="host" filterParams={this.props.filterParams} loadMore={this.loadMore} />
                 </Row>
                 {this.state.extinfo.http && (
                   <Row>
                     <HuntStat
                       title="Hostname"
-                      config={this.props.config}
                       filters={this.props.filters}
                       item="http.hostname"
                       filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
-                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       title="URL"
-                      config={this.props.config}
                       filters={this.props.filters}
                       item="http.url"
                       filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
-                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       title="User agent"
-                      config={this.props.config}
                       filters={this.props.filters}
                       item="http.http_user_agent"
                       filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
-                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                   </Row>
                 )}
@@ -287,23 +263,17 @@ class RulePage extends React.Component {
                   <Row>
                     <HuntStat
                       title="Name"
-                      config={this.props.config}
                       filters={this.props.filters}
                       item="dns.query.rrname"
                       filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
-                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       title="Type"
-                      config={this.props.config}
                       filters={this.props.filters}
                       item="dns.query.rrtype"
                       filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
-                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                   </Row>
                 )}
@@ -311,33 +281,24 @@ class RulePage extends React.Component {
                   <Row>
                     <HuntStat
                       title="Subject DN"
-                      config={this.props.config}
                       filters={this.props.filters}
                       item="tls.subject"
                       filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
-                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       // title="SNIe
-                      config={this.props.config}
                       filters={this.props.filters}
                       item="tls.sni"
                       filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
-                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       title="Fingerprint"
-                      config={this.props.config}
                       filters={this.props.filters}
                       item="tls.fingerprint"
                       filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
-                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                   </Row>
                 )}
@@ -376,8 +337,6 @@ RulePage.propTypes = {
   sid: PropTypes.any,
   rule: PropTypes.any,
   filters: PropTypes.any,
-  config: PropTypes.any,
-  addFilter: PropTypes.any,
   rulesets: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
   store: PropTypes.object,
