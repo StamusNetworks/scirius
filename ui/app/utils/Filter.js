@@ -261,7 +261,9 @@ export default class Filter {
   }
 
   set negated(value) {
-    this.hookOnNegate();
+    if (value) {
+      this.hookOnNegate();
+    }
     this._negated = !!value;
     this.store();
   }
