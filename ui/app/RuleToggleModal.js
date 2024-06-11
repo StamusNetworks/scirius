@@ -129,7 +129,7 @@ class RuleToggleModal extends React.Component {
   }
 
   close() {
-    this.setState({ errors: undefined, rulesets: [] });
+    this.setState({ errors: undefined, rulesets: [], supported_filters: [] });
     this.props.close();
   }
 
