@@ -6,7 +6,9 @@ from django.urls import re_path
 from django.utils import timezone
 from django.db import models
 from collections import OrderedDict
+from string import Formatter
 import json
+import logging
 
 from django.core.exceptions import SuspiciousOperation, ValidationError
 
@@ -1864,6 +1866,21 @@ class UserActionSerializer(serializers.ModelSerializer):
 
             content['value'] = ua_obj.action_value
             all_content[ua_obj.action_key] = content
+
+        """
+        We may have some cases when the key does not exists (deleting an object like a Ruleset, RulesetVersion, NetworkDefinition, ...)
+        In order to avoid breaking the UI with a 500 HTTP error, we need to replace the missing value
+        Also, we log the missing key for further investigation
+        """
+        # get the key list that are in the description
+        formatter_keys = set([it[1] for it in Formatter().parse(actions_dict[instance.action_type]['description'])])
+        # get missing keys: only missing formatter keys are kept: https://docs.python.org/3/library/stdtypes.html#frozenset.difference
+        missing_keys = formatter_keys - set(format_.keys())
+        if len(missing_keys) > 0:
+            logger = logging.getLogger('user_actions')
+            for key in missing_keys:
+                format_[key] = "DELETED"
+                logger.error(f"User action #{instance.pk}: missing key {key} in {actions_dict[instance.action_type]}")
 
         data['title'] = instance.get_title()
         data['description_raw'] = actions_dict[instance.action_type]['description'] if instance.action_type is not None else None
