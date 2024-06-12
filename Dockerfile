@@ -37,7 +37,10 @@ RUN \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         apt-utils \
         wget \
-        unzip
+        unzip \
+        ca-certificates \
+        curl \
+        gnupg
 RUN \
   echo "**** download Kibana dashboards ****" && \
   wget --no-check-certificate --content-disposition -O /tmp/kibana7-dashboards.tar.gz https://github.com/StamusNetworks/KTS7/tarball/master && \
@@ -73,7 +76,10 @@ RUN \
         libc-dev
 RUN \
     echo "**** add NodeSource repository ****" && \
-    wget -O- https://deb.nodesource.com/setup_18.x | bash -
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list && \
+    apt update
 RUN \
     echo "**** install Node.js ****" && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
