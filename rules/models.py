@@ -709,9 +709,6 @@ class UserAction(models.Model):
         return html
 
     def get_title(self):
-        if self.description:
-            return self.description[:15]
-
         from scirius.utils import get_middleware_module
         actions_dict = get_middleware_module('common').get_user_actions_dict()
         if self.action_type not in list(actions_dict.keys()):
