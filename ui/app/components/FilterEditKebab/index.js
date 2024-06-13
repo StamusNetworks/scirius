@@ -6,6 +6,7 @@ import { Dropdown, Menu } from 'antd';
 import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 
@@ -14,7 +15,6 @@ import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import { sections } from 'ui/constants';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
 import FilterToggleModal from 'ui/FilterToggleModal';
-import { useCustomHistory } from 'ui/hooks/useCustomHistory';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import filterSetActions from 'ui/stores/filterset/actions';
 import Filter from 'ui/utils/Filter';
@@ -24,7 +24,7 @@ const FilterEditKebab = observer(({ data, lastIndex, needUpdate, setExpand, aler
   const [filterSets, setFilterSets] = useState({ showModal: false, page: '', shared: false, name: '', description: '' });
   const { commonStore } = useStore();
 
-  const history = useCustomHistory();
+  const history = useHistory();
 
   const displayToggle = useCallback(
     action => {

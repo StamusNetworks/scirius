@@ -4,10 +4,10 @@ import { InfoCircleFilled, RobotOutlined, UserOutlined } from '@ant-design/icons
 import { Dropdown } from 'antd';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
+import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 
 import typedOptions from 'ui/components/TypedValue/options';
-import { useCustomHistory } from 'ui/hooks/useCustomHistory';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
 
@@ -30,7 +30,7 @@ const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_tech
 
 const TypedValue = ({ filter, additionalLinks, redirect, children, filterOnClick = true }) => {
   const { commonStore } = useStore();
-  const history = useCustomHistory();
+  const history = useHistory();
 
   let listOfLinks = additionalLinks || [];
 

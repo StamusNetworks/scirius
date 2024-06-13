@@ -199,10 +199,8 @@ class RuleToggleModal extends React.Component {
         .then(() => {
           this.setState({ submitting: false });
           this.close();
-          const searchParams = new URLSearchParams(this.props.history.location.search);
           const url = '/stamus/hunting/policies';
-          const tenant = searchParams.get('tenant');
-          this.props.history.push(tenant ? `${url}?tenant=${tenant}` : url);
+          this.props.history.push(url);
         })
         .catch(error => {
           this.setState({ errors: error.response.data, submitting: false });

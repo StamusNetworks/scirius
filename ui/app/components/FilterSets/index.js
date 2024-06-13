@@ -24,6 +24,7 @@ import { DeleteOutlined, InfoCircleOutlined, LoadingOutlined } from '@ant-design
 import { Drawer, Collapse, Empty, Modal } from 'antd';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 
 import FilterSetItem from 'ui/components/FilterSetItem';
@@ -33,7 +34,6 @@ import { sections, huntUrls } from 'ui/constants';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
 import { addFilter, clearFilters, setTag } from 'ui/containers/HuntApp/stores/global';
-import { useCustomHistory } from 'ui/hooks/useCustomHistory';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import filterSetActions from 'ui/stores/filterset/actions';
 import reducer from 'ui/stores/filterset/reducer';
@@ -61,7 +61,7 @@ const FilterSets = () => {
   useInjectSaga({ key: 'filterSets', saga });
   const dispatch = useDispatch();
   const { commonStore } = useStore();
-  const history = useCustomHistory();
+  const history = useHistory();
 
   const [expandedPanels, setExpandedPanels] = useState([]);
   const [searchValue, setSearchValue] = useState('');

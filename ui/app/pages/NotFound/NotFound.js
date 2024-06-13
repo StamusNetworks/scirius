@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { Button, Empty } from 'antd';
+import { useHistory } from 'react-router-dom';
 
 import { HOME_PATH } from 'ui/config';
-import { useCustomHistory } from 'ui/hooks/useCustomHistory';
 
 import * as Style from './style';
 
@@ -14,7 +14,7 @@ const NotFound = () => (
 );
 
 const Description = () => {
-  const history = useCustomHistory();
+  const history = useHistory();
   return (
     <div>
       <h2>Not found</h2>
