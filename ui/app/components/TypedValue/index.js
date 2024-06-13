@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import typedOptions from 'ui/components/TypedValue/options';
-import isIP from 'ui/helpers/isIP';
 import { useCustomHistory } from 'ui/hooks/useCustomHistory';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
@@ -150,7 +149,10 @@ const TypedValue = ({ filter, additionalLinks, redirect, children, filterOnClick
       }}
       trigger={[!filterOnClick ? 'hover' : 'contextMenu']}
       destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
-      onClick={filterOnClick ? () => commonStore.addFilter(filter) : null}
+      onClick={() => {
+        if (filterOnClick) commonStore.addFilter(filter);
+        if (redirect) history.push(`/stamus/hunting/dashboards`);
+      }}
     >
       {children || (
         <Value title="Right click for more actions" data-test={filter.displayValue}>
