@@ -16,6 +16,7 @@ import EventsField from 'ui/components/EventsField';
 import PCAPFile from 'ui/components/PCAPFile';
 import { Signature } from 'ui/components/Signature';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
+import TypedValue from 'ui/components/TypedValue';
 import UICard from 'ui/components/UIElements/UICard';
 import notify from 'ui/helpers/notify';
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
@@ -325,6 +326,10 @@ class AlertItem extends React.Component {
         </Warning>
       </Fragment>
     );
+  }
+
+  getFiles(files = []) {
+    return files?.filter(file => file.sha256 || file.md5);
   }
 
   render() {
@@ -904,41 +909,45 @@ class AlertItem extends React.Component {
             )}
           </TabPaneResponsive>
 
-          <UICard title="Files" style={{ marginBottom: '10px' }}>
-            <div />
-            <Table
-              pagination={false}
-              dataSource={data.files}
-              columns={[
-                {
-                  key: 'filename',
-                  title: 'Filename',
-                  dataIndex: 'filename',
-                },
-                {
-                  key: 'mimetype',
-                  title: 'Mimetype',
-                  dataIndex: 'mimetype',
-                },
-                {
-                  key: 'size',
-                  title: 'Size',
-                  dataIndex: 'size',
-                },
-                {
-                  key: 'sha256',
-                  title: 'SHA256',
-                  dataIndex: 'sha256',
-                },
-                {
-                  key: 'stored',
-                  title: 'Stored',
-                  dataIndex: 'stored',
-                  render: value => (value ? 'Yes' : 'No'),
-                },
-              ]}
-            />
-          </UICard>
+          {this.getFiles(data.files).length > 0 && (
+            <UICard title="Files" style={{ marginBottom: '10px' }}>
+              <div />
+              <Table
+                pagination={false}
+                dataSource={this.getFiles(data.files)}
+                columns={[
+                  {
+                    key: 'filename',
+                    title: 'Filename',
+                    dataIndex: 'filename',
+                  },
+                  {
+                    key: 'mimetype',
+                    title: 'Mimetype',
+                    dataIndex: 'mimetype',
+                    render: val => val || 'N/A',
+                  },
+                  {
+                    key: 'size',
+                    title: 'Size',
+                    dataIndex: 'size',
+                  },
+                  {
+                    key: 'sha256',
+                    title: 'SHA256',
+                    dataIndex: 'sha256',
+                    render: val => <TypedValue filter={new Filter('file.sha256', val)} filterOnClick={false} />,
+                  },
+                  {
+                    key: 'stored',
+                    title: 'Stored',
+                    dataIndex: 'stored',
+                    render: value => (value ? 'Yes' : 'No'),
+                  },
+                ]}
+              />
+            </UICard>
+          )}
 
           {data.payload_printable && (
             <UICard data-test="alert-card-Payload printable" title="Payload printable" noPadding style={{ marginBottom: '10px' }}>
