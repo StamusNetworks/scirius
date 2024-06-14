@@ -91,20 +91,6 @@ class CommonStore {
         console.log('Error while parsing local storage data');
       }
     }
-    if (!localStorage.getItem('startDate')) {
-      const startDate = moment().subtract(1, 'hours').unix();
-      this._startDate = startDate;
-      localStorage.setItem('startDate', startDate);
-    } else {
-      this._startDate = localStorage.getItem('startDate');
-    }
-    if (!localStorage.getItem('endDate')) {
-      const endDate = moment().unix();
-      this._endDate = endDate;
-      localStorage.setItem('endDate', endDate);
-    } else {
-      this._endDate = localStorage.getItem('endDate');
-    }
     if (!localStorage.getItem('withAlerts')) {
       localStorage.setItem('withAlerts', 'true');
       this._withAlerts = true;
@@ -131,6 +117,26 @@ class CommonStore {
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log('Error while parsing local storage data');
+    }
+    const storedStartDate = localStorage.getItem('startDate');
+    const storedEndDate = localStorage.getItem('endDate');
+    if (!storedStartDate || !storedEndDate) {
+      this._timeRangeType = 'relative';
+      this._relativeType = 'H1';
+      this._startDate = moment().subtract(1, 'hours').unix();
+      this._endDate = moment().unix();
+    } else if (this._timeRangeType === 'absolute') {
+      this._startDate = Number(storedStartDate);
+      this._endDate = Number(storedEndDate);
+    } else {
+      this._relativeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.duration || 'H1';
+      if (this._relativeType === 'Auto') {
+        this._startDate = this._minTimestamp;
+        this._endDate = this._maxTimestamp;
+      } else {
+        this._startDate = moment().subtract(PeriodEnum[this._relativeType].seconds, 'seconds').unix();
+        this._endDate = moment().unix();
+      }
     }
     makeAutoObservable(this, {
       root: false,
@@ -167,7 +173,6 @@ class CommonStore {
         break;
       case 'All':
         this._startDate = 0;
-        this._endDate = moment().unix();
         break;
       case 'Auto':
         this._startDate = this._minTimestamp;
@@ -176,7 +181,7 @@ class CommonStore {
       default:
         break;
     }
-    if (type !== 'All') {
+    if (type !== 'Auto') {
       this._endDate = moment().unix();
     }
     this._timeRangeType = 'relative';
@@ -284,18 +289,18 @@ class CommonStore {
   async fetchAllPeriod() {
     const response = await api.get(endpoints.ALL_PERIOD.url, { event_view: false });
     if (response.ok) {
-      const { max_timestamp: maxTimestamp = 0, min_timestamp: minTimestamp = 0 } = response.data;
+      const { max_timestamp: maxValue, min_timestamp: minValue } = response.data;
+      const minTimestamp = parseInt(minValue, 10);
+      const maxTimestamp = parseInt(maxValue, 10);
+      const correct = !Number.isNaN(minTimestamp) && !Number.isNaN(maxTimestamp);
 
-      const correct = !Number.isNaN(parseInt(response.data.max_timestamp, 10)) && !Number.isNaN(parseInt(response.data.min_timestamp, 10));
-      if (!correct) {
+      // If the difference between min and max timestamp is less than a week, set the default period to D7
+      if (!correct || maxTimestamp - minTimestamp < 60 * 60 * 24 * 7) {
         this._minTimestamp = null;
         this._maxTimestamp = null;
-        if (this._relativeType === 'All') {
-          this._relativeType = 'D7';
-        }
       } else {
-        this._minTimestamp = Math.round(minTimestamp / 1000);
-        this._maxTimestamp = Math.round(maxTimestamp / 1000);
+        this._minTimestamp = minTimestamp;
+        this._maxTimestamp = maxTimestamp;
       }
       this.setTimePickerStorage();
     }
@@ -414,19 +419,19 @@ class CommonStore {
     if (this._timeRangeType === 'absolute') {
       return this._startDate;
     }
-    if (this._relativeType === 'All') {
+    if (this._relativeType === 'Auto') {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return !Number.isNaN(parseInt(this._minTimestamp, 10)) ? moment(this._minTimestamp).unix() : moment().subtract(7, 'days');
+      return this._minTimestamp || moment().subtract(7, 'days').unix();
     }
-    return moment().subtract(PeriodEnum[this._relativeType].seconds, 'milliseconds').unix();
+    return moment().subtract(PeriodEnum[this._relativeType].seconds, 'seconds').unix();
   }
 
   get endDate() {
-    if (this._relativeType === 'All') {
+    if (this._relativeType === 'Auto') {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return !Number.isNaN(parseInt(this._maxTimestamp, 10)) ? moment(this._maxTimestamp).unix() : moment();
+      return this._maxTimestamp || moment().unix();
     }
-    return parseInt(this._endDate, 10);
+    return this._endDate;
   }
 
   get refresh() {
