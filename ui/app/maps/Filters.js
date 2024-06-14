@@ -19,6 +19,7 @@ export const FilterType = {
   ROLE: 'ROLE',
   NETWORK_INFO: 'NETWORK_INFO',
   STAMUS_ASSET: 'STAMUS_ASSET',
+  SHA256: 'SHA256',
   GENERIC: 'GENERIC',
 };
 
@@ -862,6 +863,7 @@ export const FiltersList = [
     title: 'SHA256',
     id: 'file.sha256',
     category: FilterCategory.EVENT,
+    type: FilterType.SHA256,
   },
   {
     title: 'Mimetype',
