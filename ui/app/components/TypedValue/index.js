@@ -29,7 +29,7 @@ const DropdownLabel = styled.div`
 
 const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_technique_id'];
 
-const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
+const TypedValue = ({ filter, additionalLinks, redirect, children, filterOnClick = true }) => {
   const { commonStore } = useStore();
   const history = useCustomHistory();
 
@@ -157,9 +157,9 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           },
         ],
       }}
-      trigger={['contextMenu']}
+      trigger={[!filterOnClick ? 'hover' : 'contextMenu']}
       destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
-      onClick={() => commonStore.addFilter(filter)}
+      onClick={filterOnClick ? () => commonStore.addFilter(filter) : null}
     >
       {children || (
         <Value title="Right click for more actions" data-test={filter.displayValue}>
@@ -179,6 +179,7 @@ TypedValue.propTypes = {
   redirect: PropTypes.bool,
   additionalLinks: PropTypes.arrayOf(PropTypes.object),
   children: PropTypes.node,
+  filterOnClick: PropTypes.bool,
 };
 
 export default TypedValue;
