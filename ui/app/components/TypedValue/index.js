@@ -120,6 +120,10 @@ const TypedValue = ({ filter, additionalLinks, redirect, children, filterOnClick
     listOfLinks = [...listOfLinks, typedOptions.EXTERNAL_INFO_PORT(filter.displayValue)];
   }
 
+  if (filter.type === 'SHA256') {
+    listOfLinks = [...listOfLinks, typedOptions.EXTERNAL_INFO('file', filter.displayValue)];
+  }
+
   // additionalLinks apply to all fields - ip, port, hostname, username
   if (filter.id === mitreLinks[0] || filter.id === mitreLinks[1]) {
     listOfLinks = [
