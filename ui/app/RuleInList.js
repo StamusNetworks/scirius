@@ -1,18 +1,16 @@
 import React from 'react';
 
-import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { SafetyOutlined } from '@ant-design/icons';
 import { Spin, Table } from 'antd';
 import PropTypes from 'prop-types';
 
-import { Count } from 'ui/components/EventValue';
+import EventValue, { Count } from 'ui/components/EventValue';
 import ExpandedSignature from 'ui/components/ExpandedSignature';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
-import { useStore } from 'ui/mobx/RootStoreProvider';
 import 'ui/pygments.css';
 import Filter from 'ui/utils/Filter';
 
 const RuleInList = ({ rulesets, rules, filterParams, loading }) => {
-  const { commonStore } = useStore();
   const columns = [
     {
       title: '',
@@ -24,6 +22,7 @@ const RuleInList = ({ rulesets, rules, filterParams, loading }) => {
       onHeaderCell: () => ({
         'data-test': 'sid',
       }),
+      render: val => <EventValue filter={new Filter('alert.signature_id', val)} />,
     },
     {
       title: 'Message',
@@ -31,6 +30,7 @@ const RuleInList = ({ rulesets, rules, filterParams, loading }) => {
       onHeaderCell: () => ({
         'data-test': 'message',
       }),
+      render: val => <EventValue filter={new Filter('msg', val)} />,
     },
     {
       title: 'Created',
@@ -59,31 +59,6 @@ const RuleInList = ({ rulesets, rules, filterParams, loading }) => {
       onHeaderCell: () => ({
         'data-test': 'alerts',
       }),
-    },
-    {
-      title: 'Filter',
-      dataIndex: 'filter',
-      onHeaderCell: () => ({
-        'data-test': 'filter',
-      }),
-      render: (text, rule) => (
-        <React.Fragment>
-          <ZoomInOutlined
-            data-test="zoom-in-magnifier"
-            style={{ marginRight: '10px' }}
-            onClick={() => {
-              commonStore.addFilter(new Filter('alert.signature_id', rule.sid, { negated: false }));
-            }}
-          />
-          <ZoomOutOutlined
-            data-test="zoom-out-magnifier"
-            onClick={e => {
-              e.stopPropagation();
-              commonStore.addFilter(new Filter('alert.signature_id', rule.sid, { negated: true }));
-            }}
-          />
-        </React.Fragment>
-      ),
     },
     {
       title: 'Ctrl',

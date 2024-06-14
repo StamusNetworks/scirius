@@ -27,6 +27,7 @@ import moment from 'moment';
 import { Helmet } from 'react-helmet';
 
 import ErrorHandler from 'ui/components/Error';
+import EventValue from 'ui/components/EventValue';
 import Filters from 'ui/components/Filters';
 import HuntRestError from 'ui/components/HuntRestError';
 import { STAMUS } from 'ui/config';
@@ -34,6 +35,7 @@ import buildListParams from 'ui/helpers/buildListParams';
 import useAutorun from 'ui/helpers/useAutorun';
 import useFilterParams from 'ui/hooks/useFilterParams';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import Filter from 'ui/utils/Filter';
 
 import { buildListUrlParams } from '../../helpers/common';
 import HuntPaginationRow from '../../HuntPaginationRow';
@@ -112,6 +114,7 @@ const EventsPage = () => {
       onHeaderCell: () => ({
         'data-test': 'method',
       }),
+      render: val => <EventValue filter={new Filter('alert.signature', val)} />,
     },
     {
       title: 'Source IP',
@@ -119,6 +122,7 @@ const EventsPage = () => {
       onHeaderCell: () => ({
         'data-test': 'source-ip',
       }),
+      render: val => <EventValue filter={new Filter('src_ip', val)} />,
     },
     {
       title: 'Destination IP',
@@ -126,6 +130,7 @@ const EventsPage = () => {
       onHeaderCell: () => ({
         'data-test': 'destination-ip',
       }),
+      render: val => <EventValue filter={new Filter('dest_ip', val)} />,
     },
     {
       title: 'Proto',
@@ -133,6 +138,7 @@ const EventsPage = () => {
       onHeaderCell: () => ({
         'data-test': 'proto',
       }),
+      render: val => <EventValue filter={new Filter('app_proto', val)} />,
     },
     {
       title: 'Probe',
