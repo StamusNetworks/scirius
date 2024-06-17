@@ -37,7 +37,7 @@ from django.contrib.auth.decorators import permission_required
 from elasticsearch.exceptions import ConnectionError as ESConnectionError
 import django_tables2 as tables
 
-from scirius.utils import scirius_render, scirius_listing, RequestsWrapper
+from scirius.utils import get_middleware_module, scirius_render, scirius_listing, RequestsWrapper
 
 from rules.es_data import ESData
 from rules.models import RuleAtVersion, Ruleset, Source, SourceUpdate, Category, Rule, SuppressedRuleAtVersion, dependencies_check, get_system_settings
@@ -246,8 +246,6 @@ class Reference:
 
 
 def elasticsearch(request):
-    from scirius.utils import get_middleware_module
-
     RULE_FIELDS_MAPPING = {
         'rule_src': 'src_ip',
         'rule_dest': 'dest_ip',
@@ -354,8 +352,6 @@ def rule(request, rule_id):
     if request.is_ajax():
         filters = {}
         if rule.ruleatversion_set.count() > 1:
-            from scirius.utils import get_middleware_module
-
             hosts = request.GET.get('hosts', None)
             filters = {'version': get_middleware_module('common').rule_version(hosts)}
 
@@ -1103,7 +1099,6 @@ def activate_source(request, source_id, ruleset_id):
 
 @permission_required('rules.source_view', raise_exception=True)
 def test_source(request, source_id):
-    from scirius.utils import get_middleware_module
     source = get_object_or_404(Source, pk=source_id)
     test_results = source.test()
     get_middleware_module('common').update_rule_analysis(source.pk, request.user)
@@ -1518,7 +1513,6 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
         context['disabled_rules'] = suppr_rules_t
 
     elif mode == 'display':
-        from scirius.utils import get_middleware_module
         vers_ravs = get_middleware_module('common').rules_at_version_from_ruleset(ruleset)
 
         all_rules = {}
@@ -1563,8 +1557,6 @@ def ruleset_export(request, ruleset_id):
 
 @permission_required('rules.source_edit', raise_exception=True)
 def add_ruleset(request):
-    from scirius.utils import get_middleware_module
-
     extra_form = get_middleware_module('common').extra_ruleset_form(request)
 
     context = {}
@@ -1676,8 +1668,6 @@ def update_ruleset(request, ruleset_id):
 
 @permission_required('rules.source_view', raise_exception=True)
 def changelog_ruleset(request, ruleset_id):
-    from scirius.utils import get_middleware_module
-
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     return get_middleware_module('common').changelog_ruleset(request, ruleset)
 
@@ -1791,7 +1781,6 @@ def edit_ruleset(request, ruleset_id):
 
         return redirect(ruleset)
     else:
-        from scirius.utils import get_middleware_module
         mode = request.GET.get('mode', None)
 
         if mode == 'sources':
@@ -1912,7 +1901,6 @@ def ruleset_add_supprule(request, ruleset_id):
             ruleset.save()
         return redirect(ruleset)
 
-    from scirius.utils import get_middleware_module
     rules = EditRuleTable(Rule.objects.all())
     tables.RequestConfig(request).configure(rules)
     context = {
@@ -1971,7 +1959,6 @@ def system_settings(request):
     main_form = SystemSettingsForm(instance=gsettings, request=request)
     kibana_form = KibanaDataForm()
 
-    from scirius.utils import get_middleware_module
     context = {
         'form_id': 'main',
         'main_form': main_form,
