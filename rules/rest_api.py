@@ -109,7 +109,6 @@ class RulesetSerializer(serializers.ModelSerializer):
         data['sources'] = [source.pk for source in sources]
 
         try:
-            from scirius.utils import get_middleware_module
             data.update(get_middleware_module('common').get_rest_ruleset(instance))
         except AttributeError:
             pass
@@ -1839,7 +1838,6 @@ class UserActionSerializer(serializers.ModelSerializer):
         fields = ('pk', 'action_type', 'date', 'comment', 'user', 'username', 'ua_objects', 'client_ip')
 
     def to_representation(self, instance):
-        from scirius.utils import get_middleware_module
         data = super(UserActionSerializer, self).to_representation(instance)
         actions_dict = get_middleware_module('common').get_user_actions_dict()
 
@@ -1961,7 +1959,6 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def get_action_type_list(self, request):
-        from scirius.utils import get_middleware_module
         actions_dict = get_middleware_module('common').get_user_actions_dict()
 
         res = OrderedDict()
@@ -2473,7 +2470,6 @@ class ESCheckVersionViewSet(APIView):
     }
 
     def post(self, request, format=None):
-        from scirius.utils import get_middleware_module
         res = {}
         try:
             es_url = self.request.data.get('es_url', '')
@@ -2971,8 +2967,6 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
     no_tenant_check = True
 
     def retrieve(self, request, pk=None):
-        from scirius.utils import get_middleware_module
-
         instance = self.get_object()
         serializer = SystemSettingsSerializer(instance)
         data = serializer.data.copy()
@@ -3033,7 +3027,6 @@ class SciriusContextAPIView(APIView):
     no_tenant_check = True
 
     def get(self, request, format=None):
-        from scirius.utils import get_middleware_module
         context = get_middleware_module('common').get_homepage_context()
         return Response(context)
 
@@ -3113,7 +3106,6 @@ class FilterSetViewSet(viewsets.ModelViewSet):
         return item['name']
 
     def list(self, request):
-        from scirius.utils import get_middleware_module
         filters = get_middleware_module('common').get_default_filter_sets()
 
         queryset = self.get_queryset()
@@ -3178,7 +3170,6 @@ class HuntFilterAPIView(APIView):
     no_tenant_check = True
 
     def get(self, request, format=None):
-        from scirius.utils import get_middleware_module
         filters = get_middleware_module('common').get_hunt_filters()
         return Response(filters)
 
