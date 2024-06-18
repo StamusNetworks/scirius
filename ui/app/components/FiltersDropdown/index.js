@@ -87,13 +87,13 @@ function FiltersDropdown({ disabled, filterTypes }) {
 
   const [pathItems, setPathItems] = useState({ path: null, items: [] });
   const [negated, setNegated] = useState(false);
-  const [value, setValue] = useState();
-  const [valueType, setValueType] = useState();
-  const [validationType, setValidationType] = useState();
+  const [value, setValue] = useState(null);
+  const [valueType, setValueType] = useState(null);
+  const [validationType, setValidationType] = useState(null);
 
   const onClear = () => {
-    setValueType();
-    setValue();
+    setValueType(null);
+    setValue(null);
     setNegated(false);
   };
 
