@@ -51,6 +51,12 @@ export const FilterLabel = styled.span`
   list-style: none outside none;
   cursor: default;
   padding-left: ${p => (!p?.hasIcon ? '5px' : '0')};
+
+  // Prevent filter text from overflowing
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 350px;
 `;
 
 export const FilterText = styled.div`
