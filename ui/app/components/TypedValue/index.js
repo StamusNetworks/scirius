@@ -112,7 +112,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children, filterOnClick
         commonStore.addFilter(filter);
         if (redirect) history.push(`/stamus/hunting/dashboards`);
       }),
-      typedOptions.EXTERNAL_INFO(filter.value),
+      typedOptions.EXTERNAL_INFO('ip-address', filter.value),
     ];
   }
 

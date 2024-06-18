@@ -4,7 +4,6 @@ import { CopyOutlined, InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from 
 import { message } from 'antd';
 
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
-import isIP from 'ui/helpers/isIP';
 
 const CETypedOptions = {
   COPY_TO_CLIPBOARD: value => ({
@@ -39,10 +38,10 @@ const CETypedOptions = {
       </div>
     ),
   }), // Negated filter on IP: 0.0.0.0
-  EXTERNAL_INFO: value => ({
+  EXTERNAL_INFO: (type, value) => ({
     key: 'typedValueIP4',
     label: (
-      <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
+      <a href={`https://www.virustotal.com/gui/${type}/${value}`} target="_blank">
         <InfoCircleFilled /> <span>External info</span>
       </a>
     ),
