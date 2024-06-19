@@ -46,6 +46,7 @@ export const ActionSubItemTwoItem = styled.div`
 
 export const DescriptionItem = styled.div`
   padding: 0 10px;
+  word-break: break-all;
 `;
 
 export const FiltersCell = styled.div`
