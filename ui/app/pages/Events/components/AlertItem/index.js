@@ -10,6 +10,7 @@ import styled from 'styled-components';
 
 import * as config from 'config/Api';
 import AlertRelatedData from 'ui/components/AlertRelatedData';
+import * as Style from 'ui/components/AlertRelatedData/style';
 import ErrorHandler from 'ui/components/Error';
 import EventField from 'ui/components/EventField';
 import EventsField from 'ui/components/EventsField';
@@ -920,6 +921,7 @@ class AlertItem extends React.Component {
                     key: 'filename',
                     title: 'Filename',
                     dataIndex: 'filename',
+                    render: val => <Style.BreakAnywhere>{val}</Style.BreakAnywhere>,
                   },
                   {
                     key: 'mimetype',
