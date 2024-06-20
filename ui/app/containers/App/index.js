@@ -7,7 +7,7 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Layout } from 'antd';
+import { ConfigProvider, Layout } from 'antd';
 import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -23,6 +23,7 @@ import Header from 'ui/components/Header';
 import LeftNav from 'ui/components/LeftNav';
 import ProxyRoute from 'ui/components/ProxyRoute';
 import { APP_URL } from 'ui/config';
+import { theme } from 'ui/config/theme';
 import actions from 'ui/containers/App/actions';
 import saga from 'ui/containers/App/saga';
 import selectors from 'ui/containers/App/selectors';
@@ -96,42 +97,44 @@ const App = ({ setSessionActivity }) => {
   }
 
   return (
-    <Layout>
-      {errorMsg && <pre id="rf_js_error">{errorMsg}</pre>}
-      <GlobalStyle />
-      <ErrorHandler>
-        <Header />
-      </ErrorHandler>
+    <ConfigProvider theme={theme}>
       <Layout>
+        {errorMsg && <pre id="rf_js_error">{errorMsg}</pre>}
+        <GlobalStyle />
         <ErrorHandler>
-          <LeftNav />
+          <Header />
         </ErrorHandler>
-        <ErrorHandler>
-          <Content>
-            <Switch>
-              {pagesList
-                .filter(page => typeof pages[page].metadata.url !== 'function')
-                .map(page => {
-                  if (!commonStore.systemSettings.license?.nta && pages[page].metadata.nta) return null;
-                  return (
-                    <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />
-                  );
-                })
-                .filter(route => route)}
-              <Route exact path={['/', APP_URL]}>
-                {pages.OperationalCenter ? (
-                  <Redirect to={`${APP_URL}/security-posture/operational-center`} />
-                ) : (
-                  <Redirect to={`${APP_URL}/hunting/dashboards`} />
-                )}
-              </Route>
-              <ProxyRoute />
-            </Switch>
-            <FilterSets />
-          </Content>
-        </ErrorHandler>
+        <Layout>
+          <ErrorHandler>
+            <LeftNav />
+          </ErrorHandler>
+          <ErrorHandler>
+            <Content>
+              <Switch>
+                {pagesList
+                  .filter(page => typeof pages[page].metadata.url !== 'function')
+                  .map(page => {
+                    if (!commonStore.systemSettings.license?.nta && pages[page].metadata.nta) return null;
+                    return (
+                      <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />
+                    );
+                  })
+                  .filter(route => route)}
+                <Route exact path={['/', APP_URL]}>
+                  {pages.OperationalCenter ? (
+                    <Redirect to={`${APP_URL}/security-posture/operational-center`} />
+                  ) : (
+                    <Redirect to={`${APP_URL}/hunting/dashboards`} />
+                  )}
+                </Route>
+                <ProxyRoute />
+              </Switch>
+              <FilterSets />
+            </Content>
+          </ErrorHandler>
+        </Layout>
       </Layout>
-    </Layout>
+    </ConfigProvider>
   );
 };
 
