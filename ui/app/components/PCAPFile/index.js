@@ -214,7 +214,7 @@ const PCAPFile = ({ alertData }) => {
           <Warning>WARNING: Be careful when downloading. The PCAP can contain malicious, inappropriate, or illegal data!</Warning>
           <Modal
             title="PCAP file download progress"
-            visible={showPCAPdownloadProgress}
+            open={showPCAPdownloadProgress}
             onCancel={() => setShowPCAPdownloadProgress(false)}
             footer={
               <ModalFooter

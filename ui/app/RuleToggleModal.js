@@ -262,7 +262,7 @@ class RuleToggleModal extends React.Component {
     }
     return (
       <Modal
-        visible={this.props.show}
+        open={this.props.show}
         title={title}
         onCancel={this.close}
         footer={

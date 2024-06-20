@@ -308,9 +308,8 @@ class RulePage extends React.Component {
           {this.state.rule && !this.state.rule.hits && <Empty description="No hits for this signature" style={{ padding: '3rem 0' }} />}
           <SignatureFlow rule={this.state.rule} />
         </Spin>
-
         <Modal
-          visible={!(this.state.moreModal === null)}
+          open={!(this.state.moreModal === null)}
           title="More results"
           footer={null}
           onCancel={() => {

@@ -23,7 +23,7 @@ const RuleContentModal = props => {
   return (
     <Modal
       title={<div>Transformed rule content in {props.rule_status.name}</div>}
-      visible={props.display}
+      open={props.display}
       onCancel={props.close}
       footer={null}
       aria-labelledby="contained-modal-title-lg"

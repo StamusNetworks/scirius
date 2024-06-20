@@ -139,7 +139,7 @@ const FilterSets = () => {
   const totalResults = rowsGlobal.length + rowsPrivate.length + rowsStatic.length;
 
   return (
-    <Drawer visible={visible} onClose={() => dispatch(actions.setFilterSets(false))} title="Filter Sets" placement="right" zIndex={10000} width={450}>
+    <Drawer open={visible} onClose={() => dispatch(actions.setFilterSets(false))} title="Filter Sets" placement="right" zIndex={10000} width={450}>
       <FilterSetSearch onChange={value => setSearchValue(value)} disabled={loading} value={searchValue} />
       {!loading && totalResults === 0 && (
         <NoResults>
@@ -161,7 +161,7 @@ const FilterSets = () => {
             header={item.title}
             extra={
               loading ? (
-                <LoadingIndicator style={{ width: 22, height: 22, margin: 0 }} />
+                <LoadingIndicator rootStyle={{ width: 22, height: 22, margin: 0 }} />
               ) : (
                 <span data-test={`${item.title.toLowerCase().replaceAll(' ', '-')}-count`}>{`${item.data.length} Filter Sets`}</span>
               )
@@ -184,7 +184,7 @@ const FilterSets = () => {
       </Collapse>
       <Modal
         title="Deleting a filter set"
-        visible={Boolean(confirmDelete)}
+        open={Boolean(confirmDelete)}
         zIndex={11000}
         onCancel={() => dispatch(filterSetActions.deleteFilterSetConfirm(undefined))}
         onOk={() => {
