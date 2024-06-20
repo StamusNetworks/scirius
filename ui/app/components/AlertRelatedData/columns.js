@@ -49,7 +49,7 @@ const columns = {
   Http: [
     { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     { title: 'Host', dataIndex: ['rawJson', 'http', 'hostname'] },
-    { title: 'URL', dataIndex: ['rawJson', 'http', 'url'] },
+    { title: 'URL', dataIndex: ['rawJson', 'http', 'url'], render: val => <Style.BreakAnywhere>{val}</Style.BreakAnywhere> },
     { title: 'User Agent', dataIndex: ['rawJson', 'http', 'http_user_agent'] },
     { title: 'Status', dataIndex: ['rawJson', 'http', 'status'] },
     { title: 'HTTP Method', dataIndex: ['rawJson', 'http', 'http_method'] },
@@ -210,7 +210,11 @@ const columns = {
       },
     },
     { title: 'Size', dataIndex: ['rawJson', 'fileinfo', 'size'] },
-    { title: 'Filename', dataIndex: ['rawJson', 'fileinfo', 'filename'] },
+    {
+      title: 'Filename',
+      dataIndex: ['rawJson', 'fileinfo', 'filename'],
+      render: val => <Style.BreakAnywhere>{val}</Style.BreakAnywhere>,
+    },
     {
       title: 'Stored',
       render: data => {
