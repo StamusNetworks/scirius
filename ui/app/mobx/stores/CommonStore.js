@@ -175,8 +175,8 @@ class CommonStore {
         this._startDate = 0;
         break;
       case 'Auto':
-        this._startDate = this._minTimestamp;
-        this._endDate = this._maxTimestamp;
+        this._startDate = moment(this._minTimestamp).unix();
+        this._endDate = moment(this._maxTimestamp).unix();
         break;
       default:
         break;
@@ -421,7 +421,7 @@ class CommonStore {
     }
     if (this._relativeType === 'Auto') {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return this._minTimestamp || moment().subtract(7, 'days').unix();
+      return moment(this._minTimestamp).unix() || moment().subtract(7, 'days').unix();
     }
     return moment().subtract(PeriodEnum[this._relativeType].seconds, 'seconds').unix();
   }
@@ -429,7 +429,7 @@ class CommonStore {
   get endDate() {
     if (this._relativeType === 'Auto') {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return this._maxTimestamp || moment().unix();
+      return moment(this._maxTimestamp).unix() || moment().unix();
     }
     return this._endDate;
   }

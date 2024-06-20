@@ -34,7 +34,7 @@ const makeSelectStartDate = () =>
     }
     if (subState.timespan.duration === 'Auto') {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return !Number.isNaN(parseInt(minTimestamp, 10)) ? moment.unix(minTimestamp) : moment().subtract(7, 'days');
+      return !Number.isNaN(parseInt(minTimestamp, 10)) ? moment(minTimestamp) : moment().subtract(7, 'days');
     }
     return moment.unix(subState.timespan.now - PeriodEnum[subState.timespan.duration].seconds);
   });
@@ -47,7 +47,7 @@ const makeSelectEndDate = () =>
     const { maxTimestamp } = subState.timespan;
     if (subState.timespan.duration === 'Auto') {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return !Number.isNaN(parseInt(maxTimestamp, 10)) ? moment.unix(maxTimestamp) : moment.unix(subState.timespan.now);
+      return !Number.isNaN(parseInt(maxTimestamp, 10)) ? moment(maxTimestamp) : moment.unix(subState.timespan.now);
     }
     return moment.unix(subState.timespan.now);
   });
