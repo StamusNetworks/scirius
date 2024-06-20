@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "7.4.3",
-    "antd": "^4.24.7",
+    "antd": "^5.18.3",
     "apisauce": "^3.0.0",
     "axios": "^1.6.7",
     "c3": "^0.4.24",
