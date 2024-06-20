@@ -4,6 +4,7 @@
 
 const path = require('path');
 
+const AntdMomentWebpackPlugin = require('@ant-design/moment-webpack-plugin');
 const webpack = require('webpack');
 
 const { ANTD_THEME } = require('../../app/constants/antd.json');
@@ -30,7 +31,7 @@ module.exports = options => ({
             loader: 'babel-loader',
             options: {
               presets: [['@babel/preset-env', { targets: 'defaults' }], '@babel/preset-react'],
-              plugins: ['babel-plugin-styled-components', ['import', { libraryName: 'antd', libraryDirectory: 'es', style: true }]],
+              plugins: ['babel-plugin-styled-components'],
             },
           },
         ],
@@ -95,6 +96,7 @@ module.exports = options => ({
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
     }),
+    new AntdMomentWebpackPlugin(),
   ]),
   resolve: {
     modules: ['node_modules', 'app'],
