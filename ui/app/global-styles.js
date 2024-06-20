@@ -11,6 +11,13 @@ const GlobalStyle = createGlobalStyle`
   .ant-table-row:hover > td {
     background: #f0f2f5 !important;
   }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-smooth: antialiased;
+    padding: 0;
+    margin: 0;
+  }
 `;
 
 export default GlobalStyle;

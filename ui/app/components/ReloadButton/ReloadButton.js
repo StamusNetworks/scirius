@@ -20,9 +20,8 @@ export const ReloadButton = ({ reloadThreats = () => null }) => {
         commonStore.reload();
         reloadThreats();
       }}
-      icon={<ReloadOutlined />}
-      type="ghost"
     >
+      <ReloadOutlined />
       Reload
     </Style.ReloadButton>
   );

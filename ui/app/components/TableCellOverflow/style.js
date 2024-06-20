@@ -26,11 +26,17 @@ export const ValueContainer = styled.div`
 
 export const PopoverContent = styled.div`
   max-width: 250px;
-
-  ol {
-    margin-bottom: 0;
+  ul {
     & > li {
-      padding-left: 10px;
+      list-style: none;
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    & > li > div {
+      flex-shrink: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 `;

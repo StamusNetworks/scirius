@@ -19,6 +19,7 @@ export const LeftNavStyled = styled(Sider)`
 
   .ant-menu {
     background: #fff;
+    padding-left: 8px;
   }
 
   .ant-menu-submenu-title {
@@ -48,7 +49,7 @@ export const LeftNavStyled = styled(Sider)`
   }
 
   .ant-menu-item {
-    padding-left: 40px !important;
+    padding-left: 32px !important;
     padding-right: 5px !important;
     /*decrease height of menus*/
     height: 30px !important;

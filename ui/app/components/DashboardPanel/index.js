@@ -11,7 +11,7 @@ import useAutorun from 'ui/helpers/useAutorun';
 import { api } from 'ui/mobx/api';
 
 const Title = styled.h2`
-  margin-top: 10px;
+  margin: 0.5rem 0;
   cursor: default;
 `;
 

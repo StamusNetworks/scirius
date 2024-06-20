@@ -25,13 +25,13 @@ export const TableCellOverflow = ({ value, title, component }) => {
           title={title}
           content={
             <Style.PopoverContent>
-              <ol>
-                {value.slice(1).map(v => (
+              <ul>
+                {value.slice(1).map((v, i) => (
                   <li key={v}>
-                    <Component value={v} />
+                    {i + 1}.<Component value={v} />
                   </li>
                 ))}
-              </ol>
+              </ul>
             </Style.PopoverContent>
           }
         >

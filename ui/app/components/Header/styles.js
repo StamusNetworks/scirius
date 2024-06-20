@@ -86,6 +86,10 @@ export const Logo = styled(Link)`
   float: left;
   padding-left: 14px;
 
+  height: 100%;
+  display: flex;
+  align-items: center;
+
   & img {
     height: 30px;
     padding-bottom: 3px;
