@@ -159,6 +159,7 @@ const HistoryPage = () => {
             rowExpandable: () => true,
           }}
           pagination={false}
+          data-test="history-table"
         />
       )}
       <ErrorHandler>

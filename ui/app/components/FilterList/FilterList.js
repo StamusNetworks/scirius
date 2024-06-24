@@ -25,7 +25,7 @@ const FilterList = props => {
   return (
     <React.Fragment>
       {/* eslint-disable react/no-array-index-key */}
-      <ListInline>
+      <ListInline data-test="filters-list">
         {filters.map((filter, idx) => (
           <FilterItem key={idx} filter={filter} disabled={!props.filterTypes.some(f => filter.category?.includes(f))} />
         ))}

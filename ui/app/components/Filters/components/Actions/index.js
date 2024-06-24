@@ -26,7 +26,7 @@ const Actions = ({ section }) => {
   const dispatch = useDispatch();
   const supportedActions = useSelector(ruleSetsSelectors.makeSelectSupportedActions());
   return (
-    <div>
+    <div data-test="actions-list">
       <Title>Actions</Title>
       <ActionsContainer>
         <ClearFiltersButton

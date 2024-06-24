@@ -255,9 +255,8 @@ function FiltersDropdown({ disabled, filterTypes }) {
             checkedChildren={<span>IS</span>}
             unCheckedChildren={<span>NOT</span>}
             size="default"
-            onChange={n => setNegated(!n)}
-            value={negated}
-            defaultChecked
+            onChange={() => setNegated(!negated)}
+            value={!negated}
           />
         </div>
       )}
