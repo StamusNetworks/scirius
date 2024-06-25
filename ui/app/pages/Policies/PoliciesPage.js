@@ -64,19 +64,20 @@ const PoliciesPage = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    try {
-      const res = await API.fetchProcessingFilters({
-        page: pagination.current,
-        page_size: pagination.pageSize,
-        ordering: '-timestamp',
-      });
+    const res = await API.fetchProcessingFilters({
+      page: pagination.current,
+      page_size: pagination.pageSize,
+      ordering: '-timestamp',
+    });
+    if (res.ok) {
       setData(res.data.results);
       setCount(res.data.count);
-    } catch {
+    } else if (res.data.detail === 'Invalid page.' && pagination.current > 1) {
+      setPagination(prev => ({ ...prev, current: prev.current - 1 }));
+    } else {
       notify('Failed to fetch data');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const handleTableChange = (page, pageSize) => {
