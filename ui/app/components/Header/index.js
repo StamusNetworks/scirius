@@ -45,7 +45,7 @@ const Header = ({ menuItems = [] }) => {
             </Menu.Item>
           ))}
           <Menu.Item key="timerange-dropdown" className="timerange-dropdown" data-test="timerange-dropdown">
-            <Popover placement="bottomRight" content={<TimeRangePickersContainer />} trigger="click" visible={hidden} onVisibleChange={setHidden}>
+            <Popover placement="bottomRight" content={<TimeRangePickersContainer />} trigger="click" open={hidden} onOpenChange={setHidden}>
               {commonStore.timeRangeType === 'relative' && (
                 <React.Fragment>
                   <ClockCircleOutlined /> {PeriodEnum[commonStore.relativeType].title}
@@ -74,13 +74,13 @@ const Header = ({ menuItems = [] }) => {
             </Popover>
           </Menu.Item>
           <Menu.Item key="help" className="help-dropdown">
-            <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" visible={helpPopOver} onVisibleChange={setHelpPopOver}>
+            <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" open={helpPopOver} onOpenChange={setHelpPopOver}>
               <QuestionCircleOutlined /> Help
             </Popover>
           </Menu.Item>
           {commonStore.user && (
             <Menu.Item data-test="username-link" key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
-              <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
+              <Popover placement="bottomRight" content={<UserMenu />} trigger="click" open={userPopOver} onOpenChange={setUserPopOver}>
                 <span>
                   <UserOutlined /> {commonStore.user.username}
                 </span>

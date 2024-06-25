@@ -145,7 +145,7 @@ const HelpMenu = () => {
     <Wrapper>
       <AboutModal
         title=" "
-        visible={visible}
+        open={visible}
         onOk={() => setVisible(false)}
         onCancel={() => setVisible(false)}
         footer={
