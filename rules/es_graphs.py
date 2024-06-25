@@ -953,7 +953,7 @@ class ESEventsCount(ESQuery):
                 'date': {
                     'date_histogram': {
                         'field': '@timestamp',
-                        'interval': self._interval(),
+                        self._es_interval_kw(): self._es_interval(),
                         'min_doc_count': 0,
                         'offset': '+%sms' % offset,
                         'extended_bounds': {

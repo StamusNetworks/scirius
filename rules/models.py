@@ -799,6 +799,16 @@ class SystemSettings(models.Model):
         else:
             return None
 
+    def save(self, *args, **kwargs) -> None:
+        from scirius.utils import get_middleware_module
+        from rules.es_query import build_es_url
+
+        if self.use_elasticsearch and self.custom_elasticsearch:
+            es_url = build_es_url(self.elasticsearch_url, self.elasticsearch_user, self.elasticsearch_pass)
+            get_middleware_module('common').check_es_template_needed(es_url)
+
+        super().save(*args, **kwargs)
+
 
 def get_system_settings():
     gsettings = SystemSettings.objects.all()

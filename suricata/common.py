@@ -203,6 +203,10 @@ def es_query_string(request):
     return ''
 
 
+def check_es_template_needed(_):
+    pass
+
+
 def check_es_version(request, es_url):
     from rules.es_graphs import ESVersion, ESError
 

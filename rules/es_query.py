@@ -294,7 +294,7 @@ class ESQuery:
 
     def _interval(self, dictionary=None):
         if self.interval:
-            return self.interval
+            return int(self.interval)
         if dictionary and 'interval' in dictionary:
             interval = int(dictionary['interval']) * 1000
         elif self.request and 'interval' in self.request.GET:
