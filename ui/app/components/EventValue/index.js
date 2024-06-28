@@ -27,7 +27,7 @@ export const Count = styled.span`
   cursor: default;
 `;
 
-const EventValue = ({ filter, count, copyMode, redirect }) => {
+const EventValue = ({ filter, count, copyMode }) => {
   const [hover, setHover] = useState(false);
   const { commonStore } = useStore();
 
@@ -59,7 +59,7 @@ const EventValue = ({ filter, count, copyMode, redirect }) => {
 
   return (
     <Container data-test="event-value" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} hover={hover}>
-      <TypedValue filter={filter} additionalLinks={additionalLinks} redirect={redirect} />
+      <TypedValue filter={filter} additionalLinks={additionalLinks} />
       {count && !(copyMode && hover) && <Count>{count}</Count>}
     </Container>
   );
@@ -69,7 +69,6 @@ EventValue.propTypes = {
   filter: PropTypes.instanceOf(Filter),
   count: PropTypes.number,
   copyMode: PropTypes.bool,
-  redirect: PropTypes.bool,
 };
 
 export default EventValue;

@@ -28,7 +28,7 @@ const DropdownLabel = styled.div`
 
 const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_technique_id'];
 
-const TypedValue = ({ filter, additionalLinks, redirect, children, filterOnClick = true }) => {
+const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true }) => {
   const { commonStore } = useStore();
   const history = useHistory();
 
@@ -91,12 +91,10 @@ const TypedValue = ({ filter, additionalLinks, redirect, children, filterOnClick
       ...listOfLinks,
       typedOptions.FILTER_ON_IP(filter.displayValue, () => {
         commonStore.addFilter(filter);
-        if (redirect) history.push(`/stamus/hunting/dashboards`);
       }),
       typedOptions.NEGATED_FILTER_ON_IP(filter.displayValue, () => {
         filter.negated = true;
         commonStore.addFilter(filter);
-        if (redirect) history.push(`/stamus/hunting/dashboards`);
       }),
       typedOptions.EXTERNAL_INFO('ip-address', filter.value),
     ];
@@ -151,7 +149,6 @@ const TypedValue = ({ filter, additionalLinks, redirect, children, filterOnClick
       destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
       onClick={() => {
         if (filterOnClick) commonStore.addFilter(filter);
-        if (redirect) history.push(`/stamus/hunting/dashboards`);
       }}
     >
       {children || (
@@ -169,7 +166,6 @@ TypedValue.defaultProps = {
 
 TypedValue.propTypes = {
   filter: PropTypes.instanceOf(Filter),
-  redirect: PropTypes.bool,
   additionalLinks: PropTypes.arrayOf(PropTypes.object),
   children: PropTypes.node,
   filterOnClick: PropTypes.bool,
