@@ -29,6 +29,7 @@ import saga from 'ui/containers/App/saga';
 import selectors from 'ui/containers/App/selectors';
 import GlobalStyle from 'ui/global-styles';
 import { CamelCaseToDashCase } from 'ui/helpers';
+import useAutorun from 'ui/helpers/useAutorun';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import pages from 'ui/pages';
 import withSaga from 'utils/injectSaga';
@@ -50,8 +51,11 @@ const App = ({ setSessionActivity }) => {
     await commonStore.fetchSystemSettings();
     await commonStore.fetchSources();
     await commonStore.fetchUser();
-    await commonStore.fetchAllPeriod();
   }, []);
+
+  useAutorun(async () => {
+    await commonStore.fetchAllPeriod();
+  }, ['tenant']);
 
   useEffect(() => {
     let interval = null;
