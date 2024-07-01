@@ -99,8 +99,14 @@ def auth_choices():
 def has_multitenant():
     return False
 
+
 def check_tenant(user, tenant) -> bool:
     return True
+
+
+def check_tenant_in_es_query(request, index, qfilter):
+    pass
+
 
 def get_tenants(empty_queryset=False):
     return []

@@ -17,10 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from django.conf import settings
 
 from rules.es_query import ESQuery
 from rules.es_graphs import ES_TIMESTAMP, ES_KEYWORD
+from scirius.utils import get_middleware_module
 
 
 class ESGetUniqueFields(ESQuery):
@@ -179,7 +181,7 @@ class ESGenericSearch(ESQuery):
     =============================================================================================================================================================
     ==== POST ====\n
     Post ES query:\n
-        curl -k https://myssp2/rest/rules/es/search/ -H "Authorization: Token d16206ca40ce0cbbf3080eb1e662b17c5452d96f" -H 'Content-Type: application/json' -X  POST -d '{"index":"logstash-tls-*", "size":0, qfilter":"(event_type: tls AND (proto: UDP OR proto: TCP))", "aggs":"{'aggs': {'1': {'terms': {'field': 'tls.cipher_suite.keyword', 'order': {'_count': 'desc'}, 'size': 5}}}}"}'
+        curl -k https://myssp2/rest/rules/es/search/ -H "Authorization: Token d16206ca40ce0cbbf3080eb1e662b17c5452d96f" -H 'Content-Type: application/json' -X  POST -d '{"index":"logstash-tls-*", "size":0, "qfilter":"(event_type: tls AND (proto: UDP OR proto: TCP))", "aggs":"{'aggs': {'1': {'terms': {'field': 'tls.cipher_suite.keyword', 'order': {'_count': 'desc'}, 'size': 5}}}}"}'
 
     =============================================================================================================================================================
     '''
@@ -189,6 +191,14 @@ class ESGenericSearch(ESQuery):
         self.aggs = aggs
         self.size = size
         self.time_filter = time_filter
+
+        get_middleware_module('common').check_tenant_in_es_query(
+            user=request.user,
+            params=request.GET,
+            indexes=index,
+            qfilter=qfilter
+        )
+
         super().__init__(request, *args, **kwargs)
 
     def _get_index(self) -> str:
