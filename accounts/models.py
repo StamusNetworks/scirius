@@ -228,6 +228,25 @@ class SciriusUser(models.Model):
         if self.tokenusers.exists():
             User.objects.filter(pk__in=self.tokenusers.values_list('user__pk', flat=True)).update(is_active=self.user.is_active)
 
+    @staticmethod
+    def create_full(user: User, data: dict) -> User:
+        from scirius.utils import get_middleware_module
+
+        if "timezone" not in data:
+            data["timezone"] = "UTC"
+        try:
+            sciriususer = user.sciriususer
+            sciriususer.timezone = data['timezone']
+        except AttributeError:
+            sciriususer = SciriusUser.objects.create(
+                user=user,
+                timezone=data['timezone'],
+            )
+        user.save()
+        get_middleware_module('common').update_scirius_user_class(user, data)
+        sciriususer.update_token_users()
+        return user
+
 
 class SciriusTokenUser(SciriusUser):
     parent = models.ForeignKey(SciriusUser, on_delete=models.CASCADE, related_name='tokenusers')

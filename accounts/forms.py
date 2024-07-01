@@ -255,19 +255,7 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
             raise NotImplementedError('This method does not support "commit=False"')
 
         instance = super().save()
-        try:
-            sciriususer = instance.sciriususer
-            sciriususer.timezone = self.cleaned_data['timezone']
-        except AttributeError:
-            sciriususer = SciriusUser.objects.create(
-                user=instance,
-                timezone=self.cleaned_data['timezone'],
-            )
-
-        instance.save()
-        get_middleware_module('common').update_scirius_user_class(instance, self.cleaned_data)
-        sciriususer.update_token_users()
-        return instance
+        return SciriusUser.create_full(instance, self.cleaned_data)
 
 
 class TokenUserForm(forms.ModelForm):
