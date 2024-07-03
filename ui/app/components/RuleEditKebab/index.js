@@ -70,16 +70,23 @@ export default class RuleEditKebab extends React.Component {
           </a>
         </Dropdown>
         <ErrorHandler>
-          {this.state.toggle.show && (
-            <RuleToggleModal
-              show={this.state.toggle.show}
-              action={this.state.toggle.action}
-              config={this.props.config}
-              close={this.hideToggle}
-              rulesets={this.props.rulesets}
-              refresh_callback={this.props.refresh_callback}
-            />
-          )}
+          <div
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            {this.state.toggle.show && (
+              <RuleToggleModal
+                show={this.state.toggle.show}
+                action={this.state.toggle.action}
+                config={this.props.config}
+                close={this.hideToggle}
+                rulesets={this.props.rulesets}
+                refresh_callback={this.props.refresh_callback}
+              />
+            )}
+          </div>
         </ErrorHandler>
       </React.Fragment>
     );
