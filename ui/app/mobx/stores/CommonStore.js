@@ -314,18 +314,48 @@ class CommonStore {
   // @TODO: Should be handled better (skipCheck)
   addFilter(stack) {
     const filters = getFilters(stack);
-    this.ids.push(...filters);
+
+    // Update existing filters that if key/value is the same
+    this.ids = this.ids.map(f => {
+      const matchingFilter = filters.find(id => id.id === f.id && id.value === f.value);
+      const isSameFilter = matchingFilter && matchingFilter.negated === f.negated && matchingFilter.fullString === f.fullString;
+
+      if (!matchingFilter) return f;
+
+      if (isSameFilter) {
+        message.info({
+          content: `Filter already exists!`,
+        });
+        return f;
+      }
+
+      f.suspended = matchingFilter.suspended;
+      f.negated = matchingFilter.negated;
+      f.fullString = matchingFilter.fullString;
+
+      message.info({
+        content: `Filter updated!`,
+      });
+
+      return f;
+    });
+
+    // ADD Only new filters
+    const newFilters = filters.filter(f => !this.ids.some(id => id.id === f.id && id.value === f.value));
+    this.ids.push(...newFilters);
+    if (newFilters.length > 0) {
+      message.info({
+        content: `Filter added!`,
+      });
+    }
+
+    // PERSIST to localStorage
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
 
     // Set each EVENT_TYPE from force array to true
     const eventTypesToTurnOn = getEventTypesToTurnOn(filters);
     eventTypesToTurnOn.forEach(eventType => {
       this.setAlertTag(eventType, true);
-    });
-
-    // notify the user only when Filters component is not shown
-    message.info({
-      content: `Filter added!`,
     });
   }
 
