@@ -94,6 +94,13 @@ export const dashboard = [
         i: 'alert.target.ip',
         title: 'Victims',
       },
+    ],
+  },
+  {
+    panelId: 'geoip',
+    title: 'GeoIP Information',
+    position: 8,
+    items: [
       {
         i: 'geoip.country_name',
         title: 'Country Names',
@@ -107,7 +114,7 @@ export const dashboard = [
   {
     panelId: 'ip',
     title: 'IP Information',
-    position: 8,
+    position: 9,
     items: [
       {
         i: 'src_ip',
@@ -154,7 +161,7 @@ export const dashboard = [
   {
     panelId: 'client_server',
     title: 'Clients and Servers',
-    position: 9,
+    position: 10,
     items: [
       {
         i: 'flow.src_ip',
@@ -178,7 +185,7 @@ export const dashboard = [
     panelId: 'http',
     id: 'http',
     title: 'HTTP Information',
-    position: 10,
+    position: 11,
     itemsMinWidth: '350px',
     items: [
       {
@@ -206,7 +213,7 @@ export const dashboard = [
   {
     panelId: 'dns',
     title: 'DNS Information',
-    position: 11,
+    position: 12,
     items: [
       {
         i: 'dns.query.rrname',
@@ -221,7 +228,7 @@ export const dashboard = [
   {
     panelId: 'tls',
     title: 'TLS Information',
-    position: 12,
+    position: 13,
     itemsMinWidth: '500px',
     items: [
       {
@@ -261,7 +268,7 @@ export const dashboard = [
   {
     panelId: 'smtp',
     title: 'SMTP Information',
-    position: 13,
+    position: 14,
     items: [
       {
         i: 'smtp.mail_from',
@@ -280,7 +287,7 @@ export const dashboard = [
   {
     panelId: 'smb',
     title: 'SMB Information',
-    position: 14,
+    position: 15,
     items: [
       {
         i: 'smb.command',
@@ -303,7 +310,7 @@ export const dashboard = [
   {
     panelId: 'ssh',
     title: 'SSH Information',
-    position: 15,
+    position: 16,
     items: [
       {
         i: 'ssh.client.software_version',
