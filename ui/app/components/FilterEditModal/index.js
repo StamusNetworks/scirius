@@ -40,9 +40,12 @@ const FilterEditModal = ({ onClose, filter }) => {
   }, [form, filter]);
 
   const onFinish = values => {
-    filter.value = isNumeric(values.value) ? parseInt(values.value, 10) : values.value;
-    filter.fullString = !values.wildcard;
-    filter.negated = values.negated;
+    filter.update({
+      value: isNumeric(values.value) ? parseInt(values.value, 10) : values.value,
+      fullString: !values.wildcard,
+      negated: values.negated,
+    });
+
     onClose();
   };
 

@@ -20,7 +20,7 @@ export const Timeline = ({ chart, stacked = false, height, width, XAxisLabel }) 
           <CartesianGrid strokeDasharray="3 3" />
           <Tooltip labelFormatter={label => <TooltipLabel label={label} interval={chart.dates.interval} />} />
           {chart.keys.map(key => (
-            <Bar {...key} stackId={stacked && 'a'} />
+            <Bar {...key} key={key.dataKey} stackId={stacked && 'a'} />
           ))}
           <YAxis />
           <XAxis dataKey="time" tick={XAxisLabel && <XAxisLabel />} />

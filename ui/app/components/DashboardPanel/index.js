@@ -75,6 +75,7 @@ const DashboardPanel = ({ panel, hideEmptyTiles, setPanelIsEmpty }) => {
           if (hideEmptyTiles && data.length === 0) return null;
           return (
             <DashboardBlock
+              key={item.i}
               block={item}
               data={data}
               loading={loading}

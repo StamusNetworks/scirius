@@ -28,7 +28,7 @@ export const DashboardTimeline = ({ filterParams, chartTarget, filters, systemSe
     }
   };
 
-  useAutorun(fetchData, [filterParams, chartTarget, filters, systemSettings, eventTypes]);
+  useAutorun(fetchData, [filterParams, chartTarget, filters, systemSettings, eventTypes, 'date', 'tenant']);
 
   if (loading) {
     return <div>Loading...</div>;

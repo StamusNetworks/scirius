@@ -287,6 +287,18 @@ export default class Filter {
     }
   }
 
+  update(value) {
+    this._value = value.value || this._value;
+    this._fullString = !!value.fullString;
+    this._suspended = !!value.suspended;
+
+    if (!!value.negated !== !!this._negated) {
+      this.negate(value.negated);
+    }
+
+    this.store();
+  }
+
   negate(value) {
     this.hookOnNegate();
     this._negated = value;
