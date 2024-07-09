@@ -64,5 +64,45 @@
     <h2>{{ threshold.threshold_type.title }} expression</h2>
     <div class="rule">{{ threshold.highlight_content|safe }}</div>
     <h2>Signature</h2>
-    <div class="rule">{{ threshold.rule.highlight_content|safe }}</div>
+
+    <ul class="nav nav-tabs" id="rule-info">
+        {% for rav in rule_at_versions %}
+            <li class="{% if forloop.first %}active{% endif %}">
+                <a href="#version_{{ rav.version }}">
+                    {% if rule_at_versions|length > 1 %}
+                        Version {% if rav.version < 39 %}< 39 {% else %}= {{ rav.version }}{% endif %}
+                    {% else %}
+                        Unique Version ({% if rav.version < 39 %}< 39 {% else %}= {{ rav.version }}{% endif %})
+                    {% endif %}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content">
+        {% for rav in rule_at_versions %}
+            <div class="tab-pane fade {% if forloop.first %}active{% endif %} in" id="version_{{ rav.version }}">
+                <div class="rule">{{ rav.content|safe }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+$(document).ready(function(){
+    var activeTab = localStorage.getItem('thresholdRuleTab');
+    if(activeTab){
+        $('#rule-info li').siblings().removeClass('active');
+        $('#rule-info a[href="' + activeTab + '"]').tab('show');
+        $('#rule-info a[href="' + activeTab + '"]').closest('li').addClass('active');
+    }
+
+    $("ul.nav-tabs a").click(function (e) {
+        e.preventDefault();
+        $(this).closest('li').siblings().removeClass('active');
+        $(this).closest('li').addClass('active');
+        $(this).tab('show');
+        localStorage.setItem('thresholdRuleTab', $(e.target).attr('href'));
+    });
+});
+    </script>
+
 {% endblock content %}

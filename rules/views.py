@@ -2079,9 +2079,20 @@ def info(request):
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
-    threshold.rule.highlight_content = SuriHTMLFormat(threshold.rule.content)
+
+    context = {
+        'rule_at_versions': [],
+        'threshold': threshold
+    }
+    for rav in threshold.rule.ruleatversion_set.all():
+        rav_struct = {
+            'version': rav.version,
+            'content': SuriHTMLFormat(rav.content)
+        }
+        context['rule_at_versions'].append(rav_struct)
+
+
     threshold.highlight_content = SuriHTMLFormat(str(threshold))
-    context = {'threshold': threshold}
     return scirius_render(request, 'rules/threshold.html', context)
 
 
