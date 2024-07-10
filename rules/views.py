@@ -1454,7 +1454,7 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     if mode == 'struct':
         categories_list = {}
-        sources = ruleset.sources.all()
+        sources = ruleset.sources.order_by('name')
         for source in sources:
             cats = CategoryTable(ruleset.categories.filter(source=source).order_by('name'))
             tables.RequestConfig(request, paginate={"per_page": 15}).configure(cats)
