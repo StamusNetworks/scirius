@@ -2986,7 +2986,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
                 # we need to recurse if ever we did disable in a chain of signatures
                 for drav in flowbit.isset.all():
                     dependant_ravs.extend(drav.get_dependant_rules_at_version(ruleset))
-        return dependant_ravs
+        return set(dependant_ravs)
 
     def toggle_availability(self):
         self.rule.category.source.needs_test()
