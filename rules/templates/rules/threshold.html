@@ -69,11 +69,7 @@
         {% for rav in rule_at_versions %}
             <li class="{% if forloop.first %}active{% endif %}">
                 <a href="#version_{{ rav.version }}">
-                    {% if rule_at_versions|length > 1 %}
-                        Version {% if rav.version < 39 %}< 39 {% else %}= {{ rav.version }}{% endif %}
-                    {% else %}
-                        Unique Version ({% if rav.version < 39 %}< 39 {% else %}= {{ rav.version }}{% endif %})
-                    {% endif %}
+                    {% if rav.version < 39 %}< v39 {% else %}v{{ rav.version }}{% endif %}
                 </a>
             </li>
         {% endfor %}

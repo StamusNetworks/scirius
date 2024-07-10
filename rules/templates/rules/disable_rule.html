@@ -12,17 +12,17 @@
                 <div class="col-md-4">
                     {% for ruleset in rulesets %}
                         {% if ruleset.deps_ravs|length %}
-                            In ruleset <strong>{{ ruleset.name }}</strong>, this will also
+                            In ruleset <strong><a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a></strong>, this will also
                             {% if operation == 'disable' %}
                                 disable
                             {% else %}
                                 enable
                             {% endif %}
-                            the following rules due to flowbits dependencies:
+                            the following rules (all versions) due to flowbits dependencies:
                             <ul>
                                 {% for rav in ruleset.deps_ravs %}
                                     <li>
-                                        <a href="{% url 'rule' rav.rule.pk %}">{{ rav.rule.msg }} (Version: {% if rav.version < 39 %}< 39{% else %}{{ rav.version }}{% endif %})</a>
+                                        <a href="{% url 'rule' rav.rule.pk %}">{{ rav.rule.msg }}</a>
                                     </li>
                                 {% endfor %}
                             </ul>

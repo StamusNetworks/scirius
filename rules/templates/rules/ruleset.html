@@ -395,11 +395,7 @@ $( 'document' ).ready(function() {
         {% for version, rules in all_rules.items %}
             <li class="{% if forloop.first %}active{% endif %}">
                 <a href="#version_{{ version }}">
-                    {% if all_rules|length > 1 %}
-                        Version {% if version < 39 %}< 39 {% else %}= {{ version }}{% endif %}
-                    {% else %}
-                        Unique Version ({% if version < 39 %}< 39 {% else %}= {{ version }}{% endif %})
-                    {% endif %}
+                    {% if version < 39 %}< v39 {% else %}v{{ version }}{% endif %}
                 </a>
             </li>
         {% endfor %}

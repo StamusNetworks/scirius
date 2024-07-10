@@ -2565,6 +2565,17 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
                         name = f"({item.get('name', '')})"
                         raise ValidationError({'sid': f'"{self.sid}" is in Stamus ranges {name}'})
 
+    @classmethod
+    def get_last_real_version(cls, version, **kwargs):
+        if cls.objects.exists():
+            return cls.objects.filter(
+                ruleatversion__version__range=[0, version],
+                **kwargs
+            ).aggregate(
+                max_version=models.Max('ruleatversion__version', default=0)
+            ).get('max_version', 0)
+        return version
+
     def clean(self):
         super().clean()
         # check stamus ranges

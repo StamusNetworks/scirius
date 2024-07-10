@@ -34,14 +34,10 @@
 {% endblock sidebar %}
 {% block content %}
     <ul class="nav nav-tabs" id="category-info">
-        {% for version in versions %}
+        {% for rule in rules %}
             <li class="{% if forloop.first %}active{% endif %}">
-                <a href="#version_{{ version }}">
-                    {% if versions|length > 1 %}
-                        Version {% if version < 39 %}< 39 {% else %}= {{ version }}{% endif %}
-                    {% else %}
-                        Unique Version ({% if version < 39 %}< 39 {% else %}= {{ version }}{% endif %})
-                    {% endif %}
+                <a href="#version_{{ rule.version }}">
+                    {% if rule.version < 39 %}< v39 {% else %}v{{ rule.version }}{% endif %}
                 </a>
             </li>
         {% endfor %}

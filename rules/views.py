@@ -175,30 +175,32 @@ def categories(request):
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def category(request, cat_id):
     cat = get_object_or_404(Category, pk=cat_id)
-
     rules = Rule.objects.filter(category=cat)
-    versions = rules.values_list('ruleatversion__version', flat=True).distinct()
+
     context = {
-        'versions': versions,
         'object_path': [cat.source],
         'category': cat,
         'rules': [],
     }
 
-    for version in versions:
+    for version in PROBE.common.rules_version():
+        real_version = Rule.get_last_real_version(version, **{'category__pk': cat.pk})
+
         rulesets_status = []
         rule_struct = {
             'version': version,
             'active': None,
             'commented': None,
-            'rulesets': []
+            'rulesets': [],
+            'version_exists': True
         }
+
         context['rules'].append(rule_struct)
 
-        # active rules (at version=version)
+        # active rules (at version=real_version)
         rules_table = RuleTable(rules.filter(
             ruleatversion__state=True,
-            ruleatversion__version=version).order_by('sid')
+            ruleatversion__version=real_version).order_by('sid')
         )
         tables.RequestConfig(request).configure(rules_table)
         rule_struct['active'] = rules_table
@@ -206,7 +208,7 @@ def category(request, cat_id):
         # Commented rules (at version)
         commented_rules_table = RuleTable(rules.filter(
             ruleatversion__state=False,
-            ruleatversion__version=version).order_by('sid')
+            ruleatversion__version=real_version).order_by('sid')
         )
         tables.RequestConfig(request).configure(commented_rules_table)
         rule_struct['commented_rules'] = commented_rules_table
@@ -368,6 +370,7 @@ def rule(request, rule_id):
 
 
 def build_rule_context(request, rule):
+    same_real_version = set()
     context = {
         'reference': extract_rule_references(rule),
         'comment_form': RuleCommentForm(),
@@ -379,75 +382,95 @@ def build_rule_context(request, rule):
         'rulesets': [],
     }
 
-    for rav in rule.ruleatversion_set.all():
-        rav_struct = {
-            'instance': rav,
-            'content': SuriHTMLFormat(rav.content),
-            'rule_transformations': False,
-            'rulesets': [],
-            'thresholds': None,
-            'suppress': None
-        }
-        context['rules_at_version'].append(rav_struct)
+    # version is version of the probe, can be u40
+    # real_version of the rule which can be u39
+    # u40 are be shown but actions are done on u39 rule at versions
+    versions = PROBE.common.rules_version()
+    added = []
+    for version in versions:
+        real_version = Rule.get_last_real_version(version, **{'pk': rule.pk})
 
-        for ruleset in Ruleset.objects.all():
-            status = 'Disabled'
+        if real_version not in added:
+            added.append(real_version)
+        else:
+            same_real_version.add(real_version if real_version in versions else versions[0])
+            same_real_version.add(version)
 
-            is_suppressed = SuppressedRuleAtVersion.objects.filter(
-                ruleset=ruleset,
-                rule_at_version__in=rule.ruleatversion_set.all()
-            ).count() > 0
+        for rav in rule.ruleatversion_set.filter(version=real_version):
+            rav_struct = {
+                'instance': rav,
+                'version': version,
+                'content': SuriHTMLFormat(rav.content),
+                'rule_transformations': False,
+                'rulesets': [],
+                'thresholds': None,
+                'suppress': None,
+                'version_exists': True
+            }
+            context['rules_at_version'].append(rav_struct)
 
-            if rav.state and rule.category in ruleset.categories.all() and not is_suppressed:
-                status = 'Enabled'
+            for ruleset in Ruleset.objects.all():
+                status = 'Disabled'
 
-            threshold = False
-            if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='threshold'):
-                threshold = True
+                is_suppressed = SuppressedRuleAtVersion.objects.filter(
+                    ruleset=ruleset,
+                    rule_at_version__in=rule.ruleatversion_set.all()
+                ).count() > 0
 
-            suppress = False
-            if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='suppress'):
-                suppress = True
+                if rav.state and rule.category in ruleset.categories.all() and not is_suppressed:
+                    status = 'Enabled'
 
-            content = SuriHTMLFormat(rav.generate_content(ruleset))
-            ruleset_info = {'name': ruleset.name, 'pk': ruleset.pk, 'status': status,
-                            'threshold': threshold, 'suppress': suppress,
-                            'a_drop': False, 'a_filestore': False, 'a_bypass': False,
-                            'l_auto': False, 'l_yes': False,
-                            't_auto': False, 't_src': False, 't_dst': False,
-                            'content': content}
+                threshold = False
+                if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='threshold'):
+                    threshold = True
 
-            # get rule transaformations
-            for TYPE in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-                trans = rule.get_transformation(ruleset, TYPE, override=True)
-                prefix = 'a_'
+                suppress = False
+                if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='suppress'):
+                    suppress = True
 
-                if TYPE == Transformation.LATERAL:
-                    prefix = 'l_'
-                if TYPE == Transformation.TARGET:
-                    prefix = 't_'
+                content = SuriHTMLFormat(rav.generate_content(ruleset))
+                ruleset_info = {'name': ruleset.name, 'pk': ruleset.pk, 'status': status,
+                                'threshold': threshold, 'suppress': suppress,
+                                'a_drop': False, 'a_filestore': False, 'a_bypass': False,
+                                'l_auto': False, 'l_yes': False,
+                                't_auto': False, 't_src': False, 't_dst': False,
+                                'content': content}
 
-                if trans is not None:
-                    ruleset_info[prefix + trans.value] = True
-                    rav_struct['rule_transformations'] = True
+                # get rule transaformations
+                for TYPE in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
+                    trans = rule.get_transformation(ruleset, TYPE, override=True)
+                    prefix = 'a_'
 
-            rav_struct['rulesets'].append(ruleset_info)
+                    if TYPE == Transformation.LATERAL:
+                        prefix = 'l_'
+                    if TYPE == Transformation.TARGET:
+                        prefix = 't_'
 
-        thresholds = Threshold.objects.filter(rule=rule, threshold_type='threshold')
-        if thresholds:
-            thresholds = RuleThresholdTable(thresholds)
-            tables.RequestConfig(request).configure(thresholds)
-            rav_struct['thresholds'] = thresholds
-        suppress = Threshold.objects.filter(rule=rule, threshold_type='suppress')
-        if suppress:
-            suppress = RuleSuppressTable(suppress)
-            tables.RequestConfig(request).configure(suppress)
-            rav_struct['suppress'] = suppress
-        try:
-            context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
-        except:
-            pass
+                    if trans is not None:
+                        ruleset_info[prefix + trans.value] = True
+                        rav_struct['rule_transformations'] = True
 
+                rav_struct['rulesets'].append(ruleset_info)
+
+            thresholds = Threshold.objects.filter(rule=rule, threshold_type='threshold')
+            if thresholds:
+                thresholds = RuleThresholdTable(thresholds)
+                tables.RequestConfig(request).configure(thresholds)
+                rav_struct['thresholds'] = thresholds
+            suppress = Threshold.objects.filter(rule=rule, threshold_type='suppress')
+            if suppress:
+                suppress = RuleSuppressTable(suppress)
+                tables.RequestConfig(request).configure(suppress)
+                rav_struct['suppress'] = suppress
+            try:
+                context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
+            except:
+                pass
+
+    # order versions asc
+    same_real_version = list(same_real_version)
+    same_real_version.sort()
+    context['same_real_version'] = [f'v{version}' if version != 0 else '<v39' for version in same_real_version]
     context['kibana_version'] = get_es_major_version()
     return context
 
@@ -791,7 +814,17 @@ def switch_rule(request, rule_id, operation='disable'):
     context = {'rule': rule_object, 'form': form, 'object_path': [rule_object]}
     rulesets = Ruleset.objects.all()
     for ruleset in rulesets:
-        ruleset.deps_ravs = rule_object.get_dependant_rules_at_version(ruleset)
+        deps_ravs = rule_object.get_dependant_rules_at_version(ruleset)
+
+        # keep only one version to show as dependencies
+        parents_sid = []
+        for rav in deps_ravs.copy():
+            sid = rav.rule.sid
+            if sid in parents_sid:
+                deps_ravs.remove(rav)
+            parents_sid.append(sid)
+
+        ruleset.deps_ravs = deps_ravs
     context['rulesets'] = rulesets
     context['operation'] = operation
     context['rule_state'] = True in rule_object.ruleatversion_set.values_list('state', flat=True)
@@ -1452,6 +1485,8 @@ def rulesets(request):
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def ruleset(request, ruleset_id, mode='struct', error=None):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+    context = {}
+
     if mode == 'struct':
         categories_list = {}
         sources = ruleset.sources.order_by('name')
@@ -1529,7 +1564,7 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
         context['middleware_has_update'] = True
 
     rule_versions = PROBE.common.rules_version()
-    context['single_rule_version'] = True if rule_versions == [0] else False
+    context['single_rule_version'] = True if len(rule_versions) == 1 else False
     return scirius_render(request, 'rules/ruleset.html', context)
 
 
@@ -2084,13 +2119,14 @@ def threshold(request, threshold_id):
         'rule_at_versions': [],
         'threshold': threshold
     }
-    for rav in threshold.rule.ruleatversion_set.all():
-        rav_struct = {
-            'version': rav.version,
-            'content': SuriHTMLFormat(rav.content)
-        }
-        context['rule_at_versions'].append(rav_struct)
-
+    for version in PROBE.common.rules_version():
+        real_version = Rule.get_last_real_version(version, **{'pk': threshold.rule.pk})
+        for rav in threshold.rule.ruleatversion_set.filter(version=real_version):
+            rav_struct = {
+                'version': version,
+                'content': SuriHTMLFormat(rav.content)
+            }
+            context['rule_at_versions'].append(rav_struct)
 
     threshold.highlight_content = SuriHTMLFormat(str(threshold))
     return scirius_render(request, 'rules/threshold.html', context)

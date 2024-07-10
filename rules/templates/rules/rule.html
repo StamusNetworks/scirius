@@ -329,12 +329,8 @@ $(document).ready(function(){
                     <ul class="nav nav-tabs" id="rule-sub-info">
                         {% for rav in rules_at_version %}
                             <li class="{% if forloop.first %}active{% endif %}">
-                                <a href="#rule_{{ rav.instance.version }}">
-                                    {% if rules_at_version|length > 1 %}
-                                        Version {% if rav.instance.version < 39 %}< 39 {% else %}= {{ rav.instance.version }}{% endif %}
-                                    {% else %}
-                                        Unique Version ({% if rav.instance.version < 39 %}< 39 {% else %}= {{ rav.instance.version }}{% endif %})
-                                    {% endif %}
+                                <a href="#rule_{{ rav.version }}">
+                                    {% if rav.version < 39 %}< v39 {% else %}v{{ rav.version }}{% endif %}
                                 </a>
                             </li>
                         {% endfor %}
@@ -342,7 +338,7 @@ $(document).ready(function(){
 
                     <div class="tab-content">
                         {% for rav in rules_at_version %}
-                            <div class="tab-pane fade {% if forloop.first %}active{% endif %} in" id="rule_{{ rav.instance.version }}">
+                            <div class="tab-pane fade {% if forloop.first %}active{% endif %} in" id="rule_{{ rav.version }}">
 
                                 <div class="panel panel-default">
                                     <div class="panel-body">
@@ -409,6 +405,11 @@ $(document).ready(function(){
                                         </h2>
                                         <div class="container-fluid">
                                             <div class="row">
+                                                {% if same_real_version %}
+                                                <div class="col-md-12 alert alert-warning alert-dismissible">
+                                                    Enable/disable in source will be applied on "{{ same_real_version|join:", " }}". They are the same version.
+                                                </div>
+                                                {% endif %}
                                                 <div class="col-md-6">
                                                     <div class="panel panel-default">
                                                         <div class="panel-heading">
@@ -418,7 +419,7 @@ $(document).ready(function(){
                                                                 </a>
                                                             </h2>
                                                         </div>
-                                                        <div class="panel-body rav-status_{{ rav.instance.version }}" id="{{ rav.pk }}">
+                                                        <div class="panel-body rav-status_{{ rav.version }}" id="{{ rav.pk }}">
                                                             <div class="row">
                                                                 <div class="col-md-1" style="margin-right:0.7em;">
                                                                     Status:
@@ -473,21 +474,21 @@ $(document).ready(function(){
 
                                 {# rule_transformation #}
                                 <div class="row">
-                                    <div id="validity_error_{{ rav.instance.version }}" class="col-md-12" style="display:none;">
+                                    <div id="validity_error_{{ rav.version }}" class="col-md-12" style="display:none;">
                                         <h2 class="title">
                                             Rulesets error
                                         </h2>
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div id="validity_warning_{{ rav.instance.version }}" class="col-md-12" style="display:none;">
+                                    <div id="validity_warning_{{ rav.version }}" class="col-md-12" style="display:none;">
                                         <h2 class="title">
                                             Rulesets Warning
                                         </h2>
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div id="validity_info_{{ rav.instance.version }}" class="col-md-12" style="display:none;">
+                                    <div id="validity_info_{{ rav.version }}" class="col-md-12" style="display:none;">
                                         <h2 class="title">
                                             Rulesets Info
                                         </h2>
@@ -510,7 +511,7 @@ $(document).ready(function(){
                                                                     </a>
                                                                 </h2>
                                                             </div>
-                                                            <div class="panel-body ruleset-status_{{ rav.instance.version }}" id="{{ ruleset.pk }}">
+                                                            <div class="panel-body ruleset-status_{{ rav.version }}" id="{{ ruleset.pk }}">
                                                                 <div class="row">
                                                                     <div class="col-md-1" style="margin-right:0.7em;">
                                                                         Status:
@@ -527,7 +528,7 @@ $(document).ready(function(){
                                                                         Validity:
                                                                     </div>
                                                                     <div class="col-md-1">
-                                                                        <div class="label label-default" id="validity_{{ rav.instance.version }}" style="margin-right: 1px;">
+                                                                        <div class="label label-default" id="validity_{{ rav.version }}" style="margin-right: 1px;">
                                                                             Valid
                                                                         </div>
                                                                     </div>
@@ -806,7 +807,7 @@ function load_ip_stats() {
 <script>
 function rule_validity_check() {
     {% for rav in rules_at_version %}
-        $("div.ruleset-status_{{ rav.instance.version }}").each(
+        $("div.ruleset-status_{{ rav.version }}").each(
             function() {
                 var ruleset_id = $(this).attr('id');
                 var ruleset_name = $(this).parent().find("h2").text();
@@ -817,7 +818,7 @@ function rule_validity_check() {
                     context: $(this),
                     success: function(data) {
                         if (data['status']) {
-                            vlabel = $(this).find("#validity_{{ rav.instance.version }}");
+                            vlabel = $(this).find("#validity_{{ rav.version }}");
                             vlabel.text('Valid');
                             vlabel.addClass('label-success');
                             vlabel.removeClass('label-default');
@@ -827,8 +828,8 @@ function rule_validity_check() {
                                 for (i = 0; i < data['warnings'].length; i++) {
                                     warning_content += '<li><span class="text-warning"><strong>' + data['warnings'][i]['source'] + '</strong></span>: <span>' + data['warnings'][i]['message'] + '</span></li>';
                                 }
-                                $("#validity_warning_{{ rav.instance.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="warnings"><ul>' + warning_content + '</ul></div>');
-                                $("#validity_warning_{{ rav.instance.version }}").show(duration=200);
+                                $("#validity_warning_{{ rav.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="warnings"><ul>' + warning_content + '</ul></div>');
+                                $("#validity_warning_{{ rav.version }}").show(duration=200);
                             }
 
                             info_content = "";
@@ -836,11 +837,11 @@ function rule_validity_check() {
                                 for (i = 0; i < data['info'].length; i++) {
                                     info_content += '<li><span class="text-info"><strong>' + data['info'][i]['source'] + '</strong></span>: <span>' + data['info'][i]['message'] + '</span></li>';
                                 }
-                                $("#validity_info_{{ rav.instance.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="info"><ul>' + info_content + '</ul></div>');
-                                $("#validity_info_{{ rav.instance.version }}").show(duration=200);
+                                $("#validity_info_{{ rav.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="info"><ul>' + info_content + '</ul></div>');
+                                $("#validity_info_{{ rav.version }}").show(duration=200);
                             }
                         } else {
-                            vlabel = $(this).find("#validity_{{ rav.instance.version }}")
+                            vlabel = $(this).find("#validity_{{ rav.version }}")
                             vlabel.addClass('label-danger');
                             vlabel.text('Invalid');
                             vlabel.removeClass('label-default');
@@ -853,8 +854,8 @@ function rule_validity_check() {
                             else {
                                 error_content = "Unknown error";
                             }
-                            $("#validity_error_{{ rav.instance.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="errors"><ul>' + error_content + '</ul></div>');
-                            $("#validity_error_{{ rav.instance.version }}").show(duration=200);
+                            $("#validity_error_{{ rav.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="errors"><ul>' + error_content + '</ul></div>');
+                            $("#validity_error_{{ rav.version }}").show(duration=200);
                         }
                     }
                 });
