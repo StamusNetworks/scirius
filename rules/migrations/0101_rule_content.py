@@ -93,7 +93,7 @@ def _suppressed(apps):
                             rule_at_version=rav))
 
         if len(suppressed):
-            SuppressedRuleAtVersion.bulk_create(suppressed)
+            SuppressedRuleAtVersion.objects.bulk_create(suppressed)
             RuleTransformation.objects.filter(key='suppressed').delete()
 
 
