@@ -26,7 +26,7 @@ const getField = field => {
   switch (field.label.toLowerCase()) {
     case 'url':
       return (
-        <Signature.ValueAsLink href={`https://${field.value}`} target="_blank">
+        <Signature.ValueAsLink href={field.value} target="_blank">
           {field.value}
         </Signature.ValueAsLink>
       );

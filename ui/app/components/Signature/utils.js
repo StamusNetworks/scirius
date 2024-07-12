@@ -106,6 +106,15 @@ const getSignatureMetadata = rule => {
   return [...metadata, { label: 'created at', value: rule.created || 'unknown' }, { label: 'updated at', value: rule.updated || 'unknown' }];
 };
 
+const formatReference = (value, label) => {
+  const trimmedValue = value.trim();
+  const cleanValue = trimmedValue.endsWith(';)') ? trimmedValue.slice(0, -2) : trimmedValue;
+  if (value.startsWith('http://')) return cleanValue;
+  if (value.startsWith('https://')) return cleanValue;
+  if (label.toLowerCase() === 'url') return `https://${cleanValue}`;
+  return cleanValue;
+};
+
 const getSignatureReferences = raw =>
   raw
     .split('; ')
@@ -113,7 +122,7 @@ const getSignatureReferences = raw =>
     .filter(data => data.startsWith('reference:'))
     .map(data => data.slice(10))
     .map(data => data.split(','))
-    .map(([label, value]) => ({ label, value }));
+    .map(([label, value]) => ({ label, value: formatReference(value, label) }));
 
 export function decodeUnicodeEscapeSequence(str) {
   return str.replace(/\\u[\dA-F]{4}/gi, function (match) {
