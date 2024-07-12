@@ -1463,10 +1463,6 @@ class UserActionObject(models.Model):
     object_id = models.PositiveIntegerField(null=True)
     content = GenericForeignKey('content_type', 'object_id')
 
-    def set_null_content(self):
-        self.content = None
-        self.save()
-
 
 class SourceUpdate(models.Model):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
