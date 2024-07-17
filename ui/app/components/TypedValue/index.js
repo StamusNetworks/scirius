@@ -8,6 +8,7 @@ import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 
 import typedOptions from 'ui/components/TypedValue/options';
+import isIP from 'ui/helpers/isIP';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
 
@@ -48,7 +49,8 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
   );
 
   if (filter.type === 'HOSTNAME' || filter.type === 'NAME') {
-    listOfLinks = [...listOfLinks, typedOptions.EXTERNAL_INFO(filter.value)];
+    const type = isIP(filter.value) ? 'ip-address' : 'domain';
+    listOfLinks = [...listOfLinks, typedOptions.EXTERNAL_INFO(type, filter.value)];
   }
 
   if (filter.type === 'USERNAME') {
