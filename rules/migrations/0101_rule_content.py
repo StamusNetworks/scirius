@@ -95,6 +95,7 @@ def _suppressed(apps):
         if len(suppressed):
             SuppressedRuleAtVersion.objects.bulk_create(suppressed)
             RuleTransformation.objects.filter(key='suppressed').delete()
+            suppressed = []
 
 
 def migration(apps, _):
