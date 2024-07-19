@@ -1347,25 +1347,38 @@ class Source(models.Model):
         if self.custom_data_type:
             datatypes.append(self.custom_data_type[0])
 
-        for filename in os.listdir(source_dir):
-            full_path = os.path.join(source_dir, filename)
+        # race condition if a ruleset1 with a sourceA has finished update on SourceA
+        # then ruleset2 with sourceA is starting an update
+        # => rule analysis is run on this source which has been deleted
+        # by sourceA update from ruleset2
+        if not os.path.exists(settings.FLOCK_PATH):
+            os.makedirs(settings.FLOCK_PATH)
+        source_lock_path = os.path.join(settings.FLOCK_PATH, 'source_analysis_%s' % self.pk)
+        source_lock = open(source_lock_path, 'w')
+        fcntl.flock(source_lock, fcntl.LOCK_EX)
 
-            # don't copy original rules file to dest
-            if filename.endswith('.rules') and self.datatype in datatypes:
-                continue
+        try:
+            for filename in os.listdir(source_dir):
+                full_path = os.path.join(source_dir, filename)
 
-            if filename.endswith('categories.txt') and self.datatype in ('sig', 'sigs'):
-                with open(full_path, 'r') as f:
-                    cats_content = f.read()
-                continue
+                # don't copy original rules file to dest
+                if filename.endswith('.rules') and self.datatype in datatypes:
+                    continue
 
-            if filename.endswith('.list') and self.datatype in ('sig', 'sigs'):
-                with open(full_path, 'r') as f:
-                    iprep_content = f.read()
-                continue
+                if filename.endswith('categories.txt') and self.datatype in ('sig', 'sigs'):
+                    with open(full_path, 'r') as f:
+                        cats_content = f.read()
+                    continue
 
-            if os.path.isfile(full_path):
-                shutil.copy2(full_path, directory)
+                if filename.endswith('.list') and self.datatype in ('sig', 'sigs'):
+                    with open(full_path, 'r') as f:
+                        iprep_content = f.read()
+                    continue
+
+                if os.path.isfile(full_path):
+                    shutil.copy2(full_path, directory)
+        finally:
+            source_lock.close()
 
         return cats_content, iprep_content
 
@@ -1414,18 +1427,31 @@ class Source(models.Model):
         return False
 
     def _handle_file(self, _file, upload=False):
-        self.remove_rules_dir()
+        # race condition if a ruleset1 with a sourceA has finished update on SourceA
+        # then ruleset2 with sourceA is starting an update
+        # => rule analysis is run on this source which has been deleted
+        # by sourceA update from ruleset2
+        if not os.path.exists(settings.FLOCK_PATH):
+            os.makedirs(settings.FLOCK_PATH)
+        source_lock_path = os.path.join(settings.FLOCK_PATH, 'source_analysis_%s' % self.pk)
+        source_lock = open(source_lock_path, 'w')
+        fcntl.flock(source_lock, fcntl.LOCK_EX)
 
-        if self.datatype == 'sigs':
-            self.handle_rules_in_tar(_file)
-        elif self.datatype == 'sig':
-            self.handle_rules_file(_file)
-        elif self.datatype == 'other':
-            self.handle_other_file(_file)
-        elif self.datatype == 'b64dataset':
-            self.handle_b64dataset(_file)
-        elif self.datatype in self.custom_data_type:
-            self.handle_custom_file(_file, upload=upload)
+        try:
+            self.remove_rules_dir()
+
+            if self.datatype == 'sigs':
+                self.handle_rules_in_tar(_file)
+            elif self.datatype == 'sig':
+                self.handle_rules_file(_file)
+            elif self.datatype == 'other':
+                self.handle_other_file(_file)
+            elif self.datatype == 'b64dataset':
+                self.handle_b64dataset(_file)
+            elif self.datatype in self.custom_data_type:
+                self.handle_custom_file(_file, upload=upload)
+        finally:
+            source_lock.close()
 
     def handle_uploaded_file(self, f):
         dest = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
