@@ -1047,7 +1047,7 @@ class Source(models.Model):
         re_version = re.compile(r'(\w+)-u(\d+)\.rules$')
 
         existing_rules_hash = {'groups': {}}
-        for rav in RuleAtVersion.objects. \
+        for rav in RuleAtVersion.objects.filter(rule__category__source=self). \
                 prefetch_related('rule'). \
                 prefetch_related('rule__category'). \
                 prefetch_related('rule__category__source'):
@@ -2168,7 +2168,7 @@ class Category(models.Model, Transformable, Cache):
 
         if existing_rules_hash is None:
             existing_rules_hash = {'groups': {}}
-            for rav in RuleAtVersion.objects. \
+            for rav in RuleAtVersion.objects.filter(rule__category__source=self.source). \
                     prefetch_related('rule'). \
                     prefetch_related('rule__category'). \
                     prefetch_related('rule__category__source'):
