@@ -233,18 +233,21 @@ class PoliciesForm(RulesetPolicyEditPermForm, BaseEditForm, forms.Form):
         filterdef_fields = [f.name for f in RuleProcessingFilterDef._meta.get_fields() if f.name not in ('id', 'proc_filter')]
         filterset_fields = [f.name for f in FilterSet._meta.get_fields() if f.name not in ('id', 'user')]
 
-        res = []
+        res = {}
         for proc_filter in RuleProcessingFilter.objects.values(*filter_fields):
-            proc_filter['filter_defs'] = list(RuleProcessingFilterDef.objects.filter(pk=proc_filter['filter_defs']).values(*filterdef_fields))
-            proc_filter['rulesets'] = list(Ruleset.objects.filter(pk=proc_filter['rulesets']).values_list('name', flat=True))
+            if proc_filter['index'] not in res:
+                proc_filter['filter_defs'] = list(RuleProcessingFilterDef.objects.filter(pk=proc_filter['filter_defs']).values(*filterdef_fields))
+                res[proc_filter['index']] = proc_filter
+                proc_filter['rulesets'] = list(Ruleset.objects.filter(pk=proc_filter['rulesets']).values_list('name', flat=True))
+            else:
+                filter_defs = RuleProcessingFilterDef.objects.filter(pk=proc_filter['filter_defs']).values(*filterdef_fields).first()
+                res[proc_filter['index']]['filter_defs'].append(filter_defs)
 
             get_middleware_module('common').update_policies(proc_filter)
 
-            res.append(proc_filter)
-
         # Get only shared filtersets
         json_filtersets = json.dumps(list(FilterSet.objects.filter(user_id=None).values(*filterset_fields)))
-        json_content = json.dumps(res, cls=DjangoJSONEncoder)
+        json_content = json.dumps(list(res.values()), cls=DjangoJSONEncoder)
 
         tar_path_io = BytesIO()
         with tarfile.open(fileobj=tar_path_io, mode="w:gz") as tar:
