@@ -26,6 +26,7 @@ from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation, ValidationError
 from django.core.validators import validate_ipv4_address
 from django.db import transaction
+from django.db.utils import IntegrityError
 from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils import timezone
@@ -839,6 +840,10 @@ class InvalidCategoryException(Exception):
     pass
 
 
+class DuplicateSidException(Exception):
+    pass
+
+
 class Source(models.Model):
     FETCH_METHOD = (
         ('http', 'HTTP URL'),
@@ -1450,6 +1455,13 @@ class Source(models.Model):
                 self.handle_b64dataset(_file)
             elif self.datatype in self.custom_data_type:
                 self.handle_custom_file(_file, upload=upload)
+        except DuplicateSidException as e:
+            sid = str(e)
+            source_name = ''
+            if len(sid):
+                source_name = f' ({Rule.objects.filter(sid=sid).values_list("category__source__name", flat=True).first()})'
+                sid = f'({sid}) '
+            raise ValidationError(f'The source contains conflicting SID {sid}with other source{source_name}')
         finally:
             source_lock.close()
 
@@ -2225,9 +2237,6 @@ class Category(models.Model, Transformable, Cache):
 
         with open(os.path.join(source_git_dir, filename)) as rfile:
             with transaction.atomic():
-                duplicate_source = set()
-                duplicate_sids = set()
-
                 for line in rfile.readlines():
                     state = True
                     if line.startswith('#'):
@@ -2263,14 +2272,6 @@ class Category(models.Model, Transformable, Cache):
                             # FIXME update references if needed
                             rav = existing_rules_hash[sid][version]
                             rule = rav.rule
-
-                            if rule.category.source != source:
-                                source_name = rule.category.source.name
-                                duplicate_source.add(source_name)
-                                duplicate_sids.add(sid_str)
-                                if len(duplicate_sids) == 20:
-                                    break
-                                continue
 
                             if rav.content != line or rule.group is True or (rav.state != rav.commented_in_source and rav.commented_in_source == state):
                                 rav.content = line
@@ -2339,17 +2340,16 @@ class Category(models.Model, Transformable, Cache):
                             rules_update["ravs"].append(rav)
                             existing_rules_hash[rule.sid][rav.version] = rav
 
-                if len(duplicate_sids):
-                    sids = sorted(duplicate_sids)
-                    if len(sids) == 20:
-                        sids += '...'
-                    sids = ', '.join(sids)
-                    source_name = ', '.join(sorted(duplicate_source))
-
-                    raise ValidationError('The source contains conflicting SID (%s) with other sources (%s)' % (sids, source_name))
-
                 if len(rules_update["added"]):
-                    Rule.objects.bulk_create(rules_update["added"])
+                    try:
+                        Rule.objects.bulk_create(rules_update["added"])
+                    except IntegrityError as e:
+                        error = str(e)
+                        match = re.search(r'\(sid\)=\((\d+)\)', error)
+                        sid = ''
+                        if match:
+                            sid = match.group(1)
+                        raise DuplicateSidException(sid)
 
                 if len(rules_update['ravs']):
                     # We cannot validate before like rules,
