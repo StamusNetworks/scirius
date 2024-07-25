@@ -28,7 +28,7 @@ export const Signature = ({ rule }) => {
           <Buffer buffer={buffer} />
         ))}
       </Styled.Row>
-      <Button onClick={() => setShowSignatureText(!showSignatureText)}>{showSignatureText ? 'Hide' : 'Show'} Signature Text</Button>
+      <Button onClick={() => setShowSignatureText(!showSignatureText)}>{showSignatureText ? 'Hide' : 'Show'} Detection Method Text</Button>
       {showSignatureText && <Styled.SigContent dangerouslySetInnerHTML={{ __html: rule.content_html }} key={rule.id} />}
     </Styled.Wrapper>
   );

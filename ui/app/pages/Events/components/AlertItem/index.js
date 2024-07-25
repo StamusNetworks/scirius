@@ -379,7 +379,7 @@ class AlertItem extends React.Component {
         <Tabs.TabPane key="alert" tab="Synthetic view">
           <TabPaneResponsive>
             {/* Signature should always be displayed */}
-            <UICard data-test="alert-card-Signature" title="Signature" fullHeight>
+            <UICard data-test="alert-card-Detection Method" title="Detection Method" fullHeight>
               <DlHorizontal>
                 <ErrorHandler>
                   <EventField filter={new Filter('alert.signature', data.alert.signature)} />
@@ -823,9 +823,9 @@ class AlertItem extends React.Component {
               </DlHorizontal>
             </UICard>
 
-            {/* Signature metadata should always be displayed */}
+            {/* Detection method metadata should always be displayed */}
             {data.event_type !== 'stamus' && data.event_type === 'alert' && (
-              <UICard data-test="alert-card-Signature metadata" title="Signature metadata" fullHeight>
+              <UICard data-test="alert-card-Detection method metadata" title="Detection method metadata" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.alert.metadata) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                   {data.alert.metadata &&
@@ -1027,7 +1027,7 @@ class AlertItem extends React.Component {
         )}
         {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />} />}
         {showTabs && (
-          <Tabs.TabPane key="signature" tab="Signature">
+          <Tabs.TabPane key="signature" tab="Detection Method">
             {this.state.signatureLoading ? (
               <Spin size="small" />
             ) : _.isEmpty(this.state.signature) ? (

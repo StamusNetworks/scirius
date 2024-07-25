@@ -156,13 +156,13 @@ export const FiltersList = [
     force: [EVENT_TYPES.ALERT],
   },
   {
-    title: 'Signature',
+    title: 'Method',
     id: 'alert.signature',
     category: FilterCategory.EVENT,
     force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
-    title: 'Signature ID',
+    title: 'Method ID',
     id: 'alert.signature_id',
     category: FilterCategory.EVENT,
     wildcardable: false,
@@ -732,7 +732,7 @@ export const FiltersList = [
     format: value => value?.replaceAll('_', '') || null,
   },
   {
-    title: 'Signature Severity',
+    title: 'Method Severity',
     id: 'alert.metadata.signature_severity',
     category: FilterCategory.EVENT,
   },

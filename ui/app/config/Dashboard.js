@@ -7,7 +7,7 @@ export const dashboard = [
     items: [
       {
         i: 'alert.signature',
-        title: 'Signatures',
+        title: 'Detection Methods',
       },
       {
         i: 'alert.category',
@@ -42,7 +42,7 @@ export const dashboard = [
     items: [
       {
         i: 'alert.metadata.signature_severity',
-        title: 'Signature Severities',
+        title: 'Method severities',
       },
       {
         i: 'alert.metadata.attack_target',

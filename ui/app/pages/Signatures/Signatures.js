@@ -11,7 +11,7 @@ const Signatures = () => (
       items={[
         'Hunting',
         <Link app to="hunting/signatures">
-          Signatures
+          Detection Methods
         </Link>,
       ]}
     />

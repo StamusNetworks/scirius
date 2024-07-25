@@ -100,7 +100,13 @@ const getSignatureMetadata = rule => {
       ?.split('metadata:')[1]
       ?.split(', ')
       .map(data => data.split(' '))
-      .map(([label, value]) => ({ label: label.split('_').join(' '), value: formatReference(value, label) }))
+      .map(([label, value]) => ({
+        label: label
+          .split('_')
+          .join(' ')
+          .replace(/Signature/i, 'Detection method'),
+        value: formatReference(value, label),
+      }))
       .filter(({ label }) => label !== 'created at' && label !== 'updated at') || [];
 
   return [...metadata, { label: 'created at', value: rule.created || 'unknown' }, { label: 'updated at', value: rule.updated || 'unknown' }];

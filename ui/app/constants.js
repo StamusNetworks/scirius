@@ -39,7 +39,7 @@ export const PAGE_STATE = {
 export const huntTabs = {
   [PAGE_STATE.dashboards]: 'Dashboard',
   [PAGE_STATE.alerts_list]: 'Events',
-  [PAGE_STATE.rules_list]: 'Signatures',
+  [PAGE_STATE.rules_list]: 'Detection methods',
   [PAGE_STATE.filters_list]: 'Policy',
   [PAGE_STATE.inventory]: 'Inventory',
   [PAGE_STATE.host_insight]: 'Host Insight',

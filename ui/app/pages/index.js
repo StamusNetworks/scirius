@@ -7,7 +7,7 @@ import History from './History/History';
 import Kibana from './Kibana/Kibana';
 import NotFoundPage from './NotFound/NotFound';
 import Policies from './Policies/Policies';
-import Signatures from './Signatures/Signatures';
+import DetectionMethods from './Signatures/Signatures';
 
 export default {
   NotFoundPage,
@@ -22,6 +22,6 @@ export default {
   Events,
   Dashboards,
   Policies,
-  Signatures,
+  DetectionMethods,
   History,
 };
