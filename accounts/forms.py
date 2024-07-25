@@ -175,7 +175,7 @@ class PasswordCreationForm(UserCreationForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data and self.data.get('method', 'stamus') == 'stamus':
+        if cleaned_data and self.data.get('saml', 'off') == 'off':
             for password in ('password1', 'password2'):
                 if not cleaned_data.get(password):
                     self.add_error(password, 'This field is required')
