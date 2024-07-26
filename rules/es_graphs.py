@@ -714,6 +714,8 @@ class ESMetricsTimeline(ESQuery):
                     rdata[host] = {'entries': [{'time': date, 'mean': elt['stat']['value']}]}
                 else:
                     rdata[host]['entries'].append({'time': date, 'mean': elt['stat']['value']})
+            if rdata[host]['entries'][-1]['mean'] is None:
+                del rdata[host]['entries'][-1]
             data = rdata
         except:
             return {}
