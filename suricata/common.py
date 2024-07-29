@@ -266,6 +266,10 @@ def get_rulesets_with_extra(sizes=False, curators=False):
     return {}
 
 
+def is_ruleset_curator_available():
+    return False
+
+
 def data_export():
     pass
 

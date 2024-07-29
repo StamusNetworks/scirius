@@ -2084,7 +2084,7 @@ def system_settings(request):
         )
     context['global_settings'] = get_system_settings()
     if request.user.has_perms(['rules.ruleset_policy_edit', 'rules.configuration_edit']):
-        context['ruleset_curator_available'] = True
+        context['ruleset_curator_available'] = get_middleware_module('common').is_ruleset_curator_available()
         context['rulesets'] = get_middleware_module('common').get_rulesets_with_extra(sizes=True, curators=True)
         context['monthly'] = True  # enable monthly choice on recurrent tasks
         date_time = timezone.now() + relativedelta(days=1, hour=3, minute=0, second=0, microsecond=0)
