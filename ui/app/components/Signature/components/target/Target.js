@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { TargetIcon, ServerIcon, ClientIcon, ArrowIcon } from 'ui/assets/icons';
 
 import * as Signature from '../../styles';
+
 import * as Styled from './styles';
 
 export const Target = ({ destination, target }) => {
