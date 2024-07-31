@@ -4,6 +4,7 @@ import UIBreadcrumb from 'ui/components/UIElements/UIBreadcrumb';
 import { Link } from 'ui/helpers/Link';
 
 import UpdatePushRuleset from '../../components/UpdatePushRuleset';
+
 import PoliciesPage from './PoliciesPage';
 
 const Policies = () => (
