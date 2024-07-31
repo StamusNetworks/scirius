@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 
 import * as SignatureStyle from '../../styles';
 import { Field } from '../field';
+
 import * as Style from './styles';
 
 export const Buffer = ({ buffer }) => (

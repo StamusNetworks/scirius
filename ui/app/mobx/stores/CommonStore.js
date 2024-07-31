@@ -6,9 +6,10 @@ import moment from 'moment';
 import endpoints from 'ui/config/endpoints';
 import Filter from 'ui/utils/Filter';
 
-import { createFilterInstanceFromStorage, getEventTypesToTurnOn, getFilters } from './CommonStore.util';
 import { PeriodEnum } from '../../maps/PeriodEnum';
 import { api } from '../api';
+
+import { createFilterInstanceFromStorage, getEventTypesToTurnOn, getFilters } from './CommonStore.util';
 
 class CommonStore {
   root = null;

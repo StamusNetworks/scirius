@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import * as Signature from '../../styles';
 import { Field } from '../field';
 import { Target } from '../target';
+
 import * as Styled from './styles';
 
 export const GeneralInformation = ({ data }) => {

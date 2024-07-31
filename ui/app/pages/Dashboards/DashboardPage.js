@@ -38,6 +38,7 @@ import { useStore } from 'ui/mobx/RootStoreProvider';
 import 'react-resizable/css/styles.css';
 import '../../../../rules/static/rules/c3.min.css';
 import DashboardMosaic from '../../components/DashboardMosaic';
+
 import * as Style from './style';
 
 const TrendCard = styled(UICard)`

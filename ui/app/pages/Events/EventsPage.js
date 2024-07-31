@@ -39,6 +39,7 @@ import Filter from 'ui/utils/Filter';
 
 import { buildListUrlParams } from '../../helpers/common';
 import HuntPaginationRow from '../../HuntPaginationRow';
+
 import AlertItem from './components/AlertItem';
 
 const EventsPage = () => {
