@@ -11,27 +11,30 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         source_name = options.get('source', None)
 
-        sources = Source.objects.all()
+        sources = Source.objects.filter(datatype__in=['sig', 'sigs', 'threat'])
         if source_name:
             sources = sources.filter(name=source_name)
 
         for source in sources:
-            testor = TestRules()
-            related_files, cats_content, iprep_content = source.prepare_tests_files()
+            try:
+                testor = TestRules()
+                related_files, cats_content, iprep_content = source.prepare_tests_files()
 
-            all_versions = RuleAtVersion.get_versions_to_analyse()
-            for version in all_versions:
-                contents = RuleAtVersion.objects. \
-                    filter(
-                        rule__category__source=source,
-                        version=version
-                    ).distinct().values_list('content', flat=True)
+                all_versions = RuleAtVersion.get_versions_to_analyse()
+                for version in all_versions:
+                    contents = RuleAtVersion.objects. \
+                        filter(
+                            rule__category__source=source,
+                            version=version
+                        ).distinct().values_list('content', flat=True)
 
-                if contents:
-                    content = testor.rules_infos(
-                        '\n'.join(contents),
-                        related_files=related_files,
-                        cats_content=cats_content,
-                        iprep_content=iprep_content
-                    )
-                    RuleAtVersion.write_analyse(content, version)
+                    if contents:
+                        content = testor.rules_infos(
+                            '\n'.join(contents),
+                            related_files=related_files,
+                            cats_content=cats_content,
+                            iprep_content=iprep_content
+                        )
+                        RuleAtVersion.write_analyse(content, version)
+            except:
+                continue
