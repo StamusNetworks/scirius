@@ -88,11 +88,11 @@ export const dashboard = [
     items: [
       {
         i: 'alert.source.ip',
-        title: 'Attackers',
+        title: 'Offender IPs',
       },
       {
         i: 'alert.target.ip',
-        title: 'Victims',
+        title: 'Victim IPs',
       },
     ],
   },
