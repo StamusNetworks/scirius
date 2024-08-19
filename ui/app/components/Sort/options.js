@@ -38,7 +38,7 @@ const options = [
   {
     icon: <AlertOutlined />,
     id: 'hits',
-    title: 'Alerts',
+    title: 'Events',
     isNumeric: true,
     defaultAsc: false,
     page: ['RULES_LIST'],

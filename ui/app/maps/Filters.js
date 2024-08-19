@@ -26,7 +26,7 @@ export const FilterType = {
 export const FiltersList = [
   /* Signature filters */
   {
-    title: 'Alerts min',
+    title: 'Events min',
     id: 'hits_min',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
@@ -36,7 +36,7 @@ export const FiltersList = [
     force: [EVENT_TYPES.ALERT],
   },
   {
-    title: 'Alerts max',
+    title: 'Events max',
     id: 'hits_max',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
@@ -144,7 +144,7 @@ export const FiltersList = [
     force: [EVENT_TYPES.ALERT],
   },
   {
-    title: 'Attacker Network',
+    title: 'Offender Network',
     id: 'alert.source.net_info_agg',
     category: FilterCategory.EVENT,
     force: [EVENT_TYPES.ALERT],
@@ -300,14 +300,14 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Attacker IP',
+    title: 'Offender IP',
     id: 'alert.source.ip',
     wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
   {
-    title: 'Attacker port',
+    title: 'Offender port',
     id: 'alert.source.port',
     category: FilterCategory.EVENT,
     wildcardable: false,
