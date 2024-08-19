@@ -403,6 +403,15 @@ class CommonStore {
     localStorage.setItem('ids_filters', '[]');
   }
 
+  nextFilters(filters) {
+    this.ids = this.ids.map(f => {
+      f.suspended = true;
+      return f;
+    });
+    this.addFilter(filters);
+    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
+  }
+
   getFilters(includeAlertTAg = false) {
     if (includeAlertTAg) {
       return [...toJS(this.ids), toJS(this._alert)].filter(Boolean);
