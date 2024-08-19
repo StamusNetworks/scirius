@@ -54,7 +54,7 @@ const RuleInList = ({ rulesets, rules, filterParams, loading }) => {
       }),
     },
     {
-      title: 'Alerts',
+      title: 'Events',
       dataIndex: 'alerts',
       onHeaderCell: () => ({
         'data-test': 'alerts',

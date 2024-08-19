@@ -63,7 +63,7 @@ export const RuleSortFields = [
   },
   {
     id: 'hits',
-    title: 'Alerts',
+    title: 'Events',
     isNumeric: true,
     defaultAsc: false,
   },
@@ -219,7 +219,7 @@ const SignaturesPage = () => {
             commonStore.withAlerts = value;
           }}
         />
-        <span>Show only with alerts</span>
+        <span>Show only with events</span>
       </AlertsMinOneToggle>
 
       {!SID && <RuleInList loading={loading} rules={signatures} sources={sources} filterParams={filterParams} rulesets={ruleSets} />}
