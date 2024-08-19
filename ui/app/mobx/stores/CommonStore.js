@@ -324,13 +324,14 @@ class CommonStore {
       if (!matchingFilter) return f;
 
       if (isSameFilter) {
+        f.suspended = false;
         message.info({
           content: `Filter already exists!`,
         });
         return f;
       }
 
-      f.suspended = matchingFilter.suspended;
+      f.suspended = false;
       f.negated = matchingFilter.negated;
       f.fullString = matchingFilter.fullString;
 
@@ -409,7 +410,6 @@ class CommonStore {
       return f;
     });
     this.addFilter(filters);
-    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
   }
 
   getFilters(includeAlertTAg = false) {
