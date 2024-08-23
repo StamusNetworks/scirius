@@ -5,6 +5,7 @@ import EveBox from './EveBox/EveBox';
 import Events from './Events/Events';
 import History from './History/History';
 import Kibana from './Kibana/Kibana';
+import Linking from './Linking/Linking';
 import NotFoundPage from './NotFound/NotFound';
 import Policies from './Policies/Policies';
 import DetectionMethods from './Signatures/Signatures';
@@ -24,4 +25,5 @@ export default {
   Policies,
   DetectionMethods,
   History,
+  Linking,
 };
