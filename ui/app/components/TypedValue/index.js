@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { InfoCircleFilled, RobotOutlined, UserOutlined } from '@ant-design/icons';
+import { InfoCircleFilled, RobotOutlined, UserOutlined, LinkOutlined } from '@ant-design/icons';
 import { Dropdown } from 'antd';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
@@ -36,6 +36,17 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
   const history = useHistory();
 
   let listOfLinks = additionalLinks || [];
+
+  const customLinks = commonStore.linkTemplates
+    .filter(l => l.entities.includes(filter.id))
+    .map(l => ({
+      key: `typedValue${l.label}`,
+      label: (
+        <a href={l.url.replace('{{ value }}', filter.value)} target="_blank">
+          <LinkOutlined /> <span>{l.label}</span>
+        </a>
+      ),
+    }));
 
   const getRoleLabel = (location, removeFilters = false) => (
     <div
@@ -145,7 +156,7 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
           {
             type: 'group', // Must have
             label: <DropdownLabel>{filter.label}</DropdownLabel>,
-            children: listOfLinks.filter(({ label }) => !_.isEmpty(label)),
+            children: [...listOfLinks.filter(({ label }) => !_.isEmpty(label)), ...customLinks],
           },
         ],
       }}

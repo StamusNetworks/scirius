@@ -51,6 +51,7 @@ const App = ({ setSessionActivity }) => {
     await commonStore.fetchSystemSettings();
     await commonStore.fetchSources();
     await commonStore.fetchUser();
+    await commonStore.fetchLinkTemplates();
   }, []);
 
   useAutorun(async () => {

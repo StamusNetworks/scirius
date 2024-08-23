@@ -26,14 +26,17 @@ export const EditModal = ({ initialValues }) => {
         open={open}
         title="Edit this template"
         okButtonProps={{ loading: deleteLoading }}
-        okText={deleteLoading ? 'Deleting...' : 'Confirm'}
+        okText={deleteLoading ? 'Saving...' : 'Confirm'}
         cancelText="Cancel"
         onOk={handleDeleteThreat}
         onCancel={handleClose}
       >
         <Form layout="vertical" autoComplete="off" initialValues={initialValues}>
-          <Form.Item label="Entity" name="entity">
-            <Select options={[{ value: 'IP' }, { value: 'Threat' }, { value: 'Signature ID' }]} />
+          <Form.Item label="Label" name="label">
+            <Input type="text" placeholder="Google" />
+          </Form.Item>
+          <Form.Item label="Entities" name="entities">
+            <Select options={[{ value: 'IP' }, { value: 'Threat' }, { value: 'Signature ID' }]} mode="multiple" />
           </Form.Item>
           <Form.Item label="Template" name="template">
             <Input type="text" placeholder="https://www.google.com/search?q={{ value }}" />

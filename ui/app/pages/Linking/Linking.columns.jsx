@@ -6,8 +6,13 @@ import * as Style from './Linking.style';
 
 export const columns = [
   {
-    title: 'Entity',
-    dataIndex: 'entity',
+    title: 'Label',
+    dataIndex: 'label',
+  },
+  {
+    title: 'Entities',
+    dataIndex: 'entities',
+    render: value => value?.join(', '),
   },
   {
     title: 'Template',

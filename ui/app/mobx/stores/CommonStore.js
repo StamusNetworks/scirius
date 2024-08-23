@@ -79,6 +79,14 @@ class CommonStore {
 
   _stickyFilters = true;
 
+  _linkTemplates = [
+    {
+      label: 'ThreatConnect',
+      url: 'https://www.threatconnect.com/api/v3/entities/indicators/iocs/search?ioc={{ value }}',
+      entities: ['alert.signature'],
+    },
+  ];
+
   constructor(root) {
     this.root = root;
     if (!localStorage.getItem('alert_tag')) {
@@ -417,6 +425,17 @@ class CommonStore {
       return [...toJS(this.ids), toJS(this._alert)].filter(Boolean);
     }
     return toJS(this.ids);
+  }
+
+  async fetchLinkTemplates() {
+    const response = await api.get(endpoints.LINK_TEMPLATES.url);
+    if (response.ok) {
+      this._linkTemplates = response.data.results;
+    }
+  }
+
+  get linkTemplates() {
+    return this._linkTemplates;
   }
 
   set withAlerts(value) {
