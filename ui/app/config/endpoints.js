@@ -106,6 +106,10 @@ const ENDPOINT = {
     name: 'Fetching events from flow id',
     url: '/rest/rules/es/events_from_flow_id/:tenant:datesEs',
   },
+  LINK_TEMPLATES: {
+    name: 'Fetching link templates',
+    url: '/rest/rules/link_templates/',
+  },
 };
 
 export default ENDPOINT;
