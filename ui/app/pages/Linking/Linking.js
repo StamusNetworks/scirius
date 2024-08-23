@@ -11,7 +11,8 @@ import { CreateModal } from './CreateModal/CreateModal';
 const dummyData = [
   {
     pk: 1,
-    entity: 'Threat',
+    label: 'Google',
+    entities: ['Threat'],
     template: 'https://www.google.com/search?q={{ value }}',
   },
 ];
