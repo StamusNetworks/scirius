@@ -6,6 +6,9 @@ const API = {
   setSessionActivity: async (params, options) => api.post(ENDPOINT.SESSION_ACTIVITY.url, params, options),
   saveFilterSet: async (params, options) => api.post(ENDPOINT.FILTER_SET_SAVE.url, params, options),
   updatePushRuleset: async () => api.post(ENDPOINT.UPDATE_PUSH_RULESET.url),
+  createDeeplink: async (data, config) => api.post(ENDPOINT.DEEPLINK.url, data, config),
+  // PATCH
+  updateDeeplink: async (data, config) => api.patch(ENDPOINT.DEEPLINK.url, data, config),
   // GET
   fetchUser: async () => api.get(ENDPOINT.CURRENT_USER.url),
   fetchContext: async () => api.get(ENDPOINT.SCIRIUS_CONTEXT.url),
@@ -24,8 +27,10 @@ const API = {
   fetchPoliciesData: async (params, options) => api.get(ENDPOINT.POLICIES_DATA.url, params, options),
   fetchProcessingFilters: async (params, options) => api.get(ENDPOINT.PROCESSING.url, params, options),
   fetchEventsFromFlowID: async (params, options) => api.get(ENDPOINT.EVENTS_FROM_FLOW_ID.url, params, options),
+  fetchDeeplinks: async (params, options) => api.get(ENDPOINT.DEEPLINK.url, params, options),
   // DELETE
   deleteFilterSet: async (params, options) => api.delete(ENDPOINT.FILTER_SET_DELETE.url, params, options),
+  deleteDeeplink: async () => api.delete(ENDPOINT.DEEPLINK.url),
 };
 
 export default API;

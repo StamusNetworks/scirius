@@ -6,13 +6,13 @@ import * as Style from './Linking.style';
 
 export const columns = [
   {
-    title: 'Label',
-    dataIndex: 'label',
+    title: 'Name',
+    dataIndex: 'name',
   },
   {
     title: 'Entities',
     dataIndex: 'entities',
-    render: value => value?.join(', '),
+    render: value => value?.map(entity => entity.name).join(', '),
   },
   {
     title: 'Template',
@@ -21,11 +21,14 @@ export const columns = [
   {
     title: 'Actions',
     dataIndex: 'actions',
-    render: (text, record) => (
-      <Style.TableActions>
-        <EditModal initialValues={record} />
-        <DeleteModal />
-      </Style.TableActions>
-    ),
+    render: (_, record) => {
+      const formattedRecord = { ...record, entities: record.entities.map(entity => entity.name) };
+      return (
+        <Style.TableActions>
+          <EditModal initialValues={formattedRecord} />
+          <DeleteModal />
+        </Style.TableActions>
+      );
+    },
   },
 ];

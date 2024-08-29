@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 
 import { Button, Form, Input, Modal, Select } from 'antd';
+import PropTypes from 'prop-types';
 
-export const CreateModal = () => {
+import notify from 'ui/helpers/notify';
+import { FilterType } from 'ui/maps/Filters';
+import API from 'ui/services/API';
+
+export const CreateModal = ({ onSuccess }) => {
+  const [form] = Form.useForm();
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
     setOpen(true);
@@ -11,10 +17,30 @@ export const CreateModal = () => {
     setOpen(false);
   };
 
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
-  const handleDeleteThreat = async () => {
-    setDeleteLoading(true);
+  const handleCreateThreat = async () => {
+    setSubmitLoading(true);
+
+    try {
+      const values = await form.validateFields();
+      const payload = {
+        ...values,
+        entities: values.entities.map(entity => ({ name: entity })),
+      };
+      const response = await API.createDeeplink(payload);
+      if (response.ok) {
+        onSuccess();
+        notify('Link template created');
+        handleClose();
+      } else {
+        notify('Failed to create link template');
+      }
+    } catch (error) {
+      notify('Error creating link template', error);
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   return (
@@ -25,18 +51,18 @@ export const CreateModal = () => {
       <Modal
         open={open}
         title="Create new template"
-        okButtonProps={{ loading: deleteLoading }}
-        okText={deleteLoading ? 'Saving...' : 'Confirm'}
+        okButtonProps={{ loading: submitLoading }}
+        okText={submitLoading ? 'Saving...' : 'Confirm'}
         cancelText="Cancel"
-        onOk={handleDeleteThreat}
+        onOk={handleCreateThreat}
         onCancel={handleClose}
       >
-        <Form layout="vertical" autoComplete="off">
-          <Form.Item label="Label" name="label">
+        <Form form={form} layout="vertical" autoComplete="off">
+          <Form.Item label="Name" name="name">
             <Input type="text" placeholder="Google" />
           </Form.Item>
-          <Form.Item label="Entity" name="entity">
-            <Select options={[{ value: 'IP' }, { value: 'Threat' }, { value: 'Signature ID' }]} mode="multiple" />
+          <Form.Item label="Entities" name="entities">
+            <Select options={Object.values(FilterType).map(type => ({ value: type }))} mode="multiple" />
           </Form.Item>
           <Form.Item label="Template" name="template">
             <Input type="text" placeholder="https://www.google.com/search?q={{ value }}" />
@@ -45,4 +71,8 @@ export const CreateModal = () => {
       </Modal>
     </>
   );
+};
+
+CreateModal.propTypes = {
+  onSuccess: PropTypes.func,
 };
