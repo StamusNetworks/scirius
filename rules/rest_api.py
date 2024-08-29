@@ -31,7 +31,7 @@ from rest_framework.generics import get_object_or_404
 from django_filters import rest_framework as filters
 from elasticsearch.exceptions import ConnectionError
 
-from rules.models import Rule, Category, RuleAtVersion, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, FilterSet
+from rules.models import DeepLink, DeepLinkEntity, Rule, Category, RuleAtVersion, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, FilterSet
 from rules.models import Source, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
 from rules.views import get_public_sources, fetch_public_sources, extract_rule_references
 from rules.rest_processing import RuleProcessingFilterViewSet
@@ -47,7 +47,7 @@ from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsB
 from rules.es_analytics import ESGetUniqueFields
 from rules.es_analytics import ESGraphAgg, ESFieldUniqAgg, ESGenericSearch
 
-from scirius.rest_utils import ESManageMultipleESIndexesViewSet, SciriusReadOnlyModelViewSet
+from scirius.rest_utils import ESManageMultipleESIndexesViewSet, SciriusModelViewSet, SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
 from scirius.utils import get_middleware_module
 
@@ -1029,6 +1029,110 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
         serializer = self.get_serializer(page, many=True)
         self._add_hits(request, serializer.data)
         return self.get_paginated_response(serializer.data)
+
+
+class DeepLinkEntitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeepLinkEntity
+        fields = ('name',)
+
+
+class DeepLinkSerializer(serializers.ModelSerializer):
+    entities = DeepLinkEntitySerializer(many=True)
+
+    class Meta:
+        model = DeepLink
+        fields = ('pk', 'name', 'template', 'all', 'entities')
+
+    def update(self, instance, validated_data):
+        entities_data = validated_data.get('entities', [])
+        instance.all = validated_data.get('all', instance.all)
+
+        instance.name = validated_data.get('name', instance.name)
+        instance.template = validated_data.get('template', instance.template)
+        instance.save()
+
+        entity_names = [data['name'] for data in entities_data if data.get('name', None)]
+        entities = []
+        for name in entity_names:
+            entity, _ = DeepLinkEntity.objects.get_or_create(name=name)
+            entities.append(entity)
+        instance.entities.set(entities)
+
+        return instance
+
+    def create(self, validated_data):
+        entities = validated_data.pop('entities', None)
+        deeplink = DeepLink.objects.create(**validated_data)
+        if entities:
+            for entity_data in entities:
+                entity, _ = DeepLinkEntity.objects.get_or_create(**entity_data)
+                deeplink.entities.add(entity)
+        return deeplink
+
+
+class DeepLinkViewSet(SciriusModelViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    List all links:\n
+        curl -k -v https://x.x.x.x/rest/rules/deeplink/?ordering=all&page_size=1 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"count":2,"next":null,"previous":null,"results":[{"pk":4,"name":"google","template":"http://google.com/search/{{ value }}","all":false,"entities":[]},{"pk":3,"name":"google2","template":"https://google2.com/search/{{ value }}","all":false,"entities":[{"name":"ip"}]}]}
+
+    Get a link:\n
+        curl -k -v https://x.x.x.x/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"pk":4,"name":"google","template":"http://google.com/search/{{ value }}","all":false,"entities":[]}
+
+    ==== POST ====\n
+    Create a new link:\n
+        curl -k -v https://myssp/rest/rules/deeplink/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"name": "duckduckgo", "template": "http://duckduckgo.com/search/{{ value }}", "entities": [{"name": "ip"}, {"name": "port"}]}'
+
+    Return:\n
+        HTTP/1.1 201 Created
+        {"pk":5,"name":"duckduckgo","template":"http://duckduckgo.com/search/{{ value }}","all":false,"entities":[{"name":"ip"},{"name":"port"}]}
+
+    ==== PUT ====\n
+    Update a link and its entities:\n
+        curl -k -v https://x.x.x.x/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X PUT -d '{"name": "yahoo", "template": "https://yahoo.com/search/{{ value }}", "entities": [{"name": "port"}], "all": false}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"pk":3,"name":"yahoo","template":"https://yahoo.com/search/{{ value }}","all":false,"entities":[{"name":"port"}]}
+
+    ==== PATCH ====\n
+    Partial update a link:\n
+        curl -k -v https://myssp/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X PATCH -d '{"name": "google1"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"pk":4,"name":"google1","template":"http://google.com/search/{{ value }}","all":false,"entities":[]}&
+
+    ==== DELETE ====\n
+    Delete a link:\n
+        curl -k -v https://myssp/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
+
+    Return:\n
+        HTTP/1.1 204 No Content
+
+    =============================================================================================================================================================
+    """
+
+    queryset = DeepLink.objects.all()
+    serializer_class = DeepLinkSerializer
+    ordering = ('name',)
+    filterset_fields = ('name', 'template', 'all', 'entities__name')
+    ordering_fields = ('pk', 'name', 'template', 'all', 'entities__name')
+
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+        'WRITE': ('rules.configuration_edit',),
+    }
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
@@ -3351,3 +3455,4 @@ router.register('rules/changelog/source', ChangelogViewSet)
 router.register('rules/system_settings', SystemSettingsViewSet)
 router.register('rules/processing-filter', RuleProcessingFilterViewSet)
 router.register('rules/hunt_filter_sets', FilterSetViewSet, basename='hunt_filter_sets')
+router.register('rules/deeplink', DeepLinkViewSet)
