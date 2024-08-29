@@ -38,12 +38,12 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
   let listOfLinks = additionalLinks || [];
 
   const customLinks = commonStore.linkTemplates
-    .filter(l => l.entities.includes(filter.id))
+    .filter(l => l.entities?.map(entity => entity.name).includes(filter.type))
     .map(l => ({
-      key: `typedValue${l.label}`,
+      key: `typedValue${l.name}`,
       label: (
-        <a href={l.url.replace('{{ value }}', filter.value)} target="_blank">
-          <LinkOutlined /> <span>{l.label}</span>
+        <a href={l.template?.replace('{{ value }}', filter.value)} target="_blank">
+          <LinkOutlined /> <span>{l.name}</span>
         </a>
       ),
     }));
