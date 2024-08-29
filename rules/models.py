@@ -3983,6 +3983,20 @@ class RuleProcessingFilterDef(models.Model):
         return '%s %s %s' % (self.key, op, self.value)
 
 
+class DeepLink(models.Model):
+    name = models.CharField(max_length=128, null=False, blank=False)
+    template = models.CharField(max_length=2048, validators=[validate_url], null=False, blank=False)
+    all = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('name', 'template')
+
+
+class DeepLinkEntity(models.Model):
+    deeplink = models.ManyToManyField(DeepLink, related_name='entities', blank=True)
+    name = models.CharField(max_length=128, null=False, blank=False)
+
+
 def dependencies_check(obj):
     if obj == Source:
         return
