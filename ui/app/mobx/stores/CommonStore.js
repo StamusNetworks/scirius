@@ -428,7 +428,7 @@ class CommonStore {
   }
 
   async fetchLinkTemplates() {
-    const response = await api.get(endpoints.LINK_TEMPLATES.url);
+    const response = await api.get(endpoints.DEEPLINK.url);
     if (response.ok) {
       this._linkTemplates = response.data.results;
     }
