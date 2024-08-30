@@ -165,9 +165,10 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
             if '@' in self.cleaned_data['elasticsearch_url']:
                 raise forms.ValidationError('Credentials must be set in the dedicated fields')
             if self.cleaned_data['elasticsearch_url']:
-                parser = urlparse(self.cleaned_data['elasticsearch_url'])
-                if parser.port is None:
-                    raise forms.ValidationError('Invalid syntax: port is missing')
+                for url in self.cleaned_data['elasticsearch_url'].split(','):
+                    parser = urlparse(url)
+                    if parser.port is None:
+                        raise forms.ValidationError('Invalid syntax: port is missing')
         return self.cleaned_data['elasticsearch_url']
 
 
