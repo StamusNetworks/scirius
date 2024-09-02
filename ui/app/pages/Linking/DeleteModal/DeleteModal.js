@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 
 import { ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Button, Modal } from 'antd';
+import PropTypes from 'prop-types';
+
+import API from 'ui/services/API';
 
 import * as Style from './style';
 
-export const DeleteModal = () => {
+export const DeleteModal = ({ pk, onSuccess }) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
     setOpen(true);
@@ -18,6 +21,9 @@ export const DeleteModal = () => {
 
   const handleDeleteThreat = async () => {
     setDeleteLoading(true);
+    await API.deleteDeeplink(pk);
+    onSuccess();
+    handleClose();
   };
 
   return (
@@ -26,7 +32,7 @@ export const DeleteModal = () => {
       <Modal
         open={open}
         title="Delete this template"
-        okButtonProps={{ type: 'danger', loading: deleteLoading }}
+        okButtonProps={{ danger: true, loading: deleteLoading }}
         okText={deleteLoading ? 'Deleting...' : 'Confirm'}
         cancelText="Cancel"
         onOk={handleDeleteThreat}
@@ -39,4 +45,9 @@ export const DeleteModal = () => {
       </Modal>
     </>
   );
+};
+
+DeleteModal.propTypes = {
+  pk: PropTypes.number.isRequired,
+  onSuccess: PropTypes.func.isRequired,
 };
