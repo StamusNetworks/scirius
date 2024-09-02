@@ -1,10 +1,10 @@
 import React from 'react';
 
+import { CreateModal } from './CreateModal';
 import { DeleteModal } from './DeleteModal';
-import { EditModal } from './EditModal';
 import * as Style from './Linking.style';
 
-export const columns = [
+export const getColumns = refetch => [
   {
     title: 'Name',
     dataIndex: 'name',
@@ -12,7 +12,7 @@ export const columns = [
   {
     title: 'Entities',
     dataIndex: 'entities',
-    render: value => value?.map(entity => entity.name).join(', '),
+    render: (value, record) => (record.all ? 'All' : value?.map(entity => entity.name).join(', ')),
   },
   {
     title: 'Template',
@@ -25,8 +25,8 @@ export const columns = [
       const formattedRecord = { ...record, entities: record.entities.map(entity => entity.name) };
       return (
         <Style.TableActions>
-          <EditModal initialValues={formattedRecord} />
-          <DeleteModal />
+          <CreateModal initialValues={formattedRecord} onSuccess={refetch} />
+          <DeleteModal pk={record.pk} onSuccess={refetch} />
         </Style.TableActions>
       );
     },
