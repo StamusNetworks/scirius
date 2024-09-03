@@ -79,13 +79,7 @@ class CommonStore {
 
   _stickyFilters = true;
 
-  _linkTemplates = [
-    {
-      label: 'ThreatConnect',
-      url: 'https://www.threatconnect.com/api/v3/entities/indicators/iocs/search?ioc={{ value }}',
-      entities: ['alert.signature'],
-    },
-  ];
+  _linkTemplates = [];
 
   constructor(root) {
     this.root = root;
