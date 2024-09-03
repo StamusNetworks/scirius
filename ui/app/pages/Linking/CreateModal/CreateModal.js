@@ -26,6 +26,8 @@ const allOptions = [
   },
 ];
 
+const filterTypeOptions = Object.values(FilterType).map(type => ({ value: type }));
+
 export const CreateModal = ({ initialValues, onSuccess }) => {
   const isCreate = initialValues === undefined;
   const action = isCreate ? 'create' : 'update';
@@ -94,7 +96,7 @@ export const CreateModal = ({ initialValues, onSuccess }) => {
             <Radio.Group options={allOptions} />
           </Form.Item>
           <Form.Item name="entities">
-            <Select options={Object.values(FilterType).map(type => ({ value: type }))} mode="multiple" disabled={isAllEntities} />
+            <Select options={filterTypeOptions} mode="multiple" disabled={isAllEntities} />
           </Form.Item>
         </Form>
       </Modal>
