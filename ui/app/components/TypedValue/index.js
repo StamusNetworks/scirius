@@ -18,6 +18,8 @@ const Value = styled.a`
   cursor: pointer;
   white-space: nowrap;
   text-overflow: ellipsis;
+  text-decoration: underline dashed lightgray;
+  text-underline-offset: 2px;
 `;
 
 const DropdownLabel = styled.div`
