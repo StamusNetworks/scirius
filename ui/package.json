@@ -207,6 +207,9 @@
       "d3-zoom": "^3.0.0",
       "d3-interpolate": "^3.0.1",
       "d3-color": "^3.1.0"
+    },
+    "apisauce": {
+      "axios": "1.7.0"
     }
   }
 }
