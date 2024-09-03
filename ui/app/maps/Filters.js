@@ -15,12 +15,10 @@ export const FilterType = {
   MITRE: 'MITRE',
   USERNAME: 'USERNAME',
   HOSTNAME: 'HOSTNAME',
-  NAME: 'NAME',
   ROLE: 'ROLE',
   NETWORK_INFO: 'NETWORK_INFO',
   STAMUS_ASSET: 'STAMUS_ASSET',
   SHA256: 'SHA256',
-  GENERIC: 'GENERIC',
 };
 
 export const FiltersList = [
@@ -343,7 +341,7 @@ export const FiltersList = [
   {
     title: 'Queried Name',
     id: 'dns.query.rrname',
-    type: FilterType.NAME,
+    type: FilterType.HOSTNAME,
     category: FilterCategory.EVENT,
   },
   {

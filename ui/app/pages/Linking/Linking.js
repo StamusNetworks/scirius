@@ -51,13 +51,13 @@ const Linking = () => {
       <UIBreadcrumb
         items={[
           'Administration',
-          <Link app to="administration/linking">
+          <Link app to="administration/url-templates">
             Linking
           </Link>,
         ]}
       />
       <Col span={24}>
-        <h1>Contextual DeepLinking</h1>
+        <h1>External links templates</h1>
         <p>Create templates in order to add links in the contextual menu when right clicking on different values</p>
       </Col>
       <Row style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
@@ -79,8 +79,9 @@ const Linking = () => {
 };
 Linking.metadata = {
   category: 'ADMINISTRATION',
-  url: 'administration/linking',
+  url: 'administration/url-templates',
   position: 0,
+  title: 'URL Templates',
 };
 
 export default Linking;

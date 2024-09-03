@@ -26,7 +26,7 @@ export default class Filter {
   _category = FilterCategory.EVENT;
 
   /* Filter type: IP | PORT | MITRE | USERNAME | HOSTNAME | ROLE | GENERIC */
-  _type = FilterType.GENERIC;
+  _type = undefined;
 
   /* Filter icon. ReactNode */
   _icon = null;
