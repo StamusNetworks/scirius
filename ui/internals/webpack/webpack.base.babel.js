@@ -104,6 +104,7 @@ module.exports = options => ({
     mainFields: ['browser', 'jsnext:main', 'main'],
     alias: {
       ui: [path.resolve(__dirname, '../../app/appliance/'), path.resolve(__dirname, '../../app/')],
+      'react/jsx-runtime': 'react/jsx-runtime.js',
     },
   },
   devtool: options.devtool,
