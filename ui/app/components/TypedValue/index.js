@@ -38,7 +38,7 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
   let listOfLinks = additionalLinks || [];
 
   const customLinks = commonStore.linkTemplates
-    .filter(l => l.entities?.map(entity => entity.name).includes(filter.type))
+    .filter(l => l.all || l.entities?.map(entity => entity.name).includes(filter.type))
     .map(l => ({
       key: `typedValue${l.name}`,
       label: (
