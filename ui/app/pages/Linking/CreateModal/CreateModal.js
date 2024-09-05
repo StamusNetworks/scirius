@@ -55,7 +55,7 @@ export const CreateModal = ({ initialValues, onSuccess }) => {
       const response = isCreate ? await API.createDeeplink(payload) : await API.updateDeeplink(initialValues.pk, { body: payload });
       if (response.ok) {
         onSuccess();
-        notify(`Link template ${action}d`);
+        notify(`Link template ${action}d`, undefined, 'success');
         handleClose();
       } else {
         notify(`Failed to ${action} link template`);
