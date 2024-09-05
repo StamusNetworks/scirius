@@ -1,7 +1,7 @@
 import { notification } from 'antd';
 import DOMPurify from 'dompurify';
 
-const notify = (message, error) => {
+const notify = (message, error, type = 'error') => {
   let description;
 
   (async () => {
@@ -18,11 +18,19 @@ const notify = (message, error) => {
     }
   })();
 
-  notification.error({
-    message,
-    duration: 4.5,
-    description,
-  });
+  if (type === 'success') {
+    notification.success({
+      message,
+      description,
+      duration: 4.5,
+    });
+  } else {
+    notification.error({
+      message,
+      duration: 4.5,
+      description,
+    });
+  }
 };
 
 export default notify;
