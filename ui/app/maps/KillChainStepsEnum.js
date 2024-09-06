@@ -21,6 +21,16 @@ export const KillChainStepsEnum = {
   pre_condition: 'Policy Violation',
 };
 
+export const KillChainStepsEnumFromInt = {
+  0: 'Reconnaissance',
+  1: 'Weaponization',
+  2: 'Delivery',
+  3: 'Exploitation',
+  4: 'Installation',
+  5: 'Command and Control',
+  6: 'Actions on Objectives',
+};
+
 export const KillChainColors = {
   reconnaissance: reconnaissanceColor,
   weaponization: weaponizationColor,
