@@ -18,6 +18,9 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
     margin: 0;
   }
+  table > thead.ant-table-thead > tr > th {
+      overflow-wrap: normal !important;
+  }
 `;
 
 export default GlobalStyle;
