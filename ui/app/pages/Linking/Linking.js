@@ -51,8 +51,8 @@ const Linking = () => {
       <UIBreadcrumb
         items={[
           'Administration',
-          <Link app to="administration/url-templates">
-            Linking
+          <Link app to="administration/external-links">
+            External links
           </Link>,
         ]}
       />
@@ -79,9 +79,9 @@ const Linking = () => {
 };
 Linking.metadata = {
   category: 'ADMINISTRATION',
-  url: 'administration/url-templates',
+  url: 'administration/external-links',
   position: 0,
-  title: 'URL Templates',
+  title: 'External links',
 };
 
 export default Linking;
