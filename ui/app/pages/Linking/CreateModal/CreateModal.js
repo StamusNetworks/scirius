@@ -50,7 +50,7 @@ export const CreateModal = ({ initialValues, onSuccess }) => {
       const values = await form.validateFields();
       const payload = {
         ...values,
-        entities: values.all ? [] : values.entities.map(entity => ({ name: entity })), // Backend does not allow selecting entities if all is true, and expects entities as a list of objects with name property
+        entities: values.entities.map(entity => ({ name: entity })),
       };
       const response = isCreate ? await API.createDeeplink(payload) : await API.updateDeeplink(initialValues.pk, { body: payload });
       if (response.ok) {
