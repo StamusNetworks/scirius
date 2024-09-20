@@ -339,6 +339,7 @@ class RuleToggleModal extends React.Component {
                           name={ruleset.pk}
                           onChange={this.handleChange}
                           style={{ justifySelf: 'right' }}
+                          checked={!!this.state.rulesets.find(rulesetId => rulesetId === ruleset.pk)}
                         />
                         {ruleset.warnings && (
                           <React.Fragment>
