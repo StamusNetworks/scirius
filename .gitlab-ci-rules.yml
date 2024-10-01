@@ -1,4 +1,4 @@
-image: stamus/stamus-docker-qa:chromium_new
+image: stamus/stamus-docker-qa:chromium_bookworm_http
 npm:
   image: node:18.13
   stage: build
