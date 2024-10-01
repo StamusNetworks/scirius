@@ -29,6 +29,7 @@ import saga from 'ui/containers/App/saga';
 import selectors from 'ui/containers/App/selectors';
 import GlobalStyle from 'ui/global-styles';
 import { CamelCaseToDashCase } from 'ui/helpers';
+import notify from 'ui/helpers/notify';
 import useAutorun from 'ui/helpers/useAutorun';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import pages from 'ui/pages';
@@ -52,6 +53,15 @@ const App = ({ setSessionActivity }) => {
     await commonStore.fetchSources();
     await commonStore.fetchUser();
     await commonStore.fetchLinkTemplates();
+  }, []);
+
+  useEffect(() => {
+    try {
+      const localTimerange = JSON.parse(localStorage.getItem('str-timespan'));
+      if (localTimerange.timePicker === 'relative') commonStore.setRelativeTimeRange(localTimerange.duration);
+    } catch (e) {
+      notify('Failed initializing relative time range');
+    }
   }, []);
 
   useAutorun(async () => {
