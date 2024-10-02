@@ -106,6 +106,7 @@ class SCBackup(SCOperation):
 
     def backup_db(self):
         self.dbcommands.servername = DB_SERVERNAME
+        self.dbcommands.verbosity = 3
         self.dbcommands.clean = True
         self.dbcommands.encrypt = False
         self.dbcommands.compress = False
@@ -178,6 +179,7 @@ class SCRestore(SCOperation):
         self.dbcommands.database_name = 'default'
         self.dbcommands.database = self.database
         self.dbcommands.filename = filepath
+        self.dbcommands.input_database_name = 'default'
         self.filepath = filepath
 
     def restore_git_sources(self):

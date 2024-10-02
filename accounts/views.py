@@ -38,7 +38,7 @@ from django.db import transaction
 from rules.models import UserAction, get_system_settings
 from rules.forms import CommentForm
 
-from scirius.utils import scirius_render, scirius_listing, get_middleware_module
+from scirius.utils import scirius_render, scirius_listing, get_middleware_module, is_ajax
 from .forms import (
     LoginForm, TokenGroupForm, TokenUserForm, UserSettingsForm, NormalUserSettingsForm,
     PasswordForm, TokenForm, PasswordChangeForm, GroupEditForm, PasswordCreationForm
@@ -270,7 +270,7 @@ def edit_priorities(request):
 
 @permission_required('rules.configuration_auth', raise_exception=True)
 def sort_priorities(request):
-    if request.method != 'POST' or not request.is_ajax():
+    if request.method != 'POST' or not is_ajax(request):
         return HttpResponseNotAllowed('Only POST here')
 
     updated = False

@@ -23,8 +23,8 @@ class Migration(SchemaMigration):
         m2m_table_name = db.shorten_name('rules_rule_flowbits')
         db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('rule', models.ForeignKey(orm['rules.rule'], null=False)),
-            ('flowbit', models.ForeignKey(orm['rules.flowbit'], null=False))
+            ('rule', models.ForeignKey(orm['rules.rule'], on_delete=models.CASCADE, null=False)),
+            ('flowbit', models.ForeignKey(orm['rules.flowbit'], on_delete=models.CASCADE, null=False))
         ))
         db.create_unique(m2m_table_name, ['rule_id', 'flowbit_id'])
 

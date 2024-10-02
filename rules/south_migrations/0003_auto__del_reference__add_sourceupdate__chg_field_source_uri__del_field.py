@@ -58,8 +58,8 @@ class Migration(SchemaMigration):
         m2m_table_name = db.shorten_name('rules_rule_references')
         db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('rule', models.ForeignKey(orm['rules.rule'], null=False)),
-            ('reference', models.ForeignKey(orm['rules.reference'], null=False))
+            ('rule', models.ForeignKey(orm['rules.rule'], on_delete=models.CASCADE, null=False)),
+            ('reference', models.ForeignKey(orm['rules.reference'], on_delete=models.CASCADE, null=False))
         ))
         db.create_unique(m2m_table_name, ['rule_id', 'reference_id'])
 

@@ -64,8 +64,8 @@ class Migration(SchemaMigration):
         # Adding M2M table for field references on 'Rule'
         db.create_table('rules_rule_references', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('rule', models.ForeignKey(orm['rules.rule'], null=False)),
-            ('reference', models.ForeignKey(orm['rules.reference'], null=False))
+            ('rule', models.ForeignKey(orm['rules.rule'], on_delete=models.CASCADE, null=False)),
+            ('reference', models.ForeignKey(orm['rules.reference'], on_delete=models.CASCADE, null=False))
         ))
         db.create_unique('rules_rule_references', ['rule_id', 'reference_id'])
 
@@ -82,24 +82,24 @@ class Migration(SchemaMigration):
         # Adding M2M table for field sources on 'Ruleset'
         db.create_table('rules_ruleset_sources', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('ruleset', models.ForeignKey(orm['rules.ruleset'], null=False)),
-            ('sourceatversion', models.ForeignKey(orm['rules.sourceatversion'], null=False))
+            ('ruleset', models.ForeignKey(orm['rules.ruleset'], on_delete=models.CASCADE, null=False)),
+            ('sourceatversion', models.ForeignKey(orm['rules.sourceatversion'], on_delete=models.CASCADE, null=False))
         ))
         db.create_unique('rules_ruleset_sources', ['ruleset_id', 'sourceatversion_id'])
 
         # Adding M2M table for field categories on 'Ruleset'
         db.create_table('rules_ruleset_categories', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('ruleset', models.ForeignKey(orm['rules.ruleset'], null=False)),
-            ('category', models.ForeignKey(orm['rules.category'], null=False))
+            ('ruleset', models.ForeignKey(orm['rules.ruleset'], on_delete=models.CASCADE, null=False)),
+            ('category', models.ForeignKey(orm['rules.category'], on_delete=models.CASCADE, null=False))
         ))
         db.create_unique('rules_ruleset_categories', ['ruleset_id', 'category_id'])
 
         # Adding M2M table for field suppressed_rules on 'Ruleset'
         db.create_table('rules_ruleset_suppressed_rules', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('ruleset', models.ForeignKey(orm['rules.ruleset'], null=False)),
-            ('rule', models.ForeignKey(orm['rules.rule'], null=False))
+            ('ruleset', models.ForeignKey(orm['rules.ruleset'], on_delete=models.CASCADE, null=False)),
+            ('rule', models.ForeignKey(orm['rules.rule'], on_delete=models.CASCADE, null=False))
         ))
         db.create_unique('rules_ruleset_suppressed_rules', ['ruleset_id', 'rule_id'])
 

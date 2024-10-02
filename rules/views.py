@@ -41,7 +41,7 @@ import django_tables2 as tables
 from scirius.utils import (
     get_middleware_module, scirius_render,
     scirius_listing, RequestsWrapper,
-    convert_to_local
+    convert_to_local, is_ajax
 )
 
 from rules.es_data import ESData
@@ -323,7 +323,7 @@ def elasticsearch(request):
                 context['table'] = hosts
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
-                if request.is_ajax():
+                if is_ajax(request):
                     indices = ESIndexessTable(ESIndices(request).get())
                     tables.RequestConfig(request).configure(indices)
                     context['table'] = indices
@@ -362,7 +362,7 @@ def extract_rule_references(rule):
 def rule(request, rule_id):
     rule = get_object_or_404(Rule, pk=rule_id)
 
-    if request.is_ajax():
+    if is_ajax(request):
         filters = {}
         if rule.ruleatversion_set.count() > 1:
             hosts = request.GET.get('hosts', None)
@@ -1076,7 +1076,7 @@ def enable_category(request, cat_id):
 @permission_required('rules.ruleset_update_push', raise_exception=True)
 def update_source(request, source_id):
     if request.method != 'POST':  # If the form has been submitted...
-        if request.is_ajax():
+        if is_ajax(request):
             data = {
                 'status': False,
                 'errors': 'Invalid method for page'
@@ -1091,7 +1091,7 @@ def update_source(request, source_id):
         user=request.user
     )
 
-    if request.is_ajax():
+    if is_ajax(request):
         data = {'status': True}
         return JsonResponse(data)
 
@@ -1102,7 +1102,7 @@ def update_source(request, source_id):
 def activate_source(request, source_id, ruleset_id):
 
     if request.method != 'POST':  # If the form has been submitted...
-        if request.is_ajax():
+        if is_ajax(request):
             data = {}
             data['status'] = False
             data['errors'] = "Invalid method for page"
@@ -1244,7 +1244,7 @@ def add_public_source(request):
     except Exception as e:
         return scirius_render(request, 'rules/add_public_source.html', {'error': e})
 
-    if request.is_ajax():
+    if is_ajax(request):
         return JsonResponse(public_sources['sources'])
 
     if request.method == 'POST':
@@ -1556,7 +1556,7 @@ def add_ruleset(request):
 def update_ruleset(request, ruleset_id):
     rset = get_object_or_404(Ruleset, pk=ruleset_id)
     if request.method != 'POST':  # If the form has been submitted...
-        if request.is_ajax():
+        if is_ajax(request):
             data = {}
             data['status'] = False
             data['errors'] = "Invalid method for page"
@@ -1565,7 +1565,7 @@ def update_ruleset(request, ruleset_id):
 
     MIDDLEWARE.common.update_ruleset(request, rset)
 
-    if request.is_ajax():
+    if is_ajax(request):
         data = {'status': True}
         return JsonResponse(data)
     return redirect('status')
