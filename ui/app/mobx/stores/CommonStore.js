@@ -188,8 +188,6 @@ class CommonStore {
       this._endDate = moment().unix();
     }
     this._timeRangeType = 'relative';
-    localStorage.setItem('startDate', this._startDate);
-    localStorage.setItem('endDate', this._endDate);
     this._relativeType = type;
     this.setTimePickerStorage();
   }
@@ -204,8 +202,6 @@ class CommonStore {
       this._startDate = startDate;
       this._endDate = endDate;
       this._timeRangeType = 'absolute';
-      localStorage.setItem('startDate', startDate);
-      localStorage.setItem('endDate', endDate);
       this.setTimePickerStorage();
     }
   }
@@ -561,6 +557,8 @@ class CommonStore {
   }
 
   setTimePickerStorage() {
+    localStorage.setItem('startDate', this._startDate);
+    localStorage.setItem('endDate', this._endDate);
     localStorage.setItem(
       'str-timespan',
       JSON.stringify({
