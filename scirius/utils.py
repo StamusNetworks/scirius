@@ -326,3 +326,7 @@ def sizeof_fmt(num):
 def get_folder_size(folder):
     # based on: https://stackoverflow.com/a/55659577
     return sum(file.stat().st_size for file in Path(folder).rglob('*'))
+
+
+def is_ajax(request):
+    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
