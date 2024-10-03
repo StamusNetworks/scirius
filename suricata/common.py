@@ -354,3 +354,7 @@ def update_rule_analysis(source_pk, user):
 
 def get_stamus_range(_):
     return {}
+
+
+def get_scirius_extra_urls() -> list:
+    return []
