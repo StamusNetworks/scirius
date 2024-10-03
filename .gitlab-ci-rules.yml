@@ -1,6 +1,6 @@
 image: stamus/stamus-docker-qa:chromium_bookworm_http
 npm:
-  image: node:18.13
+  image: node:18-alpine
   stage: build
   artifacts:
     expire_in: 1 day
@@ -17,7 +17,7 @@ npm:
 npm-ui:
   variables:
     CYPRESS_CACHE_FOLDER: /tmp/cyress_cache # see https://github.com/cypress-io/cypress/issues/1281
-  image: node:18.13
+  image: node:18-alpine
   stage: build
   artifacts:
     expire_in: 1 day
@@ -39,11 +39,12 @@ npm-ui:
 npm-ui-eslint:
   variables:
     CYPRESS_CACHE_FOLDER: /tmp/cyress_cache # see https://github.com/cypress-io/cypress/issues/1281
-  image: node:18.13
+  image: node:18-alpine
   stage: build
   before_script:
     - echo "skip"
   script:
+  - apk add git
   - cd ui
   - 'test -e .env ||: && set -a && source .env && set +a'  # load and export env variables
   - npm install --unsafe-perms # unsafe-perms required by cypress, see https://github.com/cypress-io/cypress/issues/1281
@@ -52,12 +53,16 @@ npm-ui-eslint:
 
 test-static:
   stage: test
+  # image: python:3.12-bookworm-slim
+  # before_script:
+  # - python -m pip install pylint-django
   script:
+  - /home/admin/venv/bin/pip install 'Django>=4.2,<5'
   - /home/admin/venv/bin/pylint --load-plugins pylint_django -E -d unexpected-keyword-arg,no-member,access-member-before-definition,no-name-in-module,import-error,imported-auth-user,django-not-configured */*.py
   - PYTHONIOENCODING="UTF-8" ./tests/check_non_ascii_chars.py
 
 test-dlint:
-    image: python
+    image: python:alpine
     before_script:
         - python -m pip install dlint
     script:
