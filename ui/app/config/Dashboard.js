@@ -38,7 +38,7 @@ export const dashboard = [
   {
     panelId: 'metadata',
     title: 'Metadata',
-    position: 2,
+    position: 5,
     items: [
       {
         i: 'alert.metadata.signature_severity',
@@ -61,7 +61,7 @@ export const dashboard = [
   {
     panelId: 'mitre',
     title: 'MITRE ATT&CK Information',
-    position: 3,
+    position: 6,
     items: [
       {
         i: 'alert.metadata.mitre_tactic_id',

@@ -90,9 +90,12 @@ const DashboardMosaic = () => {
       </Row>
 
       <DashboardContext.Provider value={ctrl}>
-        {dashboard.filter(isVisible).map(panel => (
-          <DashboardPanel panel={panel} hideEmptyTiles={hideEmptyTiles} setPanelIsEmpty={setPanelIsEmpty} />
-        ))}
+        {dashboard
+          .sort((a, b) => a.position - b.position)
+          .filter(isVisible)
+          .map(panel => (
+            <DashboardPanel panel={panel} hideEmptyTiles={hideEmptyTiles} setPanelIsEmpty={setPanelIsEmpty} />
+          ))}
         {hideEmptyTiles && dashboardIsEmpty && (
           <Card>
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No matching data found for the applied filters." />
