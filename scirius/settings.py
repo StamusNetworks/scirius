@@ -10,9 +10,10 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import os
 from distutils.version import LooseVersion
 from django import get_version
-import os
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 APP_LONG_NAME = 'Scirius Community Edition'
@@ -199,7 +200,6 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
 
 USE_TZ = True
 
@@ -339,6 +339,9 @@ GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups'}
+DBBACKUP_CONNECTOR_MAPPING = {
+    "django.db.backends.postgresql": "dbbackup.db.postgresql.PgDumpConnector",
+}
 
 # Ruleset generator framework
 RULESET_MIDDLEWARE = 'suricata'
