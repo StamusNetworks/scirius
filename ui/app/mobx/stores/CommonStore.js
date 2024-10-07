@@ -588,7 +588,7 @@ class CommonStore {
     return -1;
   }
 
-  static generateAlert(informational = true, relevant = true, untagged = true, alerts = true, sightings = true, stamus = false) {
+  static generateAlert(informational = false, relevant = true, untagged = true, alerts = true, sightings = true, stamus = false) {
     return {
       id: 'alert.tag',
       value: { informational, relevant, untagged, alerts, sightings, stamus },
