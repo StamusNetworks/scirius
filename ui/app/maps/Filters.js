@@ -145,13 +145,11 @@ export const FiltersList = [
     title: 'Offender Network',
     id: 'alert.source.net_info_agg',
     category: FilterCategory.EVENT,
-    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Victim Network',
     id: 'alert.target.net_info_agg',
     category: FilterCategory.EVENT,
-    force: [EVENT_TYPES.ALERT],
   },
   {
     title: 'Method',
