@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { CheckCircleOutlined, CloseCircleOutlined, SafetyOutlined } from '@ant-design/icons';
-import { Tabs, Spin } from 'antd';
+import { Tabs, Spin, Empty } from 'antd';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
@@ -29,8 +29,8 @@ function ActionItem({ data, filters, expandedRulesets }) {
     try {
       const res = await API.fetchPoliciesData({ value: `rule_filter_${data.pk}` });
       setActionData(res.data);
-    } catch {
-      notify('Fail to fetch policies statistics');
+    } catch (e) {
+      notify('Fail to fetch policies statistics', e);
     } finally {
       setLoadingStats(false);
     }
@@ -43,6 +43,7 @@ function ActionItem({ data, filters, expandedRulesets }) {
           <Style.PolicyContainer>
             <UICard title="Filters">{filters}</UICard>
             <UICard title="Parameters">
+              {!Object.keys(data?.options || {}).length && <Empty description="No parameters for this policy" />}
               <PolicyParameters options={data.options} />
             </UICard>
             <UICard title="Rulesets">{expandedRulesets}</UICard>
