@@ -110,6 +110,10 @@ const ENDPOINT = {
     name: 'Fetching link templates',
     url: '/rest/rules/deeplink/',
   },
+  POLICIES_DATA: {
+    name: 'Policies data',
+    url: `/rest/rules/es/poststats_summary/`,
+  },
 };
 
 export default ENDPOINT;
