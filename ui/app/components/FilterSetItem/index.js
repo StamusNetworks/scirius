@@ -66,7 +66,7 @@ const FilterSetItem = ({ item, loadFilterSets, onDelete, hasRights, loading, typ
         <Tooltip title="Delete" getPopupContainer={() => document.getElementById('container')}>
           <Button
             size="small"
-            type="danger"
+            danger
             icon={loading ? <LoadingOutlined /> : <DeleteOutlined />}
             onClick={() => onDelete()}
             data-test="filter-set-delete"
