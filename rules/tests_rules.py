@@ -24,6 +24,14 @@ import tempfile
 
 
 class TestRules():
+    IP_REP_CONF = '''
+# IP Reputation
+reputation-categories-file: {tmpdir}/scirius-categories.txt
+default-reputation-path: {tmpdir}
+reputation-files:
+ - {tmpdir}/scirius-iprep.list
+    '''
+
     def build_iprep_buffers(self, cats_content, iprep_content):
         from rules.models import Rule
 
@@ -61,15 +69,21 @@ class TestRules():
     def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, cats_content='', iprep_content='', engine_analysis=False):
         extra_buffers = self.build_iprep_buffers(cats_content, iprep_content)
         testor = LangServer(conn=None)
+        params = {
+            'config_buffer': config_buffer,
+            'related_files': related_files,
+            'extra_buffers': extra_buffers
+        }
+
+        if extra_buffers:
+            params.update({
+                'extra_conf': self.IP_REP_CONF
+            })
 
         result = testor.rules_tester.check_rule_buffer(
             rule_buffer,
             engine_analysis=engine_analysis,
-            **{
-                'config_buffer': config_buffer,
-                'related_files': related_files,
-                'extra_buffers': extra_buffers
-            }
+            **params
         )
 
         idx = 6  # support only 6 unknown variables per rule
@@ -85,21 +99,22 @@ class TestRules():
                     else:
                         r_buffer = rule_buffer.replace("!" + var, "21")
                         r_buffer = rule_buffer.replace(var, "21")
+                    modified = True
 
             if modified is False:
                 break
 
-            result = testor.rules_tester.check_rule_buffer(
-                r_buffer if r_buffer else rule_buffer,
-                engine_analysis=engine_analysis,
-                **{
-                    'config_buffer': config_buffer,
-                    'related_files': related_files,
-                    'extra_buffers': extra_buffers
-                }
-            )
+            if r_buffer:
+                result = testor.rules_tester.check_rule_buffer(
+                    r_buffer,
+                    engine_analysis=engine_analysis,
+                    **params
+                )
 
             idx -= 1
+
+        if r_buffer:
+            rule_buffer = r_buffer
 
         with tempfile.NamedTemporaryFile(mode='r+') as f_tmp:
             f_tmp.write(rule_buffer)
@@ -107,11 +122,7 @@ class TestRules():
             status, diags = testor.analyse_file(
                 f_tmp.name,
                 engine_analysis=engine_analysis,
-                **{
-                    'config_buffer': config_buffer,
-                    'related_files': related_files,
-                    'extra_buffers': extra_buffers
-                }
+                **params
             )
 
         res = {'status': status, 'info': [], 'warnings': [], 'errors': []}

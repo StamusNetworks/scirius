@@ -27,7 +27,7 @@ enum34
 django-webpack-loader
 django-cprofile-middleware
 pyinotify
-suricata-language-server>=0.9.3
+suricata-language-server>=0.9.4
 psycopg2-binary
 python-dateutil>=2.8.1
 MarkupSafe
