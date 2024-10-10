@@ -1,0 +1,19 @@
+<svg width="16" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="12">
+    <path fill="#fff" d="M0 0h16v12H0z"/>
+  </mask>
+  <g mask="url(#a)">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0h16v12H0V0z" fill="#00268D"/>
+    <path d="M.5.5h15v11H.5V.5z" fill="#00268D" stroke="#E31D1C"/>
+    <path fill="#E31D1C" d="M7.5 0h1v12h-1z"/>
+    <path fill="#E31D1C" d="M0 6.5v-1h16v1z"/>
+    <path d="M8.257 2.571L8 2.417l-.257.154-5 3L2.028 6l.715.429 5 3L8 9.583l.257-.154 5-3L13.972 6l-.715-.429-5-3z" fill="#fff" stroke="#E31D1C"/>
+    <mask id="b" maskUnits="userSpaceOnUse" x="1" y="1" width="14" height="10">
+      <path d="M8.257 2.571L8 2.417l-.257.154-5 3L2.028 6l.715.429 5 3L8 9.583l.257-.154 5-3L13.972 6l-.715-.429-5-3z" fill="#fff" stroke="#fff"/>
+    </mask>
+    <g mask="url(#b)">
+      <path d="M4.823 7.8h8.927l-.944-.957s-1.887-1.893-2.009-1.98c-.121-.086-.322-.124-.55.152-.229.276-.36-.151-.55-.151-.19 0-.27 0-.546.353L7.88 6.843H6.42s-.246-.21-.386-.135c-.14.075-.93-.824-1.212-.891-.282-.067-.467.243-.467.49 0 .248-.133-.226-.402-.087-.27.14-.183.489-.183.489S4.643 7.8 4.823 7.8z" fill="#059334"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.003 5.534L6.386 6l.226-.77L6 4.76h.763l.24-.76.255.76H8l-.607.47.23.77-.62-.466z" fill="#FEDA00"/>
+    </g>
+  </g>
+</svg>

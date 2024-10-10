@@ -1,0 +1,16 @@
+<svg width="16" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g mask="url(#NZ_-_New_Zealand_(Aotearoa)__a)">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0v12h16V0H0z" fill="#2E42A5"/>
+    <g mask="url(#NZ_-_New_Zealand_(Aotearoa)__b)">
+      <g mask="url(#NZ_-_New_Zealand_(Aotearoa)__c)">
+        <path d="M-1.002 6.5l1.98.869L9.045.944l1.045-1.29-2.118-.29-3.29 2.768-2.649 1.865L-1.002 6.5z" fill="#F7FCFF"/>
+        <path d="M-.731 7.108l1.009.505 9.436-8.08H8.298L-.731 7.109z" fill="#F50100"/>
+        <path d="M10.002 6.5l-1.98.869L-.045.944-1.09-.346l2.118-.29 3.29 2.768 2.649 1.865L10.002 6.5z" fill="#F7FCFF"/>
+        <path d="M9.935 6.937l-1.01.504-4.018-3.46-1.19-.386L-1.19-.342H.227L5.13 3.502l1.303.463 3.502 2.972z" fill="#F50100"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M4.992 0h-1v3H0v1h3.992v3h1V4H9V3H4.992V0z" fill="#F50100"/>
+        <path d="M3.992 0v-.75h-.75V0h.75zm1 0h.75v-.75h-.75V0zm-1 3v.75h.75V3h-.75zM0 3v-.75h-.75V3H0zm0 1h-.75v.75H0V4zm3.992 0h.75v-.75h-.75V4zm0 3h-.75v.75h.75V7zm1 0v.75h.75V7h-.75zm0-3v-.75h-.75V4h.75zM9 4v.75h.75V4H9zm0-1h.75v-.75H9V3zM4.992 3h-.75v.75h.75V3zm-1-2.25h1v-1.5h-1v1.5zM4.742 3V0h-1.5v3h1.5zM0 3.75h3.992v-1.5H0v1.5zM.75 4V3h-1.5v1h1.5zm3.242-.75H0v1.5h3.992v-1.5zM4.742 7V4h-1.5v3h1.5zm.25-.75h-1v1.5h1v-1.5zM4.242 4v3h1.5V4h-1.5zM9 3.25H4.992v1.5H9v-1.5zM8.25 3v1h1.5V3h-1.5zm-3.258.75H9v-1.5H4.992v1.5zM4.242 0v3h1.5V0h-1.5z" fill="#F7FCFF" mask="url(#NZ_-_New_Zealand_(Aotearoa)__d)"/>
+      </g>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M12.427 10.25l-.882.463.168-.981L11 9.036l.986-.143.44-.893.441.893.986.143-.713.696.168.982-.881-.464zM10.6 6.935l-.68.357.13-.757L9.5 6l.76-.11.34-.689.34.689.76.11-.55.536.13.757-.68-.357zm3.499-.002l-.68.357.13-.756L13 5.998l.76-.11.339-.688.34.688.759.11-.55.536.13.756-.68-.357zM12.6 4.135l-.68.357.13-.757-.55-.536.76-.11.34-.689.34.689.76.11-.55.536.13.757-.68-.357z" fill="#F50100" stroke="#F7FCFF" stroke-width=".35"/>
+    </g>
+  </g>
+</svg>

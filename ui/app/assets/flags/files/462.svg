@@ -1,0 +1,18 @@
+<svg width="16" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="12">
+    <path fill="#fff" d="M0 0h16v12H0z"/>
+  </mask>
+  <g mask="url(#a)">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0h16v11a1 1 0 01-1 1H1a1 1 0 01-1-1V0z" fill="#C51918"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0h16v12H0V0z" fill="#C51918"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M3 3h10v6H3V3z" fill="#579D20"/>
+    <path d="M3.5 3.5h9v5h-9v-5z" stroke="#B6EB9A" stroke-opacity=".238"/>
+    <mask id="b" maskUnits="userSpaceOnUse" x="3" y="3" width="10" height="6">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M3 3h10v6H3V3z" fill="#fff"/>
+      <path d="M3.5 3.5h9v5h-9v-5z" stroke="#fff"/>
+    </mask>
+    <g mask="url(#b)">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M8.016 6.231c-.008 1.533 1.199 2.35 1.199 2.35-1.377.162-2.293-1.086-2.293-2.335 0-1.248 1.248-2.28 2.293-2.745 0 0-1.19 1.197-1.199 2.73z" fill="#F9FAFA"/>
+    </g>
+  </g>
+</svg>

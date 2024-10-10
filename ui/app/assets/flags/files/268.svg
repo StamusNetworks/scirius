@@ -1,0 +1,15 @@
+<svg width="16" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <mask id="a" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="12">
+    <path fill="#fff" d="M0 0h16v12H0z"/>
+  </mask>
+  <g mask="url(#a)">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0v12h16V0H0z" fill="#F7FCFF"/>
+    <mask id="b" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="12">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0v12h16V0H0z" fill="#fff"/>
+    </mask>
+    <g mask="url(#b)" fill-rule="evenodd" clip-rule="evenodd" fill="#E31D1C">
+      <path d="M7 0h2v5h7v2H9v5H7V7H0V5h7V0z"/>
+      <path d="M5 8.611L6.1 8.5v1S5 9.431 5 9.451c0 .02.1 1.049.1 1.049h-1l.08-1H3.1v-1l1.08.111L4.1 7.5h1L5 8.611zm0-6L6.1 2.5v1S5 3.431 5 3.451c0 .02.1 1.049.1 1.049h-1l.08-1H3.1v-1l1.08.111L4.1 1.5h1L5 2.611zm7 0l1.1-.111v1S12 3.431 12 3.451c0 .02.1 1.049.1 1.049h-1l.08-1H10.1v-1l1.08.111L11.1 1.5h1L12 2.611zm0 6l1.1-.111v1S12 9.431 12 9.451c0 .02.1 1.049.1 1.049h-1l.08-1H10.1v-1l1.08.111L11.1 7.5h1L12 8.611z"/>
+    </g>
+  </g>
+</svg>
