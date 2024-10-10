@@ -1,0 +1,10 @@
+<svg width="16" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g mask="url(#KP_-_Korea_(North)__a)">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0v12h16V0H0z" fill="#3D58DB"/>
+    <g mask="url(#KP_-_Korea_(North)__b)">
+      <path d="M0 2.5h-.5v7h17v-7H0z" fill="#C51918" stroke="#F7FCFF"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M5 8.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" fill="#F7FCFF"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M4.998 6.935l-1.359.945.48-1.584-1.319-1 1.654-.033.544-1.563.543 1.563 1.654.034-1.318 1 .479 1.583-1.358-.945z" fill="#C51918"/>
+    </g>
+  </g>
+</svg>
