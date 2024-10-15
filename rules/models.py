@@ -4063,7 +4063,7 @@ def dependencies_check(obj):
 
 
 def export_iprep_files(target_dir, cats_content, iprep_content):
-    group_rules = Rule.objects.filter(group=True)
+    group_rules = Rule.objects.filter(group=True).order_by('sid')
     cat_map = {}
 
     with open(target_dir + "/" + "scirius-categories.txt", 'w') as rfile:
