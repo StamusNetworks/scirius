@@ -96,6 +96,7 @@ function hide_threat_fields(src_type) {
 $('document').ready(function() {
     hide_fields();
     select_fields();
+    $("#id_method").trigger("change");
 
     let src_type = {% if not source %}undefined{% else %}"{{ source.datatype }}"{% endif %};
     if (src_type !== undefined) {
