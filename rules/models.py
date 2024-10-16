@@ -841,7 +841,9 @@ class InvalidCategoryException(Exception):
 
 
 class DuplicateSidException(Exception):
-    pass
+    def __init__(self, msg, same_source=False) -> None:
+        super().__init__(msg)
+        self.same_source = same_source
 
 
 class Source(models.Model):
@@ -1459,9 +1461,17 @@ class Source(models.Model):
             sid = str(e)
             source_name = ''
             if len(sid):
-                source_name = f' ({Rule.objects.filter(sid=sid).values_list("category__source__name", flat=True).first()})'
-                sid = f'({sid}) '
-            raise ValidationError(f'The source contains conflicting SID {sid}with other source{source_name}')
+                sub_string = ' with other '
+                if e.same_source is False:
+                    source_name = f' ({Rule.objects.filter(sid=sid).values_list("category__source__name", flat=True).first()})'
+                else:
+                    source_name = self.name
+                    sub_string = ' in same '
+                sid = f'({sid})'
+                raise ValidationError(
+                    f'The source contains conflicting SID {sid} {sub_string} source {source_name}'
+                )
+            raise ValidationError('Duplicate sids')
         finally:
             source_lock.close()
 
@@ -2272,6 +2282,14 @@ class Category(models.Model, Transformable, Cache):
                             # FIXME update references if needed
                             rav = existing_rules_hash[sid][version]
                             rule = rav.rule
+
+                            if rule.category.source != source:
+                                raise DuplicateSidException(sid)
+
+                            # check if rav has been saved,
+                            # if not it means rules with duplicate sids in same source
+                            if rav.pk is None:
+                                raise DuplicateSidException(sid, same_source=True)
 
                             if rav.content != line or rule.group is True or (rav.state != rav.commented_in_source and rav.commented_in_source == state):
                                 rav.content = line
