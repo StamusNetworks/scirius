@@ -1,0 +1,8 @@
+etc/classification.config
+etc/reference.config
+etc/rules/
+etc/suricata.yaml
+etc/threshold.config
+etc/update.yaml
+logs/
+logrotate/
