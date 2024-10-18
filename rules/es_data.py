@@ -36,6 +36,7 @@ from elasticsearch.exceptions import RequestError
 from rules.es_graphs import get_es_major_version, ESError
 from rules.es_query import ESQuery
 from rules.models import get_system_settings
+from scirius import utils
 
 # Avoid logging every request
 ES_LOGGER = logging.getLogger('elasticsearch')
@@ -317,6 +318,7 @@ def get_kibana_mappings():
         }
     else:
         return {
+            "dynamic": "true",
             "properties": {
                 "action": {
                     "properties": {
@@ -494,7 +496,7 @@ def get_kibana_mappings():
                     }
                 },
                 "canvas-element": {
-                    "dynamic": "false",
+                    "dynamic": "true",
                     "properties": {
                         "@created": {
                             "type": "date"
@@ -522,7 +524,7 @@ def get_kibana_mappings():
                     }
                 },
                 "canvas-workpad": {
-                    "dynamic": "false",
+                    "dynamic": "true",
                     "properties": {
                         "@created": {
                             "type": "date"
@@ -820,9 +822,9 @@ def get_kibana_mappings():
                             "type": "keyword",
                             "index": False
                         },
-                        "state": {
-                            "type": "flattened"
-                        },
+                        # "state": {
+                        #     "type": "flattened"
+                        # },
                         "title": {
                             "type": "text"
                         },
@@ -1700,8 +1702,12 @@ class ESData(ESQuery):
         gsettings = get_system_settings()
         headers = {
             'content-type': 'application/json',
-            'kbn-xsrf': True
+            # https://opensearch.org/docs/latest/troubleshoot/#requests-to-opensearch-dashboards-fail-with-request-must-contain-a-osd-xsrf-header
         }
+        if utils.is_opensearch():
+            headers['osd-xsrf'] = True
+        else:
+            headers['kbn-xsrf'] = True
         if gsettings.custom_elasticsearch and gsettings.elasticsearch_user and gsettings.elasticsearch_pass:
             headers['authorization'] = b'Basic %s' % base64.b64encode(f'{gsettings.elasticsearch_user}:{gsettings.elasticsearch_pass}'.encode('utf-8'))
         data = json.dumps(data)
@@ -1793,13 +1799,13 @@ class ESData(ESQuery):
         return tar_name, file_.name
 
     def _create_kibana_mappings(self):
-        if not self.es.indices.exists('.kibana'):
-            self.es.indices.create(index='.kibana', body={"mappings": get_kibana_mappings()})
-            self.es.indices.refresh(index='.kibana')
-        elif "visualization" not in str(self.es.indices.get_mapping(index='.kibana')):
-            self.es.indices.delete(index='.kibana')
-            self.es.indices.create(index='.kibana', body={"mappings": get_kibana_mappings()})
-            self.es.indices.refresh(index='.kibana')
+        try:
+            self.es.indices.delete(index='.kibana_1')
+        except:
+            pass
+        self.es.indices.create(index='.kibana_1', body={"mappings": get_kibana_mappings()})
+        self.es.indices.put_alias(index='.kibana_1', name='.kibana')
+        self.es.indices.refresh(index='.kibana_1')
 
     def _kibana_inject(self, _type, _file):
         with open(_file) as file_:
@@ -1827,7 +1833,10 @@ class ESData(ESQuery):
             content['config']['defaultIndex'] = idx
             self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body={'doc': content}, refresh=True)
 
-        self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
+        if utils.is_opensearch():
+            self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
+        else:
+            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
 
     @staticmethod
     def _get_dashboard_dir():

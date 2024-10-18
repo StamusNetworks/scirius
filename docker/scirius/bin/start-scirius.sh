@@ -25,16 +25,15 @@ cd /opt/scirius/
 migrate_db() {
     python manage.py makemigrations --noinput
     python manage.py migrate --noinput
-    python manage.py collectstatic  --noinput
+    python manage.py collectstatic --noinput
 }
-
 
 create_db() {
     python manage.py makemigrations --noinput
     python manage.py migrate --run-syncdb --noinput
 
     echo "from django.contrib.auth.models import User; User.objects.create_superuser(***)"
-    if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_EMAIL" ] ; then
+    if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_EMAIL" ]; then
         echo "from django.contrib.auth.models import User; User.objects.create_superuser('$DJANGO_SUPERUSER_USERNAME', '$DJANGO_SUPERUSER_EMAIL', '$DJANGO_SUPERUSER_PASSWORD')" | python manage.py shell
     else
         echo "from django.contrib.auth.models import User; User.objects.create_superuser('selks-user', 'selks-user@selks.com', 'selks-user')" | python manage.py shell
@@ -67,20 +66,21 @@ start() {
         echo DEBUG
         python manage.py runserver 0.0.0.0:8000
     else
-        gunicorn -w $(($(nproc --all)*2+1)) -t 120 -b 0.0.0.0:8000 scirius.wsgi
+        gunicorn -w $(($(nproc --all) * 2 + 1)) -t 120 -b 0.0.0.0:8000 scirius.wsgi
     fi
 }
 
 if [ ! -e "/data/scirius.data" ]; then
     create_db
     /opt/scirius/docker/scirius/bin/reset_dashboards.sh
-    /opt/scirius/docker/scirius/bin/create_ILM_policy.sh
+    # /opt/scirius/docker/scirius/bin/create_ILM_policy.sh
 else
     migrate_db
 fi
 
 if [ -n "$KIBANA_RESET_DASHBOARDS" ]; then
-    /opt/scirius/bin/reset_dashboards.sh &
+    echo "Resetting Kibana dashboards..."
+    /opt/scirius/docker/scirius/bin/reset_dashboards.sh
 fi
 
 start

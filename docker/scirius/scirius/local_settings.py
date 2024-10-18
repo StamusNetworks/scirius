@@ -36,27 +36,6 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1 [::1]').split(' 
 if '127.0.0.1' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('127.0.0.1')
 
-DATABASE_ENGINE = "django.db.backends." + ("postgresql_psycopg2" if os.getenv('DATABASE_TYPE', 'sqlite3') == "pg" else "sqlite3")
-DATABASE_NAME = os.getenv('DATABASE_NAME', 'db.sqlite3')
-DATABASE_USER = os.getenv('DATABASE_USERNAME', '')
-DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', '')
-DATABASE_HOST = os.getenv('DATABASE_HOST', '')
-DATABASE_PORT = os.getenv('DATABASE_PORT', '')
-
-
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': DATABASE_ENGINE,
-        'NAME': DATABASE_NAME,
-        'USER': DATABASE_USER,
-        'PASSWORD': DATABASE_PASSWORD,
-        'HOST': DATABASE_HOST,
-        'PORT': DATABASE_PORT,
-
-    }
-}
-
 # Logging
 LOGGING = {
     'version': 1,
@@ -189,3 +168,52 @@ APP_SHORT_NAME = 'SELKS'
 APP_MNGT_NAME = 'Suricata Management'
 SCIRIUS_VERSION = "40.0.0"
 LOGO = 'rules/selks.png'
+
+ENGINE = "django.db.backends.postgresql"
+NAME = os.getenv('DATABASE_NAME', 'db.sqlite3')
+USER = os.getenv('DATABASE_USERNAME', '')
+PASSWORD = os.getenv('DATABASE_PASSWORD', '')
+HOST = os.getenv('DATABASE_HOST', '')
+PORT = os.getenv('DATABASE_PORT', '')
+
+DATABASES = {
+    'default': {
+        'ENGINE': ENGINE,
+        'NAME': NAME,
+        'USER': USER,
+        'PASSWORD': PASSWORD,
+        'HOST': HOST,
+        'PORT': PORT,
+    }
+}
+
+
+RULESET_MIDDLEWARE = os.getenv('RULESET_MIDDLEWARE', 'suricata')
+
+INSTALLED_APPS = (
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django_tables2',
+    'bootstrap3',
+    'viz',
+    'rules',
+    'scirius',
+    'suricata',
+    'django_celery_results',
+    'accounts',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'django_filters',
+    'webpack_loader',
+    'chunked_upload',
+    'django_ace',
+)
+
+
+ELASTICSEARCH_LOGSTASH_INDEX = "logstash-*"
+ELASTICSEARCH_LOGSTASH_ALERT_INDEX = "logstash-*"
+
+USE_OPENSEARCH = True

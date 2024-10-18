@@ -58,6 +58,10 @@ def get_es_major_version():
 
     try:
         es_version = fetch_es_version()
+        if es_version[0] == 1 or es_version[0] == 2:
+            es_version[0] = 7
+            ES_VERSION = es_version
+            return 7
     except (TypeError, ValueError, ESError):
         return 7
 
@@ -954,7 +958,7 @@ class ESEventsCount(ESQuery):
             'aggs': {
                 'date': {
                     'date_histogram': {
-                        'field': '@timestamp',
+                        'field': ES_TIMESTAMP,
                         self._es_interval_kw(): self._es_interval(),
                         'min_doc_count': 0,
                         'offset': '+%sms' % offset,
@@ -985,7 +989,7 @@ class ESEventsCount(ESQuery):
                         }
                     }, {
                         'range': {
-                            '@timestamp': {
+                            ES_TIMESTAMP: {
                                 'gte': self._from_date(),
                                 'lte': self._to_date(),
                                 'format': 'epoch_millis'
@@ -1069,12 +1073,12 @@ class ESTimeRangeAllAlerts(ESManageMultipleESIndexes):
             'aggs': {
                 'max_timestamp': {
                     'max': {
-                        'field': '@timestamp'
+                        'field': ES_TIMESTAMP
                     }
                 },
                 'min_timestamp': {
                     'min': {
-                        'field': '@timestamp'
+                        'field': ES_TIMESTAMP
                     }
                 }
             }

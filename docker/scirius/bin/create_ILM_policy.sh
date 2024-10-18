@@ -20,12 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-while true
-do
-  ELASTICSEARCH_ADDRESS=$(python manage.py diffsettings --all |grep 'ELASTICSEARCH_ADDRESS' | cut -d"'" -f 2)
+while true; do
+  ELASTICSEARCH_ADDRESS=$(python manage.py diffsettings --all | grep 'ELASTICSEARCH_ADDRESS' | cut -d"'" -f 2)
   echo "found elastic address : $ELASTICSEARCH_ADDRESS"
-  response=$(curl -X PUT "$ELASTICSEARCH_ADDRESS/_ilm/policy/logstash-autodelete?pretty" -H 'Content-Type: application/json' -d'
+  response=$(curl -X PUT "$ELASTICSEARCH_ADDRESS/ilm/policy/logstash-autodelete?pretty" -H 'Content-Type: application/json' -d'
   {
     "policy": {
       "phases": {
@@ -47,8 +45,8 @@ do
     }
   }
  ')
- 
-  if [[ $response == *"\"acknowledged\" : true"* ]]; then
+
+  if [[ $response == *"updated"* ]]; then
     echo "ILM policy set"
     break
   else
@@ -58,9 +56,7 @@ do
   fi
 done
 
-
-while true
-do
+while true; do
   response=$(curl -X PUT "$ELASTICSEARCH_ADDRESS/_template/logstash-with-ilm?pretty" -H 'Content-Type: application/json' -d'
   {
     "index_patterns": ["logstash-*"],
@@ -70,7 +66,7 @@ do
     }
   }
   ')
- 
+
   if [[ $response == *"\"acknowledged\" : true"* ]]; then
     echo "logstash template for ILM set"
     break
@@ -79,6 +75,5 @@ do
     echo $response
     sleep 5
   fi
- 
-done
 
+done
