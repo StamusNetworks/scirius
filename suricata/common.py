@@ -104,7 +104,7 @@ def check_tenant(user, tenant) -> bool:
     return True
 
 
-def check_tenant_in_es_query(request, index, qfilter):
+def check_tenant_in_es_query(user, params: dict, qfilter: Optional[str], indexes: str):
     pass
 
 
