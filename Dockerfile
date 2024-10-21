@@ -40,7 +40,7 @@ RUN \
   unzip
 RUN \
   echo "**** download Kibana dashboards ****" && \
-  wget --no-check-certificate --content-disposition -O /tmp/kibana7-dashboards.tar.gz https://github.com/StamusNetworks/KTS7/tarball/master && \
+  wget --no-check-certificate --content-disposition -O /tmp/kibana7-dashboards.tar.gz https://github.com/StamusNetworks/KTS7/tarball/dbbac5cbe9e76838ab2bcb2b8b41e8fef19082f9 && \
   mkdir /tmp/kibana7-dashboards && \
   tar zxf /tmp/kibana7-dashboards.tar.gz -C /tmp/kibana7-dashboards --strip-components 1 && \
   mv /tmp/kibana7-dashboards /opt/kibana7-dashboards
