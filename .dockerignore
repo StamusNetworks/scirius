@@ -1,9 +1,10 @@
 .dockerignore
 Dockerfile
-.git
 .github
 .gitignore
 .gitlab-ci-rules.yml
 .gitlab-ci.yml
 .travis.yml
-tests
+.direnv
+.envrc
+docker/containers-data
