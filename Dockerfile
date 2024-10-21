@@ -20,7 +20,7 @@
 #Base containers
 FROM python:3.9-slim-bullseye as base
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
-    echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
+  echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
 #Download STEP
 FROM base as source
@@ -32,12 +32,12 @@ ENV CYBERCHEF_VERSION ${CYBERCHEF_VERSION:-v10.18.3}
 
 
 RUN \
-    echo "**** install packages ****" && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        apt-utils \
-        wget \
-        unzip
+  echo "**** install packages ****" && \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  apt-utils \
+  wget \
+  unzip
 RUN \
   echo "**** download Kibana dashboards ****" && \
   wget --no-check-certificate --content-disposition -O /tmp/kibana7-dashboards.tar.gz https://github.com/StamusNetworks/KTS7/tarball/master && \
@@ -62,22 +62,22 @@ RUN chmod ugo+x /opt/scirius/docker/scirius/bin/*
 # BUILD JS stuff
 FROM base as build_js
 RUN \
-    echo "**** install packages ****" && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        apt-utils && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        make \
-        wget \
-        gcc \
-        libc-dev
+  echo "**** install packages ****" && \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  apt-utils && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  make \
+  wget \
+  gcc \
+  libc-dev
 RUN \
-    echo "**** add NodeSource repository ****" && \
-    wget -O- https://deb.nodesource.com/setup_18.x | bash -
+  echo "**** add NodeSource repository ****" && \
+  wget -O- https://deb.nodesource.com/setup_18.x | bash -
 RUN \
-    echo "**** install Node.js ****" && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        nodejs
+  echo "**** install Node.js ****" && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  nodejs
 
 COPY --from=source /opt/scirius/*.js* /opt/scirius/.eslintrc /opt/scirius/
 COPY --from=source /opt/scirius/ui /opt/scirius/ui
@@ -89,12 +89,12 @@ ENV REACT_APP_HAS_ACTION 1
 
 WORKDIR /opt/scirius
 RUN echo "**** install Node.js dependencies for Scirius ****" && \
-    npm install && \
-    npm install -g webpack webpack-cli && \
-    webpack && \
-    cd ui && \
-    npm install && \
-    npm run build && mv webpack-stats-ui.prod.json ../rules/static/
+  npm install && \
+  npm install -g webpack webpack-cli && \
+  webpack && \
+  cd ui && \
+  npm install && \
+  npm run build && mv webpack-stats-ui.prod.json ../rules/static/
 
 # Install python packages
 FROM base as python_modules
@@ -103,22 +103,22 @@ RUN \
   echo "**** install packages ****" && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    gnupg2 \
-    gcc \
-    libc-dev \
-    libsasl2-dev \
-    libldap2-dev \
-    libssl-dev \
-    python3-pip \
-    python-dev \
-    git
+  gnupg2 \
+  gcc \
+  libc-dev \
+  libsasl2-dev \
+  libldap2-dev \
+  libssl-dev \
+  python3-pip \
+  python-dev \
+  git
 RUN \
   echo "**** install Python dependencies for Scirius ****" && \
   cd /opt/scirius && \
   python -m pip install --user --upgrade\
-    six \
-    python-daemon \
-    suricatactl &&\
+  six \
+  python-daemon \
+  suricatactl &&\
   python -m pip install --user -r requirements.txt
 
 FROM base as gophercap
@@ -126,10 +126,10 @@ RUN \
   echo "**** install tools to get gophercap ****" && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    wget \
-    curl \
-    jq \
-    gzip
+  wget \
+  curl \
+  jq \
+  gzip
 RUN \
   echo "**** install gopherCap ****" && \
   cd /tmp && \
@@ -140,20 +140,20 @@ RUN \
 #BUILD doc
 FROM base as build_docs
 RUN \
-    echo "**** install packages ****" && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        apt-utils && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        make \
-        gcc \
-        libc-dev \
-        python3-sphinx
+  echo "**** install packages ****" && \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  apt-utils && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  make \
+  gcc \
+  libc-dev \
+  python3-sphinx
 COPY --from=source /opt/scirius/doc /opt/scirius/doc
 RUN \
-    echo "**** build docs ****" && \
-    cd /opt/scirius/doc && \
-    make html
+  echo "**** build docs ****" && \
+  cd /opt/scirius/doc && \
+  make html
 
 # PACKAGING STEP
 FROM base
@@ -162,9 +162,9 @@ ARG BUILD_DATE
 ARG VCS_REF
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.vcs-url="https://github.com/StamusNetworks/SELKS.git" \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.schema-version="1.0.0-rc1"
+  org.label-schema.vcs-url="https://github.com/StamusNetworks/SELKS.git" \
+  org.label-schema.vcs-ref=$VCS_REF \
+  org.label-schema.schema-version="1.0.0-rc1"
 
 COPY --from=source /opt/scirius /opt/scirius
 
@@ -173,9 +173,9 @@ RUN \
   echo "deb http://deb.debian.org/debian bullseye-backports main" > /etc/apt/sources.list.d/bullseye-backports.list && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    curl \
-    git \
-    gunicorn && \
+  curl \
+  git \
+  gunicorn && \
   DEBIAN_FRONTEND=noninteractive apt-get install -t bullseye-backports suricata -y && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
