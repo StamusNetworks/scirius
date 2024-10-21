@@ -89,7 +89,7 @@ COPY --from=source /opt/scirius/*.js* /opt/scirius/.eslintrc /opt/scirius/
 COPY --from=source /opt/scirius/ui /opt/scirius/ui
 COPY --from=source /opt/scirius/npm /opt/scirius/npm
 COPY --from=source /opt/scirius/scss /opt/scirius/scss
-COPY --from=source /opt/scirius/rules /opt/scirius/rules
+COPY --from=source /opt/scirius/rules/static /opt/scirius/rules/static
 
 ENV REACT_APP_HAS_ACTION 1
 
