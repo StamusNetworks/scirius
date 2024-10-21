@@ -54,7 +54,13 @@ RUN \
 
 
 RUN echo  "**** COPY Scirius ****"
+RUN apt-get install -y git
+RUN pip install GitPython
+WORKDIR /opt/scirius
 COPY . /opt/scirius
+RUN git config user.email "bot@stamus-networks.com"
+RUN git config user.name "stamus bot"
+RUN ./tests/master-build.py --app-branch HEAD --master-branch "remotes/origin/master" --remote "" .
 RUN mv /opt/scirius/docker/scirius/scirius/local_settings.py /opt/scirius/scirius/local_settings.py
 RUN chmod ugo+x /opt/scirius/docker/scirius/bin/*
 
@@ -199,4 +205,4 @@ VOLUME /rules /data /static /logs
 
 EXPOSE 8000
 
-ENTRYPOINT ["/bin/bash", "/opt/scirius/docker/scirius/bin/start-scirius.sh"]
+CMD ["/bin/bash", "/opt/scirius/docker/scirius/bin/start-scirius.sh"]
