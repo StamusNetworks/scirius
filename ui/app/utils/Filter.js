@@ -58,6 +58,8 @@ export default class Filter {
   /* If filter is an asset it could be IP, EMAIL or USERNAME type  */
   _assetType = [];
 
+  _unique = false;
+
   /**
    * Initialize filter object by given parameters
    *
@@ -93,6 +95,7 @@ export default class Filter {
     this._icon = filterSchema?.icon;
     this._force = filterSchema?.force || [];
     this._assetType = filterSchema?.type === FilterType.STAMUS_ASSET ? this.getAssetType(value, filterSchema?.type) : null;
+    this._unique = filterSchema?.unique || false;
 
     const smartWildcard = this._wildcardable ? !/[\\*?]/.test(value) : null;
     // Overridable properties
@@ -252,6 +255,10 @@ export default class Filter {
 
   get convertTo() {
     return this._convertible || null;
+  }
+
+  get unique() {
+    return !!this._unique;
   }
 
   /* Prop Setters */

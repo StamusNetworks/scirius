@@ -317,15 +317,18 @@ class CommonStore {
     // Update existing filters that if key/value is the same
     this.ids = this.ids.map(f => {
       const matchingFilter = filters.find(id => id.id === f.id && id.value === f.value);
+      const sameIdDifferentValueFilter = filters.find(id => id.id === f.id && id.value !== f.value);
       const isSameFilter = matchingFilter && matchingFilter.negated === f.negated && matchingFilter.fullString === f.fullString;
+
+      if (sameIdDifferentValueFilter && f.unique) {
+        f.suspended = true;
+        return f;
+      }
 
       if (!matchingFilter) return f;
 
       if (isSameFilter) {
         f.suspended = false;
-        message.info({
-          content: `Filter already exists!`,
-        });
         return f;
       }
 
