@@ -2831,16 +2831,16 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
             ruleset_str = Ruleset.__name__.lower()
 
             for trans, tsets in Rule.TRANSFORMATIONS[key][rule_str].items():
-                if tsets and self.pk in tsets:
+                if tsets is not None and tsets and self.pk in tsets:
                     return trans
 
             if override:
                 for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].items():
-                    if tsets and self.category.pk in tsets:
+                    if tsets is not None and tsets and self.category.pk in tsets:
                         return trans
 
                 for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].items():
-                    if tsets and ruleset.pk in tsets:
+                    if tsets is not None and tsets and ruleset.pk in tsets:
                         return trans
 
         return None
