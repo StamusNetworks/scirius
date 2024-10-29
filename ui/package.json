@@ -83,7 +83,7 @@
     "fontfaceobserver": "2.1.0",
     "history": "4.9.0",
     "hoist-non-react-statics": "3.3.2",
-    "http-proxy-middleware": "^2.0.6",
+    "http-proxy-middleware": "^3.0.3",
     "immer": "^9.0.18",
     "intl": "1.2.5",
     "invariant": "2.2.4",
