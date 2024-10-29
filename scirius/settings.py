@@ -20,7 +20,11 @@ APP_LONG_NAME = 'Scirius Community Edition'
 APP_MEDIUM_NAME = 'Scirius CE'
 APP_SHORT_NAME = APP_MEDIUM_NAME
 APP_MNGT_NAME = 'Suricata Management'
-SCIRIUS_VERSION = "3.8.0"
+PRODUCT_LONG_NAME = 'Clear NDR Community Edition'
+PRODUCT_SHORT_NAME = 'Clear NDR'
+PRODUCT_MEDIUM_NAME = 'Clear NDR CE'
+SCIRIUS_VERSION = "40.0.1"
+LOGO = 'rules/selks.png'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
