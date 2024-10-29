@@ -864,7 +864,7 @@ class Source(models.Model):
     REFRESH_LOCK_EXPIRE = 60 * 10
 
     name = models.CharField(max_length=100, unique=True)
-    created_date = models.DateTimeField('date created')
+    created_date = models.DateTimeField('date created', auto_now_add=True)
     updated_date = models.DateTimeField('date updated', blank=True, null=True)
     method = models.CharField(max_length=10, choices=FETCH_METHOD)
     datatype = models.CharField(max_length=10)
@@ -891,6 +891,14 @@ class Source(models.Model):
 
         from scirius.utils import get_middleware_module
         self.custom_data_type = get_middleware_module('common').custom_source_datatype()
+
+    def add_self_in_rulesets(self, rulesets, request):
+        for ruleset in rulesets:
+            ruleset.sources.add(self)
+            ruleset.needs_test()
+
+            for cat in Category.objects.filter(source=self):
+                cat.enable(ruleset, request=request)
 
     def set_is_stamus(self):
         copyright_ = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules', 'COPYRIGHT')
@@ -1476,12 +1484,20 @@ class Source(models.Model):
             source_lock.close()
 
     def handle_uploaded_file(self, f):
-        dest = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
-        for chunk in f.chunks():
-            dest.write(chunk)
+        from scirius.utils import read_in_chunks
 
-        dest.seek(0)
-        self._handle_file(dest, upload=True)
+        with tempfile.NamedTemporaryFile(dir=self.TMP_DIR) as dest:
+            if hasattr(f, 'chunks'):
+                # FileField
+                for chunk in f.chunks():
+                    dest.write(chunk)
+            else:
+                # python file, from tasks
+                for chunk in read_in_chunks(f):
+                    dest.write(chunk)
+
+            dest.seek(0)
+            self._handle_file(dest, upload=True)
 
     def new_uploaded_file(self, f):
         firstimport = False
@@ -2420,7 +2436,6 @@ class Category(models.Model, Transformable, Cache):
     def enable(self, ruleset, request=None, comment=None):
         ruleset.categories.add(self)
         ruleset.needs_test()
-        ruleset.save()
         if request:
             UserAction.create(
                 action_type='enable_category',
@@ -2433,7 +2448,6 @@ class Category(models.Model, Transformable, Cache):
     def disable(self, ruleset, request=None, comment=None):
         ruleset.categories.remove(self)
         ruleset.needs_test()
-        ruleset.save()
         if request:
             UserAction.create(
                 action_type='disable_category',

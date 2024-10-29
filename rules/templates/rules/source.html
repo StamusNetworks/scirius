@@ -58,9 +58,7 @@
         success: function(data) {
 			if (data['status'] == true) {
 				$("#update_modal").modal('hide');
-                if (data['redirect'] == true) {
-				    window.location = "{% url 'changelog_source' source.id %}";
-                }
+				window.location = "{% url 'status' %}";
 			} else {
 				$("#update_text").text("Error during update: " + data['errors']);
 			}
@@ -85,11 +83,7 @@
                         <h4 class="modal-title" id="UpdateModalLabel">Please wait...</h4>
                     </div>
                     <div class="modal-body" id="update_text">
-                        {% if middleware_has_update %}
-                            Triggering source update. . This window will close when operation is registered.
-                        {% else %}
-                            {{ scirius_short_title }} is updating source. This window will close when update is over.
-                        {% endif %}
+                        Triggering source update. . This window will close when operation is registered.
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

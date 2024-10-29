@@ -8,6 +8,20 @@
             <h2 class="panel-title">Suricata edition</h2>
         {% endif %}
     </div>
+    {% if perms.rules.configuration_edit %}
+        <div class="panel-heading">
+            <h2 class="panel-title">
+                Action
+            </h2>
+        </div>
+        <ul class="action panel-body">
+            <li>
+                <a href="{% url 'suricata_update' %}">
+                    Ruleset actions
+                </a>
+            </li>
+        </ul>
+    {% endif %}
 {% endblock sidebar %}
 {% block content %}
     {% if missing %}

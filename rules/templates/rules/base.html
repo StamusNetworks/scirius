@@ -196,9 +196,7 @@
                             </div>
                         {% endif %}
                         {% block status %}
-                            {% if middleware_status %}
-                                {% include middleware_status %}
-                            {% endif %}
+                            {% include middleware_status %}
                         {% endblock status %}
                     </div>
                     <!-- panel -->
@@ -699,6 +697,17 @@ function timerIncrement(timeout) {
             }
         }
     });
+}
+
+function ms_to_string(mstime) {
+    var datenow = new Date();
+    var datetime = new Date(mstime);
+    if (Math.abs(datenow - datetime) > 43200000) {
+        datestring = datetime.toDateString();
+    } else {
+        datestring = datetime.toLocaleTimeString();
+    }
+    return datestring
 }
 
 $(document).ready(function () {

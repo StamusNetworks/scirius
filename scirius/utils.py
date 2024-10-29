@@ -259,6 +259,14 @@ def merge_dict_deeply(src, dest):
     return dest
 
 
+def read_in_chunks(file_, chunk_size=1024):
+    while True:
+        data = file_.read(chunk_size)
+        if not data:
+            break
+        yield data
+
+
 class RequestsWrapper:
     def __init__(self, method=None):
         self.method = method

@@ -2,35 +2,32 @@
 {% load static %}
 {% load bootstrap3  %}
 {% block content %}
+    {% if suricata.ruleset %}
     <script language="JavaScript">
 
 function tables_checking(source) {
-    checkboxes = document.getElementsByClassName('action_selection');
-    for (var i in checkboxes) {
-        checkboxes[i].checked = source.checked;
-    }
+    $('#id_reload').prop('checked', source.checked);
+    $('#id_push').prop('checked', source.checked);
 }
 
 function table_all_toggle(source) {
     checkboxes = document.getElementsByName('check_all')[0];
-    if (source.checked == 0)
-        checkboxes.checked = 0;
+    if (source.prop('checked') === false)
+        checkboxes.checked = false;
 }
 
+$(document).ready(function () {
+    $('#id_reload').click(function() {table_all_toggle($(this))});
+    $('#id_push').click(function() {table_all_toggle($(this))});
+});
+
     </script>
+    {% endif %}
     <h2 class="title">Suricata Ruleset Actions</h2>
-    {% if message %}
-        {% for line in message %}
-            {% if "Successful" in line %}
-                <div class="alert alert-success" role="alert">{{ line }}</div>
-            {% else %}
-                <div class="alert alert-warning" role="alert">{{ line }}</div>
-            {% endif %}
-        {% endfor %}
-    {% else %}
-        {% if suri.updated_date %}
+    {% if suricata.ruleset %}
+        {% if suricata.updated_date %}
             <p>
-                Suricata last updated at {{ suri.updated_date }}
+                Suricata last updated at {{ suricata.updated_date }}
             </p>
         {% endif %}
         <form action="{% url 'suricata_update' %}" method="post">
@@ -42,50 +39,24 @@ function table_all_toggle(source) {
                         Actions
                     </label>
                 </h4>
-                <div>
-                    <label>
-                        <input type="checkbox"
-                               name="reload"
-                               id="reload"
-                               class="action_selection"
-                               onclick="table_all_toggle(this);"/>
-                        <span class="glyphicon glyphicon-refresh"></span>
-                        Update
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        <input type="checkbox"
-                               name="build"
-                               id="build"
-                               class="action_selection"
-                               onclick="table_all_toggle(this);"/>
-                        <span class="glyphicon glyphicon-cog"></span>
-                        Build
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        <input type="checkbox"
-                               name="push"
-                               id="push"
-                               class="action_selection"
-                               onclick="table_all_toggle(this);"/>
-                        <span class="glyphicon glyphicon-share-alt"></span>
-                        Push
-                    </label>
-                </div>
-                {% bootstrap_form form %}
+                {% bootstrap_field form.reload %}
+                {% bootstrap_field form.push %}
+                {% include 'rules/schedule_recurrence.html' %}
                 <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Apply</button>
             </div>
         </form>
+    {% else %}
+        <h3>
+            <a href="{% url 'suricata_edit' %}">Suricata </a>
+                has no ruleset. Please set it <a href="{% url 'suricata_edit' %}">here.</a>
+        </h3>
     {% endif %}
 {% endblock content %}
 {% block sidebar %}
     <div class="panel-heading">
         <h2 class="panel-title">Suricata {{ suricata.name }}</h2>
     </div>
-    <ul>
+    <ul class="panel-body">
         <li>
             <span class="type">Ruleset:</span>
             {{ suricata.ruleset }}
@@ -99,4 +70,18 @@ function table_all_toggle(source) {
             {{ suricata.updated_date }}
         </li>
     </ul>
+    {% if perms.rules.configuration_edit %}
+        <div class="panel-heading">
+            <h2 class="panel-title">
+                Action
+            </h2>
+        </div>
+        <ul class="action panel-body">
+            <li>
+                <a href="{% url 'suricata_edit' %}">
+                    Edit
+                </a>
+            </li>
+        </ul>
+    {% endif %}
 {% endblock %}

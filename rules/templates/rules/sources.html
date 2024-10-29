@@ -155,9 +155,7 @@ function UpdateSource{{ source.id }}() {
         success: function(data) {
 			if (data['status'] == true) {
 				$("#update_modal").modal('hide');
-                if (data['redirect'] == true) {
-				    window.location = "{% url 'changelog_source' source.id %}";
-                }
+				window.location = "{% url 'status' %}";
 			} else {
 				$("#update_text").text("Error during update: " + data['errors']);
 			}

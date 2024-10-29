@@ -24,26 +24,29 @@
             {% endfor %}
         </ul>
     {% endif %}
-    <div class="panel-heading">
-        <h2 class="panel-title">Action{% if adduri and action_links|length > 0 %}s{% endif %}</h2>
-    </div>
-    {% if adduri %}
-        <ul class="action panel-body">
-            <li>
-                <a href="{{ adduri }}">Add {{ action }}</a>
-            </li>
-            {% for url, title in action_links.items  %}
+    {% if action != 'Recurrent Task' %}
+        <!-- No action for Reccurent Tasks -->
+        <div class="panel-heading">
+            <h2 class="panel-title">Action{% if adduri and action_links|length > 0 %}s{% endif %}</h2>
+        </div>
+        {% if adduri %}
+            <ul class="action panel-body">
                 <li>
-                    <a href="{% url url  %}">{{ title }}</a>
+                    <a href="{{ adduri }}">Add {{ action }}</a>
                 </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <ul class="action panel-body">
-            <li>
-                <a href="{% url 'rules_index' %}{{ action }}/add">Add</a>
-            </li>
-        </ul>
+                {% for url, title in action_links.items  %}
+                    <li>
+                        <a href="{% url url  %}">{{ title }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <ul class="action panel-body">
+                <li>
+                    <a href="{% url 'rules_index' %}{{ action }}/add">Add</a>
+                </li>
+            </ul>
+        {% endif %}
     {% endif %}
 {% endblock %}
 {% block content %}

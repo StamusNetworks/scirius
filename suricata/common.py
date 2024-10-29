@@ -116,6 +116,17 @@ def update_scirius_user_class(user, data):
     pass
 
 
+def update_ruleset(request, ruleset):
+    from suricata.models import CeleryTask
+    CeleryTask.spawn(
+        'UpdateGenerateRuleset',
+        ruleset_pk=ruleset.pk,
+        user=request.user,
+        update=True,
+        generate=False
+    )
+
+
 def help_links(djlink):
     HELP_LINKS_TABLE = {
         "suricata_edit": {"name": "Suricata setup", "base_url": "doc/suricata-ce.html", "anchor": "#setup"},
@@ -226,8 +237,8 @@ def check_es_version(request, es_url):
     return {'es_is_good_version': True, 'es_version': es_version}
 
 
-def update_context(request):
-    return {}
+def update_context(_):
+    return {'middleware_status': 'rules/tasks_status.html'}
 
 
 def custom_source_datatype():
@@ -358,3 +369,11 @@ def get_stamus_range(_):
 
 def get_scirius_extra_urls() -> list:
     return []
+
+
+def run_celery_task_extra(*_):
+    pass
+
+
+def stask_redirection(_):
+    return 'view_stasks'

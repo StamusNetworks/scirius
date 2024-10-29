@@ -1,0 +1,123 @@
+{% extends "rules/base.html" %}
+{% load static %}
+{% load bootstrap3  %}
+{% block sidebar %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Task {{ scheduledtask.pk }}</h2>
+    </div>
+    <ul class="panel-body">
+        <li>
+            <span class="type">Task:</span>
+            {{ task.title }}
+        </li>
+        <li>
+            <span class="type">Scheduled:</span>
+            {{ scheduledtask.scheduled }}
+        </li>
+        <li>
+            <span class="type">Last fired:</span>
+            {{ scheduledtask.fired }}
+        </li>
+    </ul>
+    {% if can_edit %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Action</h2>
+    </div>
+    <ul class="action panel-body">
+        <li>
+            <a href="{% url 'delete_scheduledtask' scheduledtask.pk %}">Delete recurrent task</a>
+        </li>
+        <li>
+            <a href="{% url 'edit_scheduledtask' scheduledtask.pk %}">Edit recurrent task</a>
+        </li>
+    </ul>
+    {% endif %}
+{% endblock sidebar %}
+{% block content %}
+    {% if mode == 'deletion' %}
+        <h2 class="title">Deletion of task {{ scheduledtask.pk }}</h2>
+    {% elif mode == 'edition' %}
+        <h2 class="title">Edition of task {{ scheduledtask.pk }}</h2>
+    {% else %}
+        <h2>Task {{ scheduledtask.pk }}</h2>
+    {% endif %}
+    <table class="table table-bordered table-striped">
+        <tr>
+            <td class="col-md-1">Task</td>
+            <td>
+                <span class="glyphicon glyphicon-{{ task.icon }}"></span>
+                {{ task.title }}
+            </td>
+        </tr>
+        <tr>
+            <td>Options</td>
+            <td>
+                <table>
+                {% for k,v in task_options.items %}
+                <tr>
+                    <td>{{ k }}</td>
+                    <td>{{ v }}</td>
+                </tr>
+                {% endfor %}
+                </table>
+            </td>
+        </tr>
+        {% if task.target %}
+            <tr>
+                <td>Target(s)</td>
+                <td>{{ task.target }}</td>
+            </tr>
+        {% endif %}
+        {% if task.number_of_device %}
+            <tr>
+                <td>Target number</td>
+                <td>{{ task.number_of_device }}</td>
+            </tr>
+        {% endif %}
+        {% if task.device_ip %}
+            <tr>
+                <td>Target(s) IP</td>
+                <td>{{ task.device_ip }}</td>
+            </tr>
+        {% endif %}
+        {% if task.model %}
+            <tr>
+                <td>Model(s)</td>
+                <td>{{ task.model }}</td>
+            </tr>
+        {% endif %}
+        <tr>
+            <td>Scheduled:</td>
+            <td>{{ scheduledtask.scheduled }}</td>
+        </tr>
+        <tr>
+            <td>Recurrence:</td>
+            <td>{{ scheduledtask.recurrence }}</td>
+        </tr>
+    </table>
+    {% if mode == 'deletion' %}
+        <form action="{% url 'delete_scheduledtask' scheduledtask.pk %}"
+              method="post"
+              class="form">
+            {% csrf_token %}
+            {% buttons %}
+                <button class="btn btn-primary">
+                    <span class="glyphicon glyphicon-trash">Delete the task</span>
+                </button>
+            {% endbuttons %}
+        </form>
+    {% endif %}
+    {% if mode == 'edition' %}
+        <form action="{% url 'edit_scheduledtask' scheduledtask.pk %}"
+              method="post"
+              class="form">
+            {% csrf_token %}
+            {% include 'rules/schedule_recurrence.html' with disable_checkboxes=True %}
+            {% buttons %}
+                <button class="btn btn-primary">
+                    <span class="glyphicon glyphicon-ok">Submit</span>
+                </button>
+            {% endbuttons %}
+        </form>
+    {% endif %}
+{% endblock content %}

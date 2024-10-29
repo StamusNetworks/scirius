@@ -1,0 +1,53 @@
+{% load bootstrap3 %}
+
+<div class="form-group" id="time_recurrence">
+    <label for="id_recurrence" style="font-weight: 400;">
+        <input
+            type="checkbox"
+            name="recurrence"
+            id="id_recurrence"
+            {% if recurrence %}checked{% endif %}
+            {% if disable_checkboxes %}disabled{% endif %}>
+        {% bootstrap_icon "repeat" %} Recurrence
+    </label>
+    <select class="form-control" name="recurrence_param" id="id_recurrence_param">
+        <option value="hourly">
+            Hourly
+        </option>
+        <option value="daily">
+            Daily
+        </option>
+        <option value="weekly">
+            Weekly
+        </option>
+        {% if monthly %}
+        <option value="monthly">
+            Monthly
+        </option>
+        {% endif %}
+    </select>
+</div>
+<script type="text/javascript">
+
+function toggle_recurrence() {
+    var recurrence = $("input#id_recurrence")[0];
+    if (recurrence.checked) {
+        $("select#id_recurrence_param").prop('disabled', false);
+    } else {
+        $("select#id_recurrence_param").prop('disabled', true);
+    }
+}
+
+$("input#id_recurrence").change(function () {
+    toggle_recurrence();
+}
+);
+
+$(document).ready( function() {
+    toggle_recurrence();
+    {% if recurrence_param %}
+        $("select#id_recurrence_param option[value={{ recurrence_param }}]").prop('selected', true);
+    {% endif %}
+});
+
+</script>

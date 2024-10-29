@@ -1,0 +1,120 @@
+{% load static %}
+<div class="panel-heading">
+    <h2 class="panel-title">Tasks</h2>
+</div>
+<div class="panel-body">
+    <ul>
+{% block status_actions %}
+        <li>
+            <a href="{% url 'status' %}">Status of tasks</a>
+        </li>
+        <li>
+            <a href="{% url 'view_stasks' %}">Periodic tasks</a>
+        </li>
+{% endblock status_actions %}
+    </ul>
+    <hr>
+    <div id="status">No tasks</div>
+</div>
+<script>
+var notification_enabled = false;
+var last_notif = Date.now();
+
+function show_notification (task) {
+    var state = 'failed';
+    if (task.state == 'WARNING') {
+        state = 'warned';
+    } else if (task.state == 'SUCCESS') {
+        state = 'succeeded';
+    }
+    var notification = new Notification('Scirius', {
+        body: "Task '" + task.title + "' on " + task.target + ' ' + state + '.',
+        icon: '{% static 'rules/favicon.ico' %}',
+        tag: task.id
+    });
+}
+
+function status_check () {
+    $.ajax({
+        type:"GET",
+        url:"{% url 'status' %}?ajax=1&full=1",
+        success: function(data) {
+            if (data.tasks) {
+                var msg = "<ul>";
+                $("#status").text(data.msg);
+                for(var i = 0; i < data.tasks.length; i++) {
+                    if (data.tasks[i].state == 'SUCCESS' ||
+                            data.tasks[i].state == 'FAILURE' ||
+                            data.tasks[i].state == 'WARNING' ||
+                            data.tasks[i].state == 'REVOKED') {
+                        continue;
+                    }
+                    if (data.tasks[i].id) {
+                        msg += "<li><a href='/rules/task/" + data.tasks[i].id  + "'>'"+ data.tasks[i].title + "' on " + data.tasks[i].target + "</a></li>\n";
+                    } else {
+                        msg += "<li>'" + data.tasks[i].title + "' on " + data.tasks[i].target + "</li>\n";
+                    }
+                }
+                msg = msg + "</ul>";
+                $("#status").append(msg);
+            } else {
+                $("#status").text(data.msg);
+            }
+
+            // Look for finished tasks
+            if (notification_enabled) {
+                for(var i = 0; i < data.tasks.length; i++) {
+                    var task = data.tasks[i];
+                    var show = (task.state == 'SUCCESS' || task.state == 'FAILURE' || task.state == 'WARNING') && task.end_time > last_notif - 5000.0;
+
+                    if (show) {
+                        // The check the notification wasn't displayed by an other tab
+                        notifications = localStorage.getItem('notifications');
+                        notifications = JSON.parse(notifications);
+                        if (!notifications) {
+                            notifications = [];
+                        }
+                        if (notifications.indexOf(task.id) == -1) {
+                            show_notification(task);
+
+                            notifications.push(task.id);
+                            if (notifications.length > 20) {
+                                notifications = notifications.slice(1, 20);
+                            }
+                            notifications = JSON.stringify(notifications);
+                            localStorage.setItem('notifications', notifications);
+                        }
+                        last_notif = task.end_time;
+                    }
+                }
+            }
+        },
+        complete: function() {
+            // Schedule the next request when the current one's complete
+            setTimeout(status_check, 5000);
+        }
+    });
+}
+
+$('document').ready($(function () {
+    // Let's check if the browser supports notifications
+    if ("Notification" in window) {
+        // Let's check whether notification permissions have already been granted
+        if (Notification.permission === "granted") {
+            // If it's okay let's create a notification
+            notification_enabled = true;
+        }
+
+        // Otherwise, we need to ask the user for permission
+        else if (Notification.permission !== 'denied') {
+            Notification.requestPermission(function (permission) {
+                // If the user accepts, let's create a notification
+                if (permission === "granted") {
+                    notification = true;
+                }
+            });
+        }
+    }
+    status_check();
+}));
+</script>

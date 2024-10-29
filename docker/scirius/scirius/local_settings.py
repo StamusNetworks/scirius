@@ -47,6 +47,9 @@ LOGGING = {
         'raw': {
             'format': '%(asctime)s %(message)s'
         },
+        'celeryformat': {
+            'format': '%(asctime)s %(processName)s %(levelname)s %(message)s'
+        }
     },
     'handlers': {
         'elasticsearch': {
@@ -67,6 +70,12 @@ LOGGING = {
             'filename': '/logs/django-auth.log',
             'formatter': 'fileformat',
         },
+        'celery_tasks': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/logs/celery_tasks.log',
+            'formatter': 'celeryformat',
+        },
     },
     'loggers': {
         'elasticsearch': {
@@ -81,6 +90,11 @@ LOGGING = {
         },
         'authentication': {
             'handlers': ['auth_log'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'celery_tasks': {
+            'handlers': ['celery_tasks'],
             'level': 'DEBUG',
             'propagate': True,
         },

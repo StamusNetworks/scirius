@@ -45,7 +45,7 @@ create_db() {
     python manage.py addsource "Lateral movement ruleset" https://ti.stamus-networks.io/open/stamus-lateral-rules.tar.gz http sigs
     python manage.py defaultruleset "Default ruleset"
     python manage.py disablecategory "Default ruleset" stream-events
-    python manage.py addsuricata suricata "Suricata" /rules "Default ruleset"
+    python manage.py addsuricata suricata "Suricata" "Default ruleset"
     python manage.py updatesuricata
     python manage.py collectstatic --noinput
     touch /data/scirius.data

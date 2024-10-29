@@ -1,0 +1,194 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+{% block sidebar %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Task {{ task.id|truncatechars:11 }}</h2>
+    </div>
+    <div class="panel-body">
+        <ul>
+            <li>
+                <span class="type">Name:</span>
+                {{ task.title }}
+            </li>
+            <li>
+                <span class="type">State:</span>
+                {{ task.state }}
+            </li>
+        </ul>
+    </div>
+{% endblock sidebar %}
+{% block content %}
+    {% if task.results %}
+        <script type="text/javascript">
+$('document').ready(function () {
+    nv.addGraph(function() {
+        var chart = nv.models.pieChart()
+            .x(function(d) { return d.label })
+            .y(function(d) { return d.value })
+            .showLabels(true);
+
+        d3.select("#chart svg")
+            .datum(pie_data())
+            .transition().duration(350)
+            .call(chart);
+
+        nv.utils.windowResize(chart.update);
+        return chart;
+    });
+
+    function pie_data() {
+        return  [{
+            "label": "Success",
+            "value": {{ task.success }},
+            "color": "#5cb85c",
+        } ,
+        {
+          "label": "Unreachable",
+          "value": {{ task.unreachable }},
+          "color": "#f0ad4e",
+        } ,
+        {
+          "label": "Failure",
+          "value": {{ task.failed }},
+          "color": "#d9534f"
+        },
+        {
+          "label": "Warning",
+          "value": {{ task.warning }},
+          "color": "#ec7a08"
+        }];
+    }
+});
+        </script>
+    {% endif %}
+    {# if task.results #}
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-bordered table-striped">
+                <tr>
+                    <td class="col-md-2">Name</td>
+                    <td>
+                        <span class="glyphicon glyphicon-{{ task.icon }}"></span>
+                        {{ task.title }}
+                    </td>
+                </tr>
+                {% if task.user %}
+                    <tr>
+                        <td>User</td>
+                        <td>{{ task.user }}</td>
+                    </tr>
+                {% endif %}
+                {% if task.target %}
+                    <tr>
+                        <td>Target(s)</td>
+                        <td>{{ task.target }}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td>Internal id</td>
+                    <td>{{ task.celery_id }}</td>
+                </tr>
+                {% if task.eta_time %}
+                    <tr>
+                        <td>Not started before</td>
+                        <td>{{ task.eta_time }}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td>Creation</td>
+                    <td>{{ task.created_time }}</td>
+                </tr>
+                <tr>
+                    <td>Start</td>
+                    <td>{{ task.start_time }}</td>
+                </tr>
+                <tr>
+                    <td>Finish</td>
+                    <td>{{ task.end_time }}</td>
+                </tr>
+                {% if task.retries %}
+                    <tr>
+                        <td>Retrie(s)</td>
+                        <td>{{ task.retries }}</td>
+                    </tr>
+                {% endif %}
+                {% if task.success_list %}
+                    <tr>
+                        <td>Succeeded</td>
+                        <td>{{ task.success_list|join:", " }}</td>
+                    </tr>
+                {% endif %}
+                {% if task.failed_list %}
+                    <tr>
+                        <td>Failed</td>
+                        <td>{{ task.failed_list|join:", " }}</td>
+                    </tr>
+                {% endif %}
+                {% if task.unreachable_list %}
+                    <tr>
+                        <td>Unreachable</td>
+                        <td>
+                            {{ task.unreachable_list|join:", " }}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% if task.state %}
+                    <tr>
+                        <td>
+                            State
+                        </td>
+                        <td>
+                            {{ task.state }}
+                        </td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+        <div class="col-md-4">
+            <div id="chart">
+                <svg style="width: 400px; height: 350px;">
+                </svg>
+            </div>
+        </div>
+    </div>
+    <!-- class="row" -->
+    {% if task.failed_msg %}
+        Failure:
+        <pre>{{ task.failed_msg }}</pre>
+    {% endif %}
+    {% if task.results %}
+        <table class="table table-bordered table-striped">
+            {% for res in task.results %}
+                {% if res.state == 'Success' %}
+                    <tr style="background-color: #dff0d8;">
+                    {% elif res.state == 'Unreachable' or res.state == 'Warning' %}
+                        <tr style="background-color: #fcf8e3;">
+                        {% elif res.state == 'Failed' %}
+                            <tr style="background-color: #f0dcdc;">
+                            {% endif %}
+                            <td class="col-md-2">
+                                {{ res.host }}
+                            </td>
+                            <td class="col-md-2">
+                                {{ res.state }}
+                            </td>
+                            <td class="col-md-8">
+                                {% if res.msg %}<pre>{{ res.msg }}</pre>{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+            {% if perms.rules.configuration_edit or request.user == task.user %}
+                {% if task.state == "RECEIVED" or task.state == "RETRY" or task.state == "STARTED" %}
+                    <div class="action">
+                        <form class="form" action="{% url 'revoke_task' task.id %}" method="post">
+                            {% csrf_token %}
+                            <button class="btn btn-primary" type="submit">
+                                {% bootstrap_icon "remove" %} Revoke
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endblock %}

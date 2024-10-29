@@ -1,0 +1,56 @@
+{% load static %}
+{% load bootstrap3  %}
+<div class="form-group" id="time_schedule">
+    <label for="id_schedule" style="font-weight: 400;">
+        <input
+            type="checkbox"
+            name="schedule"
+            id="id_schedule"
+            {% if schedule %}checked{% endif %}
+            {% if disable_checkboxes %}disabled{% endif %}>
+        {% bootstrap_icon "time" %} Schedule
+    </label>
+    <!-- <div class='input-group'> <input type="checkbox" name="localtime" id="id_localtime"> Use probe local time</div>-->
+    <div class='input-group date' id='datetimepicker1'>
+        <input type='text'
+               id="id_schedule_param"
+               name="schedule_param"
+               class="form-control"
+               data-date-format="YYYY/MM/DD HH:mm"/>
+        <span class="input-group-addon">
+            {% bootstrap_icon "calendar" %}
+        </span>
+    </div>
+</div>
+<script type="text/javascript">
+$(function () {
+    var start = new Date();
+    start.setDate(start.getDate() - 1);
+    $('#datetimepicker1').datetimepicker({
+        minDate: start,
+    });
+});
+
+function toggle_schedule() {
+    var schedule = $("input#id_schedule")[0];
+    if (schedule.checked) {
+        $("input#id_schedule_param").prop('disabled', false);
+        $("input#id_localtime").prop('disabled', false);
+    } else {
+        $("input#id_schedule_param").prop('disabled', true);
+        $("input#id_localtime").prop('disabled', true);
+    }
+}
+
+$("input#id_schedule").change(function () {
+    toggle_schedule();
+}
+);
+
+$(document).ready( function() {
+    toggle_schedule();
+    {% if schedule_param %}$("input#id_schedule_param").val("{{ schedule_param }}");{% endif %}
+    $(".datetimepicker-widget").hide(duration=0);
+});
+
+</script>

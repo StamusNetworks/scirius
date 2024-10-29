@@ -1,0 +1,221 @@
+{% extends "rules/base.html" %}
+{% block sidebar %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Tasks list</h2>
+    </div>
+    <div class="panel-body">List of Scirius tasks</div>
+{% endblock sidebar %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row toolbar-pf">
+            <div class="col-sm-12">
+                <div class="row toolbar-pf-results">
+                    <div class="col-sm-12">
+                        <h5>List of Tasks</h5>
+                    </div>
+                    <!-- /col -->
+                </div>
+                <!-- /row -->
+            </div>
+            <!-- /col -->
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+    <div class="container-fluid">
+        <div class="list-group list-view-pf list-view-pf-view" id="tasks_list"></div>
+    </div>
+    <script>
+
+function toggle_display(task, msg) {
+    var actual = $("#" + task.id);
+    if (actual.length) {
+        actual.replaceWith(msg);
+        $("#" + task.id).show(duration=200);
+    } else {
+        $("#tasks_list").prepend(msg);
+    }
+}
+
+function get_runtime(starttime) {
+    const runtime = (Date.now() - starttime) / 1000;
+    return runtime.toFixed(0);
+}
+
+function update_runtime(states, taskId) {
+    const runtime = get_runtime(states[taskId]["start"]);
+    $(`#runtime-${taskId}`).html(`<span class="fa fa-info"></span> Runtime: ${runtime}s`);
+}
+
+function display_tasks(states) {
+    $.ajax({
+        type: "GET",
+        url: "{% url 'status' %}?ajax=1&full=1&length=20",
+        success: function(data) {
+            if (data.tasks) {
+                /* remove tasks not in list */
+                $('.scirius_task').each(function() {
+                    var found = false;
+                    for (var i = 0; i < data.tasks.length; i++) {
+                        if (data.tasks[i].id == $(this).attr('id')) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (! found) {
+                        $(this).slideUp();
+                        $(this).remove();
+                    }
+                });
+                /* create and update tasks */
+                for (var i = 0; i < data.tasks.length; i++) {
+		            var task = data.tasks[i];
+		            var msg = '';
+                    if (task.can_edit) {
+		                msg += `
+  <div class="list-group-item scirius_task" id="${task.id}">
+  <div class="list-group-item-header">
+    <div class="list-view-pf-actions">
+      <a href="/rules/task/${task.id}"><button class="btn btn-default">View</button></a>
+      <div class="dropdown pull-right dropdown-kebab-pf">
+  <button class="btn btn-link dropdown-toggle" type="button" id="dropdownKebabRight${task.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    <span class="fa fa-ellipsis-v"></span>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownKebabRight${task.id}">
+    <li>
+        <form id="form_revoke${task.id}" action="{% url 'revoke_task' "0000" %}" method="post">{% csrf_token %}
+            <input type="hidden" name="revoke_input" />
+        </form>
+        <a href="#" onclick="document.getElementById('form_revoke${task.id}').submit();">Revoke task</a>
+    </li>
+  </ul>
+</div>
+
+    </div>
+    <div class="list-view-pf-main-info">
+      <div class="list-view-pf-left">
+        <span class="pficon glyphicon glyphicon-${task.icon}
+    `.replace("0000", `${task.id}`);
+                    } else {
+				        msg += `
+  <div class="list-group-item scirius_task" id="${task.id}">
+  <div class="list-group-item-header">
+    <div class="list-view-pf-actions">
+      <a href="/rules/task/${task.id}"><button class="btn btn-default">View</button></a>
+    </div>
+    <div class="list-view-pf-main-info">
+      <div class="list-view-pf-left">
+        <span class="pficon glyphicon glyphicon-${task.icon} `;
+                    }
+                    if (task.state == "SUCCESS") {
+                        msg += " list-view-pf-icon-sm list-view-pf-icon-success";
+                    } else if (task.state == "FAILURE") {
+                        msg += " list-view-pf-icon-sm list-view-pf-icon-danger";
+                    } else if (task.state == "WARNING") {
+                        msg += " list-view-pf-icon-sm list-view-pf-icon-warning";
+                    } else {
+                        msg += " list-view-pf-icon-sm";
+                    }
+                    msg += `"></span>
+      </div>
+      <div class="list-view-pf-body">
+        <div class="list-view-pf-description">
+          <div class="list-group-item-heading">${task.title}</div>`;
+
+		            msg += `<div class="list-group-item-text">
+		 Target: <strong>${task.target}</strong>
+          </div>
+        </div>
+        <div class="list-view-pf-additional-info">
+	`;
+
+
+                    msg += `<div class="list-view-pf-additional-info-item task_status"> <span class="pficon pficon-flag"></span> ${task.state}</div>`;
+
+                    if (task.end_time) {
+                        task.endtime_str = ms_to_string(task.end_time);
+                        msg += `<div class="list-view-pf-additional-info-item"> <span class="fa fa-clock-o"></span> End time: ${task.endtime_str}</div>`;
+                    } else if (task.eta_time) {
+                        task.etatime_str = ms_to_string(task.eta_time);
+                        msg += `<div class="list-view-pf-additional-info-item"> <span class="fa fa-clock-o"></span> ETA: ${task.etatime_str}</div>`;
+                    }
+                    if (task.retries) {
+                        msg += `<div class="list-view-pf-additional-info-item"> <span class="pficon pficon-restart"></span> Retries: ${task.retries}</div>`;
+                    }
+                    if (task.runtime) {
+                        let runtime;
+                        if (task.state == 'STARTED') {
+                            runtime = get_runtime(task.start_time);
+                        } else {
+                            runtime = task.runtime;
+                        }
+
+                        // If the runtime is already displayed, keep its value to avoid seconds jump due to update_runtime
+                        if ($(`#runtime-${task.id}`).length !== 0) {
+                            msg += $(`#runtime-${task.id}`).get()[0].outerHTML;
+                        } else {
+                            msg += `<div class="list-view-pf-additional-info-item" id="runtime-${task.id}"> <span class="fa fa-info"></span> Runtime: ${runtime}s</div>`;
+                        }
+                    }
+                    if (task.user) {
+                        if (!task.run_from_command) {
+                            msg += `<div class="list-view-pf-additional-info-item"> <span class="pficon pficon-user"></span> ${task.user}</div>`;
+                        } else {
+                            msg += `<div class="list-view-pf-additional-info-item">Run from command line</div>`;
+                        }
+                    }
+
+                    if (task.success) {
+                        msg += `<div class="list-view-pf-additional-info-item">
+                            <span class="pficon pficon-ok"></span> <strong>${task.success}</strong> success
+                          </div>`;
+                    }
+                    if (task.unreachable) {
+                          msg += `<div class="list-view-pf-additional-info-item">
+                            <span class="pficon pficon-warning-triangle-o"></span> <strong>${task.unreachable}</strong> unreachable
+                          </div>`;
+                    }
+                    if (task.failed) {
+                          msg += ` <div class="list-view-pf-additional-info-item">
+                            <span class="pficon pficon-error-circle-o"></span> <strong>${task.failed}</strong> failed
+                          </div>
+                        `;
+                    }
+
+                    msg += `
+        </div>
+      </div>
+    </div>
+  </div>
+        </div>`;
+                    toggle_display(task, msg);
+
+                    // Dynamic runtime refresh
+                    if (task.state === "STARTED") {
+                        if (!(task.id in states)) {
+                            states[task.id] = {"interval": setInterval(update_runtime, 1000, states, task.id)};
+                        }
+                        states[task.id]["start"] = task.start_time;
+                    } else {
+                        if (task.id in states) {
+                            clearInterval(states[task.id]["interval"]);
+                            delete states[task.id];
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+$('document').ready(function() {
+    let states = {};
+    display_tasks(states);
+
+    // Refresh are disabled during tests
+    if (window.location.href.indexOf('?no_refresh') == -1) {
+        setInterval(display_tasks, 5000, states);
+    }
+});
+    </script>
+{% endblock content %}

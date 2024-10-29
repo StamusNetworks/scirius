@@ -170,25 +170,24 @@
                     <script>
 function UpdateRuleset{{ ruleset.id }}() {
 	$("#update_modal").modal('show');
-	$.ajax( {
-                type:"POST",
-                url:"{% url 'update_ruleset' ruleset.id %}",
-                success: function(data) {
-			if (data['status'] == true) {
-				$("#update_modal").modal('hide');
-                if (data['redirect'] == true) {
-				    window.location = "{% url 'changelog_ruleset' ruleset.id %}";
-                }
-			} else {
-				$("#update_text").text("Error during update: " + data['errors']);
-			}
-		},
-                error: function(data) {
-			$("#update_text").text("Error during update");
-                },
-                timeout: 120000,
-	}
-  );
+    $.ajax( {
+        type:"POST",
+        url:"{% url 'update_ruleset' ruleset.id %}",
+        success: function(data) {
+            console.log(data)
+            if (data['status'] == true) {
+                $("#update_modal").modal('hide');
+                window.location = "{% url 'status' %}";
+            } else {
+                $("#update_text").text("Error during update: " + data['errors']);
+            }
+        },
+        error: function(data) {
+            $("#update_text").text("Error during update");
+        },
+        timeout: 120000,
+        }
+    );
 }
                     </script>
                 {% endfor %}

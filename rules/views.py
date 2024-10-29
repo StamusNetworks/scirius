@@ -30,14 +30,19 @@ from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.db import IntegrityError
+from django.db.models.functions import Greatest
 from django.conf import settings
-from django.core.exceptions import SuspiciousOperation, ValidationError, PermissionDenied
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from elasticsearch.exceptions import ConnectionError as ESConnectionError
 import django_tables2 as tables
 
-from scirius.utils import get_middleware_module, scirius_render, scirius_listing, RequestsWrapper
+from scirius.utils import (
+    get_middleware_module, scirius_render,
+    scirius_listing, RequestsWrapper,
+    convert_to_local
+)
 
 from rules.es_data import ESData
 from rules.models import RuleAtVersion, Ruleset, Source, SourceUpdate, Category, Rule, SuppressedRuleAtVersion, dependencies_check, get_system_settings
@@ -47,15 +52,21 @@ from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, Sour
 from rules.es_graphs import ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid
 from rules.es_graphs import get_es_major_version
 
+from suricata.tasks import tasks_permission_required, check_task_perms
+
 from .tables import RuleTable, CategoryTable, RulesetTable, CategoryRulesetTable, RuleHostTable, ESIndexessTable
 from .tables import RuleThresholdTable, RuleSuppressTable, RulesetThresholdTable, RulesetSuppressTable
 from .tables import EditCategoryTable, EditRuleTable, EditSourceTable
 from .forms import RuleCommentForm, RuleTransformForm, CategoryTransformForm, RulesetSuppressForm, CommentForm
 from .forms import AddRuleThresholdForm, AddRuleSuppressForm, AddSourceForm, AddPublicSourceForm, SourceForm
-from .forms import RulesetForm, RulesetEditForm, RulesetCopyForm, SystemSettingsForm, KibanaDataForm, EditThresholdForm, PoliciesForm
+from .forms import (
+    RulesetForm, RulesetEditForm, RulesetCopyForm,
+    SystemSettingsForm, KibanaDataForm, EditThresholdForm,
+    PoliciesForm
+)
 from .suripyg import SuriHTMLFormat
 
-PROBE = __import__(settings.RULESET_MIDDLEWARE)
+MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
 
 
 # Create your views here.
@@ -65,7 +76,7 @@ def index(request):
     context = {'ruleset_list': ruleset_list,
                'source_list': source_list}
     try:
-        context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
+        context['probes'] = ['"' + x + '"' for x in MIDDLEWARE.models.get_probe_hostnames()]
     except:
         pass
     return scirius_render(request, 'rules/index.html', context)
@@ -153,7 +164,7 @@ def source(request, source_id, error=None, update=False, activate=False, ruleset
     if error:
         context['error'] = error
 
-    if hasattr(PROBE.common, 'update_source'):
+    if hasattr(MIDDLEWARE.common, 'update_source'):
         context['middleware_has_update'] = True
 
     return scirius_render(request, 'rules/source.html', context)
@@ -183,7 +194,7 @@ def category(request, cat_id):
         'rules': [],
     }
 
-    for version in PROBE.common.rules_version():
+    for version in MIDDLEWARE.common.rules_version():
         real_version = Rule.get_last_real_version(version, **{'category__pk': cat.pk})
 
         rulesets_status = []
@@ -325,7 +336,7 @@ def elasticsearch(request):
             return HttpResponseServerError(str(e))
     else:
         check_perms(None)
-        template = PROBE.common.get_es_template()
+        template = MIDDLEWARE.common.get_es_template()
         return scirius_render(request, template, context)
 
 
@@ -385,7 +396,7 @@ def build_rule_context(request, rule):
     # version is version of the probe, can be u40
     # real_version of the rule which can be u39
     # u40 are be shown but actions are done on u39 rule at versions
-    versions = PROBE.common.rules_version()
+    versions = MIDDLEWARE.common.rules_version()
     added = []
     for version in versions:
         real_version = Rule.get_last_real_version(version, **{'pk': rule.pk})
@@ -463,7 +474,7 @@ def build_rule_context(request, rule):
                 tables.RequestConfig(request).configure(suppress)
                 rav_struct['suppress'] = suppress
             try:
-                context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
+                context['probes'] = ['"' + x + '"' for x in MIDDLEWARE.models.get_probe_hostnames()]
             except:
                 pass
 
@@ -856,14 +867,14 @@ def delete_alerts(request, rule_id):
     if request.method == 'POST':  # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
-            if hasattr(PROBE.common, 'es_delete_alerts_by_sid'):
-                PROBE.common.es_delete_alerts_by_sid(rule_id, request=request)
+            if hasattr(MIDDLEWARE.common, 'es_delete_alerts_by_sid'):
+                MIDDLEWARE.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
                 errors = ESDeleteAlertsBySid(request).get(rule_id)
                 if errors:
                     context = {'object': rule_object, 'error': ', '. join(errors)}
                     try:
-                        context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
+                        context['probes'] = ['"' + x + '"' for x in MIDDLEWARE.models.get_probe_hostnames()]
                     except:
                         pass
                     context['comment_form'] = CommentForm()
@@ -881,7 +892,7 @@ def delete_alerts(request, rule_id):
         context = {'object': rule_object}
         context['comment_form'] = CommentForm()
         try:
-            context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
+            context['probes'] = ['"' + x + '"' for x in MIDDLEWARE.models.get_probe_hostnames()]
         except:
             pass
         return scirius_render(request, 'rules/delete_alerts.html', context)
@@ -1063,48 +1074,27 @@ def enable_category(request, cat_id):
 
 @permission_required('rules.ruleset_update_push', raise_exception=True)
 def update_source(request, source_id):
-    src = get_object_or_404(Source, pk=source_id)
-
     if request.method != 'POST':  # If the form has been submitted...
         if request.is_ajax():
-            data = {}
-            data['status'] = False
-            data['errors'] = "Invalid method for page"
+            data = {
+                'status': False,
+                'errors': 'Invalid method for page'
+            }
             return JsonResponse(data)
         return source(request, source_id, error="Invalid method for page")
 
-    try:
-        if hasattr(PROBE.common, 'update_source'):
-            return PROBE.common.update_source(request, src)
-        src.update()
-    except Exception as errors:
-        if request.is_ajax():
-            data = {}
-            data['status'] = False
-            data['errors'] = str(errors)
-            return JsonResponse(data)
-        if isinstance(errors, (IOError, OSError)):
-            _msg = 'Can not fetch data'
-        elif isinstance(errors, ValidationError):
-            _msg = 'Source is invalid'
-        elif isinstance(errors, SuspiciousOperation):
-            _msg = 'Source is not correct'
-        else:
-            _msg = 'Error updating source'
-        msg = '%s: %s' % (_msg, errors)
-        return source(request, source_id, error=msg)
+    get_object_or_404(Source, pk=source_id)
+    MIDDLEWARE.models.CeleryTask.spawn(
+        'SourceUpdateParentTask',
+        source_pk=source_id,
+        user=request.user
+    )
 
     if request.is_ajax():
-        data = {}
-        data['status'] = True
-        data['redirect'] = True
+        data = {'status': True}
         return JsonResponse(data)
 
-    supdate = SourceUpdate.objects.filter(source=src).order_by('-created_date')
-    if supdate.count() == 0:
-        return redirect(src)
-
-    return redirect('changelog_source', source_id=source_id)
+    return redirect('status')
 
 
 @permission_required('rules.source_edit', raise_exception=True)
@@ -1128,14 +1118,6 @@ def activate_source(request, source_id, ruleset_id):
     ruleset.needs_test()
     ruleset.save()
     return JsonResponse(True, safe=False)
-
-
-@permission_required('rules.source_view', raise_exception=True)
-def test_source(request, source_id):
-    source = get_object_or_404(Source, pk=source_id)
-    test_results = source.test()
-    get_middleware_module('common').update_rule_analysis(source.pk, request.user)
-    return JsonResponse(test_results, safe=True)
 
 
 def build_source_diff(request, diff):
@@ -1164,79 +1146,29 @@ def changelog_source(request, source_id):
 
 @permission_required('rules.source_edit', raise_exception=True)
 def add_source(request):
-    if request.method == 'POST':  # If the form has been submitted...
-        form = AddSourceForm(request.POST, request.FILES)  # A form bound to the POST data
-        if form.is_valid():  # All validation rules pass
+    if request.method == 'POST':
+        form = AddSourceForm(request.POST, request.FILES)
+        if form.is_valid():
             try:
-                src = Source.objects.create(
-                    name=form.cleaned_data['name'],
-                    uri=form.cleaned_data['uri'],
-                    authkey=form.cleaned_data['authkey'],
-                    method=form.cleaned_data['method'],
-                    created_date=timezone.now(),
-                    datatype=form.cleaned_data['datatype'],
-                    cert_verif=form.cleaned_data['cert_verif'],
-                    use_iprep=form.cleaned_data['use_iprep'],
-                    use_sys_proxy=form.cleaned_data['use_sys_proxy'],
-                    untrusted=form.cleaned_data.get('untrusted', False)
-                )
-
-                if src.method == 'local':
-                    try:
-                        if 'file' not in request.FILES:
-                            form.add_error('file', 'This field is required.')
-                            raise Exception('A source file is required')
-                        src.handle_uploaded_file(request.FILES['file'])
-                    except Exception as error:
-                        if isinstance(error, ValidationError):
-                            if hasattr(error, 'error_dict'):
-                                error = ', '.join(['%s: %s' % (key, val) for key, val in error.message_dict.items()])
-                            elif hasattr(error, 'error_list'):
-                                error = ', '.join(error.messages)
-                            else:
-                                error = str(error)
-                        src.delete()
-                        return scirius_render(request, 'rules/add_source.html', {'form': form, 'error': error})
-
+                src: Source = form.save()
+                src.add_self_in_rulesets(form.cleaned_data.get('rulesets', []), request)
+                form.update(request)
             except IntegrityError as error:
                 return scirius_render(request, 'rules/add_source.html', {'form': form, 'error': error})
-            try:
-                ruleset_list = form.cleaned_data['rulesets']
-            except:
-                ruleset_list = []
 
-            rulesets = [ruleset.pk for ruleset in ruleset_list]
-            if len(ruleset_list):
-                for ruleset in ruleset_list:
-                    UserAction.create(
-                        action_type='create_source',
-                        comment=form.cleaned_data['comment'],
-                        request=request,
-                        source=src,
-                        ruleset=ruleset
-                    )
+            UserAction.create(
+                action_type='create_source',
+                comment=form.cleaned_data['comment'],
+                request=request,
+                source=src
+            )
 
-            else:
-                UserAction.create(
-                    action_type='create_source',
-                    comment=form.cleaned_data['comment'],
-                    request=request,
-                    source=src,
-                    ruleset='No Ruleset'
-                )
-
-            ruleset_list = ['"' + ruleset.name + '"' for ruleset in ruleset_list]
-            test_source = src.datatype not in src.custom_data_type
+            return redirect('status')
+        else:
             return scirius_render(
                 request,
                 'rules/add_source.html',
-                {
-                    'source': src,
-                    'update': True,
-                    'rulesets': rulesets,
-                    'ruleset_list': ruleset_list,
-                    'test_source': test_source
-                }
+                {'form': form, 'error': 'form is not valid'}
             )
     else:
         form = AddSourceForm()  # An unbound form
@@ -1313,64 +1245,26 @@ def add_public_source(request):
 
     if request.is_ajax():
         return JsonResponse(public_sources['sources'])
+
     if request.method == 'POST':
-        form = AddPublicSourceForm(request.POST)
+        form = AddPublicSourceForm(request.POST, public_sources=public_sources)
         if form.is_valid():
-            source_id = form.cleaned_data['source_id']
-            source = public_sources['sources'][source_id]
-            source_uri = source['url']
-            params = {"__version__": "5.0"}
-            if 'secret_code' in form.cleaned_data:
-                params.update({'secret-code': form.cleaned_data['secret_code']})
-            source_uri = source_uri % params
             try:
-                src = Source.objects.create(
-                    name=form.cleaned_data['name'],
-                    uri=source_uri,
-                    method='http',
-                    created_date=timezone.now(),
-                    datatype=source['datatype'],
-                    cert_verif=True,
-                    public_source=source_id,
-                    use_iprep=form.cleaned_data['use_iprep'],
-                    untrusted=form.cleaned_data.get('untrusted', False)
-                )
+                src: Source = form.save()
+                src.add_self_in_rulesets(form.cleaned_data.get('rulesets', []), request)
+                form.update(request)
             except IntegrityError as error:
                 return scirius_render(request, 'rules/add_public_source.html', {'form': form, 'error': error})
-            try:
-                ruleset_list = form.cleaned_data['rulesets']
-            except:
-                ruleset_list = []
-            rulesets = [ruleset.pk for ruleset in ruleset_list]
-            if len(ruleset_list):
-                for ruleset in ruleset_list:
-                    UserAction.create(
-                        action_type='create_source',
-                        comment=form.cleaned_data['comment'],
-                        request=request,
-                        source=src,
-                        ruleset=ruleset
-                    )
-            else:
-                UserAction.create(
-                    action_type='create_source',
-                    comment=form.cleaned_data['comment'],
-                    request=request,
-                    source=src,
-                    ruleset='No Ruleset'
-                )
-            ruleset_list = ['"' + ruleset.name + '"' for ruleset in ruleset_list]
-            return scirius_render(
-                request,
-                'rules/add_public_source.html',
-                {
-                    'source': src,
-                    'update': True,
-                    'rulesets': rulesets,
-                    'ruleset_list': ruleset_list,
-                    'test_source': True
-                }
+
+            UserAction.create(
+                action_type='create_source',
+                comment=form.cleaned_data['comment'],
+                request=request,
+                source=src,
+                ruleset='No Ruleset'
             )
+
+            return redirect('status')
         else:
             return scirius_render(
                 request,
@@ -1393,43 +1287,27 @@ def edit_source(request, source_id):
     if request.method == 'POST':  # If the form has been submitted...
         prev_uri = source.uri
         form = SourceForm(request.POST, request.FILES, instance=source)
-        try:
-            if source.method == 'local' and 'file' in request.FILES:
-                source.new_uploaded_file(request.FILES['file'])
+        if form.is_valid():
+            try:
+                form.save()
+                form.update(request, prev_uri)
+            except Exception as e:
+                if isinstance(e, ValidationError):
+                    e = e.message
+                return scirius_render(
+                    request,
+                    'rules/add_source.html',
+                    {'form': form, 'source': source, 'error': e}
+                )
+            else:
+                UserAction.create(
+                    action_type='edit_source',
+                    comment=form.cleaned_data['comment'],
+                    request=request,
+                    source=source
+                )
 
-            form.save()
-
-            # do a soft reset of rules in the source if URL changes
-            if source.method == 'http' and source.uri != prev_uri:
-                RuleAtVersion.objects.filter(rule__category__source=source).update(rev=0)
-                source.version = 1
-                source.save()
-
-            if source.datatype == 'sig':
-                categories = Category.objects.filter(source=source)
-                firstimport = False if categories.count() > 0 else True
-
-                if 'name' in form.changed_data and firstimport is False:
-                    category = categories[0]  # sig => one2one source/category
-                    category.name = '%s Sigs' % form.cleaned_data['name']
-                    category.save()
-
-            UserAction.create(
-                action_type='edit_source',
-                comment=form.cleaned_data['comment'],
-                request=request,
-                source=source
-            )
-
-            return redirect(source)
-        except Exception as e:
-            if isinstance(e, ValidationError):
-                e = e.message
-            return scirius_render(
-                request,
-                'rules/add_source.html',
-                {'form': form, 'source': source, 'error': e}
-            )
+                return redirect(source)
     else:
         form = SourceForm(instance=source)
 
@@ -1560,10 +1438,7 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
         if error:
             context['error'] = error
 
-    if hasattr(PROBE.common, 'update_ruleset'):
-        context['middleware_has_update'] = True
-
-    rule_versions = PROBE.common.rules_version()
+    rule_versions = MIDDLEWARE.common.rules_version()
     context['single_rule_version'] = True if len(rule_versions) == 1 else False
     return scirius_render(request, 'rules/ruleset.html', context)
 
@@ -1571,18 +1446,18 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def ruleset_export(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
-    rule_versions = PROBE.common.rules_version()
+    rule_versions = MIDDLEWARE.common.rules_version()
 
     if request.method == 'POST':
         version = request.POST['version']
-        file_tar_io = PROBE.common.ruleset_export(ruleset, int(version))
+        file_tar_io = MIDDLEWARE.common.ruleset_export(ruleset, int(version))
         response = HttpResponse(file_tar_io.getvalue(), content_type='application/gzip')
         filename = f'rules-v{version}-{date.today()}.tgz' if version != '0' else f'rules-{date.today()}.tgz'
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
-    if rule_versions == [0] and ruleset.sources.filter(datatype__in=PROBE.common.custom_source_datatype()).count() == 0:
-        file_tar_io = PROBE.common.ruleset_export(ruleset, 0)
+    if rule_versions == [0] and ruleset.sources.filter(datatype__in=MIDDLEWARE.common.custom_source_datatype()).count() == 0:
+        file_tar_io = MIDDLEWARE.common.ruleset_export(ruleset, 0)
         response = HttpResponse(file_tar_io.getvalue(), content_type='application/gzip')
         response['Content-Disposition'] = 'attachment; filename="rules-%s.tgz"' % str(date.today())
         return response
@@ -1687,18 +1562,12 @@ def update_ruleset(request, ruleset_id):
             return JsonResponse(data)
         return ruleset(rset, ruleset_id, error="Invalid method for page")
 
-    if hasattr(PROBE.common, 'update_ruleset'):
-        return PROBE.common.update_ruleset(request, rset)
-    try:
-        rset.update()
-    except IOError as errors:
-        error = "Can not fetch data: %s" % (errors)
-        if request.is_ajax():
-            return JsonResponse({'status': False, 'errors': error})
-        return ruleset(request, ruleset_id, error)
+    MIDDLEWARE.common.update_ruleset(request, rset)
+
     if request.is_ajax():
-        return JsonResponse({'status': True, 'redirect': True})
-    return redirect('changelog_ruleset', ruleset_id=ruleset_id)
+        data = {'status': True}
+        return JsonResponse(data)
+    return redirect('status')
 
 
 @permission_required('rules.source_view', raise_exception=True)
@@ -1998,7 +1867,7 @@ def system_settings(request):
         'form_id': 'main',
         'main_form': main_form,
         'kibana_form': kibana_form,
-        'use_loggers': PROBE.common.use_stamuslogger(),
+        'use_loggers': MIDDLEWARE.common.use_stamuslogger(),
         'ruleset_curator_available': False,
     }
 
@@ -2096,7 +1965,7 @@ def system_settings(request):
 def info(request):
     data = {'status': 'green'}
     if request.GET.__contains__('query'):
-        info = PROBE.common.Info()
+        info = MIDDLEWARE.common.Info()
         query = request.GET.get('query', 'status')
         if query == 'status':
             data = info.status()
@@ -2119,7 +1988,7 @@ def threshold(request, threshold_id):
         'rule_at_versions': [],
         'threshold': threshold
     }
-    for version in PROBE.common.rules_version():
+    for version in MIDDLEWARE.common.rules_version():
         real_version = Rule.get_last_real_version(version, **{'pk': threshold.rule.pk})
         for rav in threshold.rule.ruleatversion_set.filter(version=real_version):
             rav_struct = {
@@ -2235,3 +2104,164 @@ def policies(request):
             return response
 
     return scirius_render(request, 'rules/policies.html', context)
+
+
+def status(request):
+    qlength = 20
+    if request.GET.__contains__('length'):
+        qlength = int(request.GET.get('length', 20))
+
+    if request.is_ajax() or request.GET.__contains__('ajax'):
+        tasks_list = MIDDLEWARE.models.CeleryTask.get_user_tasks(request)
+
+        if not request.GET.__contains__('show_hidden'):
+            tasks_list = tasks_list.filter(hidden=False)
+
+        tasks_list = tasks_list.annotate(date=Greatest('finished', 'eta', 'created')).order_by('-date')[:qlength]
+        task_in_progress = False
+
+        tasks = []
+        for task in tasks_list:
+            if task.get_state() in ('STARTED', 'RETRY', 'RECEIVED'):
+                task_in_progress = True
+            can_edit = request.user.has_perm(task.get_task().REQUIRED_GROUPS['WRITE'])
+            tasks.insert(0, task.display(full=False, can_edit=can_edit))
+
+        if task_in_progress:
+            data = {'msg': 'Task(s) in progress', 'tasks': tasks}
+        else:
+            data = {'msg': 'No Task in progress', 'tasks': tasks}
+
+        return JsonResponse(data)
+
+    context = {}
+    return scirius_render(request, 'rules/status.html', context)
+
+
+@tasks_permission_required(MIDDLEWARE.models.RecurrentTask)
+def stasks(request, reccurent_task_qs):
+    assocfn = {
+        'Recurrent Task': {
+            'table': MIDDLEWARE.tables.RecurrentTaskTable,
+            'manage_links': {},
+            'action_links': {}
+        }
+    }
+
+    extra_params = {}
+    if MIDDLEWARE.__name__ != 'suricata':
+        extra_params.update({
+            'template': f'{MIDDLEWARE.__name__}/object_list.html'
+        })
+
+    return scirius_listing(
+        request,
+        reccurent_task_qs.exclude(task='NotebookGenerationTask'),
+        assocfn,
+        **extra_params
+    )
+
+
+@tasks_permission_required(MIDDLEWARE.models.CeleryTask)
+def task(request, task_id):
+    t = get_object_or_404(MIDDLEWARE.models.CeleryTask, pk=task_id)
+
+    if request.method == 'POST':
+        raise PermissionDenied()
+
+    context = {'task': t.display()}
+    return scirius_render(request, "rules/task.html", context)
+
+
+@tasks_permission_required(MIDDLEWARE.models.CeleryTask)
+def revoke_task(request, task_id):
+    t = get_object_or_404(MIDDLEWARE.models.CeleryTask, pk=task_id)
+
+    if request.method == 'GET':
+        raise PermissionDenied()
+
+    t.revoke()
+    context = {
+        'success': 'Revocation succeeded',
+        'task': t.display()
+    }
+
+    return scirius_render(request, "rules/task.html", context)
+
+
+@permission_required('rules.configuration_view', raise_exception=True)
+@tasks_permission_required(MIDDLEWARE.models.RecurrentTask)
+def scheduledtask(request, task_id):
+    stask = get_object_or_404(MIDDLEWARE.models.RecurrentTask, pk=task_id)
+    task = stask.get_task()
+    details = task.display_details()
+    task_options = task.task_options
+    task_options.pop('overrided_params', None)
+
+    can_edit = check_task_perms(
+        request,
+        MIDDLEWARE.models.RecurrentTask,
+        stask.pk, raise_exception=False
+    ).exists() and request.user.has_perm('rules.configuration_edit')
+
+    context = {
+        'scheduledtask': stask,
+        'task': details,
+        'can_edit': can_edit,
+        'task_options': task_options
+    }
+    return scirius_render(request, "rules/scheduledtask.html", context)
+
+
+@permission_required('rules.configuration_edit', raise_exception=True)
+@tasks_permission_required(MIDDLEWARE.models.RecurrentTask)
+def delete_scheduledtask(request, task_id):
+    stask = get_object_or_404(MIDDLEWARE.models.RecurrentTask, pk=task_id)
+    if request.method == 'POST':
+        stask.delete()
+        return redirect('view_stasks')
+    else:
+        context = {
+            'scheduledtask': stask,
+            'task': stask.get_task().display(),
+            'mode': 'deletion'
+        }
+        return scirius_render(request, 'rules/scheduledtask.html', context)
+
+
+@permission_required('rules.configuration_edit', raise_exception=True)
+@tasks_permission_required(MIDDLEWARE.models.RecurrentTask)
+def edit_scheduledtask(request, task_id):
+    stask = get_object_or_404(MIDDLEWARE.models.RecurrentTask, pk=task_id)
+    form = MIDDLEWARE.forms.EditRecurrentTaskForm(
+        request.POST if request.method == 'POST' else None,
+        instance=stask,
+        request=request
+    )
+    task_options = stask.get_task().task_options
+    task_options.pop('overrided_params', None)
+
+    context = {
+        'scheduledtask': stask,
+        'task': stask.get_task().display(),
+        'mode': 'edition',
+        'form': form,
+        'task_options': task_options,
+        'recurrence': True,
+        'schedule': True,
+        'recurrence_param': stask.recurrence,
+        'schedule_param': convert_to_local(stask.scheduled, request.user).strftime('%Y/%m/%d %H:%M'),
+        'monthly': True
+    }
+
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return redirect(MIDDLEWARE.common.stask_redirection(stask.task))
+        else:
+            context.update({
+                'error': f'Invalid form: {form.errors.as_text()}',
+                'recurrence_param': form.cleaned_data['recurrence'],
+                'schedule_param': convert_to_local(form.cleaned_data['scheduled'], request.user).strftime('%Y/%m/%d %H:%M'),
+            })
+    return scirius_render(request, 'rules/scheduledtask.html', context)

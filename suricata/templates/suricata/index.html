@@ -502,7 +502,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             Suricata {{ suricata.name }}
         </h2>
     </div>
-    <ul>
+    <ul class="panel-body">
         <li>
             <span class="type">
                 Ruleset:
@@ -528,7 +528,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                 Action
             </h2>
         </div>
-        <ul class="action">
+        <ul class="action panel-body">
             <li>
                 <a href="{% url 'suricata_update' %}">
                     Ruleset actions
