@@ -174,6 +174,21 @@ LOGGING = {
     }
 }
 
+# Broker for celery
+CELERY_BROKER = 'amqp://guest@localhost//'
+CELERY_RESULT_BACKEND = 'django-db'
+# Disable task expiration
+CELERY_TASK_RESULT_EXPIRES = None
+CELERYBEAT_MAX_LOOP_INTERVAL = 30
+
+from kombu import Exchange, Queue, binding  # noqa: E402
+
+CELERY_QUEUES = []
+queue = 'celery'
+exchange = Exchange(queue, type='direct')
+CELERY_QUEUES += [Queue(queue, [
+    binding(exchange, routing_key=queue),
+])]
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -307,6 +322,8 @@ INFLUXDB_DATABASE = "scirius"
 # Moloch
 USE_MOLOCH = True
 MOLOCH_URL = "https://localhost:8005"
+
+SURICATA_OUTPUT_DIRECTORY = '/rules'
 
 # Proxy parameters
 # Set USE_PROXY to True to use a proxy to fetch ruleset update.
