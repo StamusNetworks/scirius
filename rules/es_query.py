@@ -8,6 +8,7 @@ from traceback import format_exc
 import os
 import json
 import re
+import urllib.parse
 
 from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
 from elasticsearch.helpers import bulk
@@ -27,13 +28,14 @@ es_logger = logging.getLogger('elasticsearch')
 
 def build_es_url(es_url, es_user, es_pass):
     urls = []
+    es_encoded_pass = urllib.parse.quote_plus(es_pass)
     for url in es_url.split(','):
         if es_user:
             if '://' in url:
                 scheme, url = url.split('://', 1)
-                url = f'{scheme}://{es_user}:{es_pass}@{url}'
+                url = f'{scheme}://{es_user}:{es_encoded_pass}@{url}'
             else:
-                url = f'{es_user}:{es_pass}@{url}'
+                url = f'{es_user}:{es_encoded_pass}@{url}'
 
         if not url.endswith('/'):
             url = url + '/'
