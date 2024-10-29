@@ -23,7 +23,7 @@ export const DashboardTimeline = ({ filterParams, chartTarget, filters, systemSe
       setChart(getTimelineData(res, chartTarget));
       setLoading(false);
     } catch (e) {
-      notify('Error fetching data', e);
+      notify.error('Error fetching data', e);
       setLoading(false);
     }
   };

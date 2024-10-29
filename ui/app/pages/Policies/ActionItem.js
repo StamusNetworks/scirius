@@ -30,7 +30,7 @@ function ActionItem({ data, filters, expandedRulesets }) {
       const res = await API.fetchPoliciesData({ value: `rule_filter_${data.pk}` });
       setActionData(res.data);
     } catch (e) {
-      notify('Fail to fetch policies statistics', e);
+      notify.error('Fail to fetch policies statistics', e);
     } finally {
       setLoadingStats(false);
     }

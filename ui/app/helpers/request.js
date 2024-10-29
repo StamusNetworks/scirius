@@ -26,7 +26,7 @@ const request = async (endpoint, method, params, options) => {
     throw error;
   } catch (error) {
     log.push([`%c[RES] Request has failed \n ${error.message}`, 'color: #CC0000']);
-    notify(`${endpoint.name} has failed`, error);
+    notify.error(`${endpoint.name} has failed`, error);
     throw error;
   } finally {
     // if (process.env.NODE_ENV === 'development') {

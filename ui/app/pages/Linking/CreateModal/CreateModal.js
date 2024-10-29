@@ -55,13 +55,13 @@ export const CreateModal = ({ initialValues, onSuccess }) => {
       const response = isCreate ? await API.createDeeplink(payload) : await API.updateDeeplink(initialValues.pk, { body: payload });
       if (response.ok) {
         onSuccess();
-        notify(`Link template ${action}d`, undefined, 'success');
+        notify.success(`Link template ${action}d`);
         handleClose();
       } else {
-        notify(`Failed to ${action} link template`);
+        notify.error(`Failed to ${action} link template`);
       }
     } catch (error) {
-      notify(`Error ${action.slice(0, -1)}ing link template`, error);
+      notify.error(`Error ${action.slice(0, -1)}ing link template`, error);
     } finally {
       setSubmitLoading(false);
     }

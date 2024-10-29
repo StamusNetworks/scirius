@@ -38,7 +38,7 @@ export const SignatureTimeline = observer(({ sid }) => {
       setChart(getTimelineData(res, true));
       setLoading(false);
     } catch (e) {
-      notify('Error fetching timeline data', e);
+      notify.error('Error fetching timeline data', e);
       setLoading(false);
     }
   };

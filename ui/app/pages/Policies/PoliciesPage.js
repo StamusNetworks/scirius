@@ -48,7 +48,7 @@ const PoliciesPage = () => {
       });
       setRulesets(newRulesets);
     } catch {
-      notify('Failed to fetch rulesets');
+      notify.error('Failed to fetch rulesets');
     }
   };
 
@@ -75,7 +75,7 @@ const PoliciesPage = () => {
     } else if (res.data.detail === 'Invalid page.' && pagination.current > 1) {
       setPagination(prev => ({ ...prev, current: prev.current - 1 }));
     } else {
-      notify('Failed to fetch data');
+      notify.error('Failed to fetch data');
     }
     setLoading(false);
   };

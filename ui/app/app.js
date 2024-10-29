@@ -39,7 +39,7 @@ const MOUNT_NODE = document.getElementById('app');
 axios.interceptors.response.use(
   response => response,
   error => {
-    notify('Request has failed', error);
+    notify.error('Request has failed', error);
     return Promise.reject(error);
   },
 );

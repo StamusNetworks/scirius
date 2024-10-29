@@ -60,7 +60,7 @@ const App = ({ setSessionActivity }) => {
       const localTimerange = JSON.parse(localStorage.getItem('str-timespan'));
       if (localTimerange.timePicker === 'relative') commonStore.setRelativeTimeRange(localTimerange.duration);
     } catch (e) {
-      notify('Failed initializing relative time range');
+      notify.error('Failed initializing relative time range');
     }
   }, []);
 

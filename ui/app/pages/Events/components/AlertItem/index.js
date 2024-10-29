@@ -145,7 +145,7 @@ class AlertItem extends React.Component {
           this.setState({ events });
         }
       } catch (error) {
-        notify('Fail to fetch events');
+        notify.error('Fail to fetch events');
       }
 
       try {
@@ -199,7 +199,7 @@ class AlertItem extends React.Component {
           } else this.setState({ fileInfo: false, fileInfoLoading: false });
         }
       } catch (error) {
-        notify('Fail to fetch events');
+        notify.error('Fail to fetch events');
       }
     }
     this.props.store.commonStore.fetchSignature(sid).then(res => {
