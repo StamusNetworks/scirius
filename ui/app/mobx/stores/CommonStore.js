@@ -471,6 +471,9 @@ class CommonStore {
     if (this._timeRangeType === 'absolute') {
       return this._startDate;
     }
+    if (this._relativeType === 'All') {
+      return 0;
+    }
     if (this._relativeType === 'Auto') {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
       return moment(this._minTimestamp).unix() || moment().subtract(7, 'days').unix();
