@@ -877,6 +877,7 @@ class Source(models.Model):
     use_sys_proxy = models.BooleanField(default=True, verbose_name='Use system proxy')
     untrusted = models.BooleanField(default=True, verbose_name='Source sanitization')
     is_stamus = models.BooleanField(default=False)
+    remove_original_sids = models.BooleanField(default=True)
 
     editable = True
 

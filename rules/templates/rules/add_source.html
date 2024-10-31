@@ -71,6 +71,10 @@ function select_fields() {
         $("#name_warning").hide(duration=200);
     }
 
+    if ($("#id_datatype").find("option:selected").text() != "threat") {
+        $('#id_remove_original_sids').parent().hide(duration=200)
+    }
+
     $("#id_method").change(display_field);
     $("#id_datatype").change(display_warning);
 }
@@ -81,11 +85,13 @@ function hide_threat_fields(src_type) {
         $('#id_use_iprep').parent().hide(duration=200);
         $('#id_untrusted').attr("checked", false);
         $('#id_untrusted').closest('.form-group').hide(duration=200);
+        $('#id_remove_original_sids').parent().show(duration=200)
     } else {
         $('#id_use_iprep').attr("checked", true);
         $('#id_use_iprep').parent().show(duration=200);
         $('#id_untrusted').attr("checked", true);
         $('#id_untrusted').closest('.form-group').show(duration=200);
+        $('#id_remove_original_sids').parent().hide(duration=200)
     }
 }
 

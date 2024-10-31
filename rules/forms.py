@@ -288,6 +288,9 @@ class SourceForm(forms.ModelForm, CommentForm):
         self.fields['datatype'] = forms.ChoiceField(choices=Source.CONTENT_TYPE + extra_choices)
         self.fields['datatype'].disabled = True
 
+        if source.datatype in dict(Source.CONTENT_TYPE).keys():
+            self.fields.pop('remove_original_sids')
+
     def update(self, request, prev_uri):
         if self.instance.method == 'local' and 'file' in request.FILES:
             file_ = request.FILES['file']
