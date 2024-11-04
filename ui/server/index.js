@@ -14,10 +14,14 @@ const app = express();
 // app.use('/api', myApi);
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+if (argv.proxy) {
+  console.log(`> Proxying to ${argv.proxy}\n`);
+}
+
 app.use(
   '/rest',
   createProxyMiddleware({
-    target: argv.proxy || 'http://192.0.2.4:8080/',
+    target: argv.proxy ? `${argv.proxy}/rest` : 'http://192.0.2.4:8080/',
     secure: false,
   }),
 );
