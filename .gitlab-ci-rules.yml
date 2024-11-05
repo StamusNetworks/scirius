@@ -1,4 +1,4 @@
-image: stamus/stamus-docker-qa:chromium
+image: stamus/stamus-docker-qa:chromium_new
 npm:
   image: node:18.13
   stage: build
