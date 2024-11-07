@@ -72,16 +72,16 @@ class CustomCSPMiddleware(object):
 
     def __call__(self, request):
         response = self.get_response(request)
-        splitted_path = request.path.split('/')
-        if len(splitted_path) > 1:
-            if splitted_path[1] in ['rules', 'appliances', 'volumetry', 'viz', 'suricata']:
+        splitted_path = list(filter(str.strip, request.path.split('/')))
+        if len(splitted_path) > 0:
+            if splitted_path[0] in ['rules', 'appliances', 'volumetry', 'viz', 'suricata']:
                 response._csp_update = {'style-src': "'unsafe-inline'", 'script-src': "'unsafe-inline'"}
-            elif splitted_path[1] == 'accounts':
-                if splitted_path[2] == "login":
+            elif splitted_path[0] == 'accounts':
+                if len(splitted_path) > 1 and splitted_path[1] == "login":
                     response._csp_update = {'script-src': "'none'"}
                 else:
                     response._csp_update = {'style-src': "'unsafe-inline'", 'script-src': "'unsafe-inline'"}
-            elif splitted_path[1] == 'saml2' and splitted_path[2] == 'login':
+            elif splitted_path[0] == 'saml2' and splitted_path[1] == 'login':
                 if get_middleware_module('common').has_saml_auth():
                     response._csp_update = {'form-action': get_middleware_module('common').saml_idp_hostname(), 'script-src': "'unsafe-inline'"}
 
