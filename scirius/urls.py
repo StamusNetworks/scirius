@@ -1,14 +1,15 @@
 
-from django.urls import re_path, include
+from django.urls import re_path, include, path
 from django.conf import settings
 
 from .views import homepage, KibanaProxyView, EveboxProxyView, MolochProxyView, static_redirect, ui_view
 from .rest_api import router
+from .utils import get_middleware_module
 
 urlpatterns = [
-    re_path(r'^rules/', include('rules.urls')),
-    re_path(r'^accounts/', include('accounts.urls')),
-    re_path(r'^viz/', include('viz.urls')),
+    path('rules/', include('rules.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('viz/', include('viz.urls')),
     re_path(r'^' + settings.RULESET_MIDDLEWARE + '/', include('' + settings.RULESET_MIDDLEWARE + '.urls')),
     re_path(r'^rest/', include(router.urls)),
     re_path(r'^stamus(/.*)?$', ui_view),
@@ -48,3 +49,5 @@ if settings.STATIC_AUTHENTICATED:
     urlpatterns += [
         re_path(r'^static/(?P<static_path>.*)$', static_redirect, name='static_redirect'),
     ]
+
+urlpatterns += get_middleware_module("common").get_scirius_extra_urls()
