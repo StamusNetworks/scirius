@@ -2112,7 +2112,7 @@ def status(request):
     if request.GET.__contains__('length'):
         qlength = int(request.GET.get('length', 20))
 
-    if request.is_ajax() or request.GET.__contains__('ajax'):
+    if is_ajax(request) or request.GET.__contains__('ajax'):
         tasks_list = MIDDLEWARE.models.CeleryTask.get_user_tasks(request)
 
         if not request.GET.__contains__('show_hidden'):
