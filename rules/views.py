@@ -679,6 +679,7 @@ def transform_category(request, cat_id):
                     (TYPE, LOOP) = (None, None)
 
                     # Remove all transformations
+                    RULESET_DEFAULT = None
                     if form_trans == form_action_trans:
                         TYPE = Transformation.ACTION
                         LOOP = (Transformation.A_DROP, Transformation.A_REJECT, Transformation.A_FILESTORE, Transformation.A_BYPASS)
