@@ -19,30 +19,31 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+from django.urls import path
 from django.urls import re_path
 
 from accounts import views
 
 urlpatterns = [
-    re_path(r'^$', views.list_accounts, name='list_accounts'),
-    re_path(r'^logout/$', views.logoutview, name='accounts_logout'),
+    path('', views.list_accounts, name='list_accounts'),
+    path('logout/', views.logoutview, name='accounts_logout'),
     re_path(r'^login/(?P<target>.*)$', views.loginview, name='accounts_login'),
-    re_path(r'^user/$', views.list_users, name='list_users'),
-    re_path(r'^user/add/$', views.add_user, name='add_user'),
-    re_path(r'^user/(?P<user_id>\d+)/$', views.edit_user, name='edit_user'),
-    re_path(r'^user/(?P<user_id>\d+)/delete/$', views.delete_user, name='delete_user'),
-    re_path(r'^user/(?P<user_id>\d+)/edit_password/$', views.edit_password, name='edit_password'),
-    re_path(r'^role/$', views.list_groups, name='list_groups'),
-    re_path(r'^role/add/$', views.add_group, name='add_group'),
-    re_path(r'^role/(?P<group_id>\d+)/$', views.edit_group, name='edit_group'),
-    re_path(r'^role/(?P<group_id>\d+)/delete/$', views.delete_group, name='delete_group'),
-    re_path(r'^priorities/$', views.edit_priorities, name='edit_priorities'),
-    re_path(r'^sort_priorities/$', views.sort_priorities, name='sort_priorities'),
-    re_path(r'^current_user/$', views.current_user, name='current_user'),
-    re_path(r'^token_list/$', views.token_list, name='token_list'),
-    re_path(r'^token_add/$', views.token_add, name='token_add'),
-    re_path(r'^token_edit/(?P<user_id>\d+)/$', views.token_edit, name='token_edit'),
-    re_path(r'^token_delete/(?P<user_id>\d+)/$', views.token_delete, name='token_delete'),
+    path('user/', views.list_users, name='list_users'),
+    path('user/add/', views.add_user, name='add_user'),
+    path('user/<int:user_id>/', views.edit_user, name='edit_user'),
+    path('user/<int:user_id>/delete/', views.delete_user, name='delete_user'),
+    path('user/<int:user_id>/edit_password/', views.edit_password, name='edit_password'),
+    path('role/', views.list_groups, name='list_groups'),
+    path('role/add/', views.add_group, name='add_group'),
+    path('role/<int:group_id>/', views.edit_group, name='edit_group'),
+    path('role/<int:group_id>/delete/', views.delete_group, name='delete_group'),
+    path('priorities/', views.edit_priorities, name='edit_priorities'),
+    path('sort_priorities/', views.sort_priorities, name='sort_priorities'),
+    path('current_user/', views.current_user, name='current_user'),
+    path('token_list/', views.token_list, name='token_list'),
+    path('token_add/', views.token_add, name='token_add'),
+    path('token_edit/<int:user_id>/', views.token_edit, name='token_edit'),
+    path('token_delete/<int:user_id>/', views.token_delete, name='token_delete'),
 
     # TODO PERMS: split into different views
     re_path(r'^edit/(?P<action>.*)$', views.editview, name='accounts_edit'),

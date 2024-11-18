@@ -11,9 +11,9 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('viz/', include('viz.urls')),
     re_path(r'^' + settings.RULESET_MIDDLEWARE + '/', include('' + settings.RULESET_MIDDLEWARE + '.urls')),
-    re_path(r'^rest/', include(router.urls)),
+    path('rest/', include(router.urls)),
     re_path(r'^stamus(/.*)?$', ui_view),
-    re_path('^$', homepage),
+    path('', homepage),
     # Forward "app/kibana.*" to kibana (work around to https://github.com/elastic/kibana/issues/5230)
     re_path(r'^(?P<path>app/.*)$', KibanaProxyView.as_view()),
     re_path(r'^(?P<path>status.*)$', KibanaProxyView.as_view()),

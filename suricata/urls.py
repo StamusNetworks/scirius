@@ -19,12 +19,12 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from django.urls import re_path
+from django.urls import path
 
 from suricata import views
 
 urlpatterns = [
-    re_path(r'^$', views.index, name='suricata_index'),
-    re_path(r'^edit/$', views.edit, name='suricata_edit'),
-    re_path(r'^update/$', views.update, name='suricata_update'),
+    path('', views.index, name='suricata_index'),
+    path('edit/', views.edit, name='suricata_edit'),
+    path('update/', views.update, name='suricata_update'),
 ]

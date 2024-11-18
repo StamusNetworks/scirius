@@ -19,11 +19,11 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from __future__ import unicode_literals
-from django.urls import re_path
+from django.urls import path
 
 from viz import views
 
 urlpatterns = [
-    re_path(r'^dashboard/$', views.dashboard, name='viz_dashboard'),
-    re_path(r'^dashboard_target/$', views.dashboard_target, name='viz_target_dashboard'),
+    path('dashboard/', views.dashboard, name='viz_dashboard'),
+    path('dashboard_target/', views.dashboard_target, name='viz_target_dashboard'),
 ]
