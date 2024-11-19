@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #Base containers
-FROM python:3.9-slim-bullseye as base
+FROM python:3.11-slim-bookworm as base
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
   echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
@@ -116,7 +116,6 @@ RUN \
   libldap2-dev \
   libssl-dev \
   python3-pip \
-  python-dev \
   git
 RUN \
   echo "**** install Python dependencies for Scirius ****" && \
