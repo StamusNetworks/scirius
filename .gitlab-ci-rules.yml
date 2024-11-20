@@ -1,3 +1,7 @@
+default:
+  tags:
+  - k8s-small
+
 image: stamus/stamus-docker-qa:chromium_bookworm_http
 npm:
   image: node:18-alpine
