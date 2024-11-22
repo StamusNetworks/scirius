@@ -83,6 +83,7 @@
     "fontfaceobserver": "2.1.0",
     "history": "4.9.0",
     "hoist-non-react-statics": "3.3.2",
+    "http-proxy-middleware": "^3.0.3",
     "immer": "^9.0.18",
     "intl": "1.2.5",
     "invariant": "2.2.4",
@@ -200,8 +201,7 @@
     "webpack-dev-middleware": "^5.3.4",
     "webpack-hot-middleware": "^2.25.3",
     "webpack-pwa-manifest": "4.3.0",
-    "whatwg-fetch": "3.6.2",
-    "http-proxy-middleware": "^3.0.3"
+    "whatwg-fetch": "3.6.2"
   },
   "overrides": {
     "react-simple-maps": {
