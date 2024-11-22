@@ -167,7 +167,7 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
       }}
     >
       {children || (
-        <Value title="Right click for more actions" data-test={filter.displayValue}>
+        <Value title={filter.displayValue} data-test={filter.displayValue}>
           {filter.displayValue}
         </Value>
       )}
