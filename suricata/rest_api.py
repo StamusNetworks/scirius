@@ -9,14 +9,16 @@ from rest_framework.views import APIView
 from rest_framework.routers import DefaultRouter
 from rest_framework.response import Response
 from suricata.models import Suricata
+from suricata.rest_tasks import CeleryTaskViewSet, RecurrentTaskViewSet
 from django.utils import timezone
 from django.conf import settings
-from django.urls import re_path
+from django.urls import path, re_path
 from django.http import HttpResponse
 
 
 from rules.models import UserAction
 from rules.rest_api import CommentSerializer
+from suricata.rest_tasks import SuricataRulesetCeleryTaskViewSet
 
 
 class SuricataViewSet(APIView):
@@ -65,7 +67,7 @@ class SuricataViewSet(APIView):
 
 def get_custom_urls():
     urls = [
-        re_path(r'suricata/update_push_all/$', SuricataViewSet.as_view(), name='suricata'),
+        path("rules/ruleset/<int:pk>/update_generate/", SuricataRulesetCeleryTaskViewSet.as_view()),
         re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/status/$', FilestoreViewSet.as_view({'get': 'status'}), name='filestore_status'),
         re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/retrieve/$', FilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_retrieve'),
         re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/download/$', FilestoreViewSet.as_view({'get': 'download'}), name='filestore_download'),
@@ -218,3 +220,6 @@ class FilestoreViewSet(viewsets.ViewSet):
 
 
 router = DefaultRouter()
+if settings.RULESET_MIDDLEWARE == "suricata":
+    router.register("suricata/task", CeleryTaskViewSet, basename="celerytask")
+    router.register("suricata/recurrent_task", RecurrentTaskViewSet, basename="celeryrecurrenttask")

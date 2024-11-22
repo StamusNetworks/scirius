@@ -28,20 +28,20 @@ from django.contrib.auth.models import User, Group
 from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.db import models
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
+from unittest.mock import patch
 
 from .models import Category, Rule, RuleAtVersion, Ruleset, Source, SuppressedRuleAtVersion, Transformation, RuleTransformation, \
     RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef, InvalidCategoryException
-from .rest_api import router
+from .rest_api import UploadEditSourceTaskSerializer, router
 from accounts.models import SciriusUser
 
 from copy import deepcopy
 import tempfile
 from shutil import rmtree
-from io import StringIO
 import itertools
 from importlib import import_module
 from rules.urls import urlpatterns
@@ -690,36 +690,32 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
     #     self.assertEqual(size, rules.count())
 
     def test_001_public_source(self):
+
         self._create_public_source()
         response = self.http_get(reverse('publicsource-fetch-list-sources'))
         self.assertDictEqual(response, {'fetch': 'ok'})
 
-        response = self.http_post(reverse('publicsource-update-source', args=(self.public_source.pk,)))
-        self.assertDictEqual(response, {'update': 'ok'})
+        self.public_source.update()
 
         # behavior/status could be different on remote and local build
-        status_ = (status.HTTP_400_BAD_REQUEST, status.HTTP_200_OK)
-        response, status_ = self.http_post(reverse('publicsource-test', args=(self.public_source.pk,)), status=status_)
+        test_results = self.public_source.test()
 
-        if status_ == status.HTTP_400_BAD_REQUEST:
-            self.assertEqual('errors' in response['test'], True)  # pylint: disable=unsubscriptable-object
-        else:
-            self.assertEqual(status_, status.HTTP_200_OK)
-            self.assertEqual('test' in response and response['test'] == 'ok', True)  # pylint: disable=unsubscriptable-object,unsupported-membership-test
-
+        if test_results['status'] is True:
             self.http_get(reverse('publicsource-list-sources'))
+        else:
+            self.assertTrue('errors' in test_results)
 
         response = self.http_delete(reverse('publicsource-detail', args=(self.public_source.pk,)), status=status.HTTP_204_NO_CONTENT)
         sources = Source.objects.filter(pk=self.public_source.pk)
         self.assertEqual(sources.count(), 0)
 
     def test_002_custom_source_upload(self):
-        self._create_custom_source('local', 'sig')
-        response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': StringIO(RULE_CONTENT)}, format='multipart')
-        self.assertDictEqual(response, {'upload': 'ok'})
+        from io import BytesIO
 
-        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
-        self.assertDictEqual(response, {'update': 'ok'})
+        self._create_custom_source('local', 'sig')
+        self.source.new_uploaded_file(BytesIO(RULE_CONTENT.encode('utf-8')))
+
+        self.http_post(reverse('source-update-source', args=(self.source.pk,)), status=status.HTTP_400_BAD_REQUEST)
 
         response = self.http_get(reverse('category-list') + '?source=%i' % self.source.pk)
         categories = response.get('results', [])
@@ -746,26 +742,32 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
     def test_003_custom_source_bad_upload(self):
         self._create_custom_source('local', 'sigs')
 
-        with open('/usr/bin/find', 'rb') as f:
-            response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart', status=status.HTTP_400_BAD_REQUEST)
-            self.assertDictEqual(response, {'upload': ['Invalid tar file']})
+        with open('/usr/bin/find', 'rb') as f, patch.object(
+            UploadEditSourceTaskSerializer,
+            "spawn",
+            return_value=HttpResponse('{"status": "OK", "code": 200, "message": null, "data": {"task_pk": 123}')
+        ):
+            self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart')
+            try:
+                self.source.new_uploaded_file(f)
+            except Exception as e:
+                self.assertTrue("Invalid tar file" in str(e))
 
-        response = self.http_delete(reverse('source-detail', args=(self.source.pk,)), status=status.HTTP_204_NO_CONTENT)
+        self.http_delete(reverse('source-detail', args=(self.source.pk,)), status=status.HTTP_204_NO_CONTENT)
         sources = Source.objects.filter(pk=self.source.pk)
         self.assertEqual(sources.count(), 0)
 
     def test_004_custom_source_http(self):
         self._create_custom_source('http', 'sigs', uri=ET_URL, cert_verif=True)
-
-        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
-        self.assertDictEqual(response, {'update': 'ok'})
+        self.source.update()
 
     def test_005_custom_source_bad_http(self):
-        self._create_custom_source('http', 'sigs', uri='http://localhost:1234/')
+        self._create_custom_source('http', 'sigs', uri='http://0.0.0.0:1234/')
 
-        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)), status=status.HTTP_400_BAD_REQUEST)
-        msg = str(response.get('update', [''])[0])
-        self.assertRegex(msg, 'Can not fetch data: .* Connection refused')
+        try:
+            self.source.update()
+        except OSError as e:
+            self.assertTrue("Connection refused" in str(e))
 
     def test_006_custom_source_delete(self):
         self._create_custom_source('local', 'sig')

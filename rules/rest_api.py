@@ -7,8 +7,9 @@ from django.utils import timezone
 from django.db import models
 from collections import OrderedDict
 import json
+import tempfile
 
-from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.core.exceptions import ValidationError
 
 from rest_framework.views import APIView
 from rest_framework.validators import UniqueValidator
@@ -48,6 +49,7 @@ from rules.es_analytics import ESGraphAgg, ESFieldUniqAgg, ESGenericSearch
 from scirius.rest_utils import ESManageMultipleESIndexesViewSet, SciriusModelViewSet, SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
 from scirius.utils import get_middleware_module
+from suricata.rest_tasks import SciriusTaskSerializer
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -113,6 +115,12 @@ class RulesetSerializer(serializers.ModelSerializer):
         return data
 
 
+class RulesetUpdateTaskSerializer(SciriusTaskSerializer):
+    TASK_NAME = 'UpdateRuleset'
+    ALLOW_RECURRENCE = True
+    ruleset = serializers.PrimaryKeyRelatedField(queryset=Ruleset.objects.all())
+
+
 class RulesetViewSet(viewsets.ModelViewSet):
     """
     =============================================================================================================================================================
@@ -138,6 +146,14 @@ class RulesetViewSet(viewsets.ModelViewSet):
     Return:\n
         HTTP/1.1 200 OK
         {"copy":"ok"}
+
+    Update ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/update_ruleset/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/update_ruleset/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"schedule": "2024-10-30T17:00"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"task_pk": 268}
 
     ==== PATCH ====\n
     Patch a ruleset:\n
@@ -294,6 +310,13 @@ class RulesetViewSet(viewsets.ModelViewSet):
     def rules_count(self, request, pk):
         ruleset = self.get_object()
         return Response(ruleset.number_of_rules())
+
+    @action(detail=True, methods=['post'])
+    def update_ruleset(self, request, pk):
+        ruleset = self.get_object()
+        data = request.data.copy()
+        data["ruleset"] = ruleset.pk
+        return RulesetUpdateTaskSerializer(data=data).spawn(request, ruleset_pk=ruleset.pk)
 
 
 class CategoryChangeSerializer(serializers.Serializer):
@@ -1567,6 +1590,48 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
         return super(RuleTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
+class BaseSourceTaskSerializer(SciriusTaskSerializer):
+    ALLOW_RECURRENCE = False
+    source = serializers.PrimaryKeyRelatedField(queryset=Source.objects.all())
+
+    def spawn(self, request, **kwargs):
+        self.is_valid(raise_exception=True)
+        return super().spawn(request, source_pk=self.validated_data.get('source').pk, **kwargs)
+
+
+class SourceUpdateTaskSerializer(BaseSourceTaskSerializer):
+    TASK_NAME = "SourceUpdateParentTask"
+    ALLOW_RECURRENCE = True
+
+
+class SourceRulesAnalysisTaskSerializer(BaseSourceTaskSerializer):
+    TASK_NAME = "SourceRulesAnalysis"
+
+
+class AddSourceTaskSerializer(BaseSourceTaskSerializer):
+    TASK_NAME = "AddSourceTask"
+
+
+class SourceTestTaskSerializer(BaseSourceTaskSerializer):
+    TASK_NAME = "SourceTestTask"
+
+
+class UploadSourceBaseTaskSerializer(BaseSourceTaskSerializer):
+    path = serializers.CharField()
+
+    def spawn(self, request):
+        self.is_valid(raise_exception=True)
+        return super().spawn(request, path=self.validated_data.get('path'))
+
+
+class UploadAddSourceTaskSerializer(UploadSourceBaseTaskSerializer):
+    TASK_NAME = "UploadAddSourceTask"
+
+
+class UploadEditSourceTaskSerializer(UploadSourceBaseTaskSerializer):
+    TASK_NAME = "UploadEditSourceTask"
+
+
 class BaseSourceSerializer(serializers.ModelSerializer):
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
 
@@ -1590,7 +1655,27 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         'WRITE': ('rules.source_edit',),
     }
 
+    def _process_action(self, request, serializer_class):
+        """
+        Because the code is the same for starting tasks, we use this generic function.
+
+        :param request: HTTP request object
+        :param serializer_class: class used toserialize data from request.data
+
+        :return: HTTP Response from the inherited spawn method
+        """
+        data = request.data.copy()
+
+        source = self.get_object()
+        data["source"] = source.pk
+        serializer = serializer_class(data=data)
+        return serializer.spawn(request)
+
     def create(self, request, *args, **kwargs):
+        """
+        Create a new source without performing any operation on itself. You'll need to call /update/ or /upload/ to
+        start the task in order to have rules in it.
+        """
         data = request.data.copy()
         comment = data.pop('comment', None)
 
@@ -1633,6 +1718,11 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         return super(BaseSourceViewSet, self).destroy(request, *args, **kwargs)
 
     def upload(self, request, pk):
+        """
+        Upload a source file and start related Celery tasks
+
+        Route only available for local sources.
+        """
         source = self.get_object()
 
         comment_serializer = CommentSerializer(data=request.data)
@@ -1645,10 +1735,18 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         if 'file' not in request.FILES:
             raise serializers.ValidationError({'file': ['This field is required.']})
 
-        try:
-            source.new_uploaded_file(request.FILES['file'])
-        except Exception as error:
-            raise serializers.ValidationError({'upload': [str(error)]})
+        path = None
+        file_ = request.FILES['file']
+        with tempfile.NamedTemporaryFile(delete=False) as tmpfile:
+            for chunk in file_.chunks():
+                tmpfile.write(chunk)
+            path = tmpfile.name
+
+        # because in REST we are creating the source without handling file and not running any task, it is an
+        # EditSource here with the uploaded file
+        TaskSerializer = UploadEditSourceTaskSerializer
+        serializer = TaskSerializer(data={"source": source.pk, "path": path})
+        result = serializer.spawn(request)
 
         UserAction.create(
             action_type='upload_source',
@@ -1657,52 +1755,33 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
             source=source
         )
 
-        return Response({'upload': 'ok'}, status=200)
+        return result
 
     @action(detail=True, methods=['post'])
     def update_source(self, request, pk):
+        """
+        Method only available for web sources (fetch them from HTTP/HTTPS).
+        """
         # Do not need to copy 'request.data' and pop 'comment'
         # because we are not using serializer there
         comment = request.data.get('comment', None)
-        is_async_str = request.query_params.get('async', 'false')
-
-        def is_async(value):
-            return bool(value) and value.lower() not in ('false', '0')
-
-        async_ = is_async(is_async_str)
 
         source = self.get_object()
+        if source.method != 'http':
+            raise serializers.ValidationError({'update': "Operation only available for web sources, use /upload/ instead"})
         comment_serializer = CommentSerializer(data={'comment': comment})
         comment_serializer.is_valid(raise_exception=True)
 
-        try:
-            msg = 'ok'
-            if async_ is True:
-                if hasattr(Probe.common, 'update_source_rest'):
-                    Probe.common.update_source_rest(request, source)
-                else:
-                    raise ServiceUnavailableException()
-            else:
-                source.update()
-        except Exception as errors:
-            if isinstance(errors, (IOError, OSError)):
-                msg = 'Can not fetch data'
-            elif isinstance(errors, ValidationError):
-                msg = 'Source is invalid'
-            elif isinstance(errors, SuspiciousOperation):
-                msg = 'Source is not correct'
-            else:
-                msg = 'Error updating source'
-            msg = '%s: %s' % (msg, errors)
-            raise serializers.ValidationError({'update': [msg]})
+        serializer = SourceUpdateTaskSerializer(data={"source": source.pk})
 
+        task = serializer.spawn(request)
         UserAction.create(
             action_type='update_source',
             comment=comment_serializer.validated_data['comment'],
             request=request,
             source=source
         )
-        return Response({'update': msg})
+        return task
 
     @action(detail=False, methods=['get'])
     def list_sources(self, request):
@@ -1721,19 +1800,12 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         return Response({'fetch': 'ok'})
 
     @action(detail=True, methods=['post'])
+    def rules_analysis(self, request, pk):
+        return self._process_action(request, SourceRulesAnalysisTaskSerializer)
+
+    @action(detail=True, methods=['post'])
     def test(self, request, pk):
-        source = self.get_object()
-        res = source.test()
-
-        if ('status' not in res or res['status'] is False) or \
-                ('errors' not in res or len(res['errors']) > 0):
-            raise serializers.ValidationError({'test': {'errors': res['errors']}})
-
-        response = {'test': 'ok'}
-        if 'warnings' in res and len(res['warnings']) > 0:
-            response['warnings'] = res['warnings']
-
-        return Response(response)
+        return self._process_action(request, SourceTestTaskSerializer)
 
 
 class PublicSourceSerializer(BaseSourceSerializer):
@@ -1807,7 +1879,7 @@ class PublicSourceViewSet(BaseSourceViewSet):
         {"fetch":"ok"}
 
     ==== POST ====\n
-    Create public source:\n
+    Create public source (you need to call /update_source/ to download the source data and update it):\n
         curl -k https://x.x.x.x/rest/rules/public_source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic public source", "public_source": "oisf/trafficid"}'
 
     Return:\n
@@ -1815,20 +1887,18 @@ class PublicSourceViewSet(BaseSourceViewSet):
         {"pk":4,"name":"sonic public source","created_date":"2018-05-07T11:54:56.450782+02:00","updated_date":"2018-05-07T11:54:56.450791+02:00","method":"http","datatype":"sig","uri":"https://raw.githubusercontent.com/jasonish/suricata-trafficid/master/rules/traffic-id.rules","cert_verif":true,"public_source":"oisf/trafficid"}
 
     Update public source:\n
-        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
-
-        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
-        {"update":"ok"}
+        {"task_pk": 456}
 
     Test public source:\n
         curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
-        {"test":"ok"}
+        {"task_pk": 789}
 
     ==== DELETE ====\n
     Delete public source:\n
@@ -1895,20 +1965,11 @@ class SourceViewSet(BaseSourceViewSet):
         {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"authkey":"123456789","use_sys_proxy":true}
 
     Update custom (only for {method: http}):\n
-        curl -k "https://x.x.x.x/rest/rules/source/<pk-source>/update_source/?async=true" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
-
-        curl -k "https://x.x.x.x/rest/rules/source/<pk-source>/update_source/?async=false" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k "https://x.x.x.x/rest/rules/source/<pk-source>/update_source/" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
-        {"update":"ok"}
-
-    Test custom source:\n
-        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
-
-    Return:\n
-        HTTP/1.1 200 OK
-        {"test":"ok"}
+        {"task_pk":"123"}
 
     Upload rules (only for {method: local}):\n
         curl -k https://x.x.x.x/rest/rules/source/<pk-source>/upload/ -H 'Authorization: Token <token>' --keepalive-time 20 -F file=@/tmp/emerging.rules.tar.gz  -X POST
@@ -1916,7 +1977,28 @@ class SourceViewSet(BaseSourceViewSet):
     Return:\n
         HTTP/1.1 100 Continue
         HTTP/1.1 200 OK
-        {"upload":"ok"}
+        {"task_pk": 268}
+
+    Test source:\n
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"task_pk": 268}
+
+    Source rule analysis:\n
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/rules_analysis/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"task_pk": 268}
+
+    Upload edit source:\n
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/upload/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"path": "/tmp/trafficid.rules"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"task_pk": 268}
 
     ==== DELETE ====\n
     Delete custom source:\n
