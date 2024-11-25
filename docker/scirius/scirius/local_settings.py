@@ -228,3 +228,6 @@ INSTALLED_APPS = (
 
 
 USE_OPENSEARCH = True
+
+CELERY_BROKER = 'amqp://guest:guest@rabbitmq:5672//'
+CELERY_RESULT_BACKEND = 'db+postgresql://' + USER + ':' + PASSWORD + '@' + HOST + ':' + PORT + '/' + NAME

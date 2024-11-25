@@ -185,7 +185,7 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir gunicorn
+RUN pip install --no-cache-dir gunicorn celery flower "sqlalchemy==1.4"
 
 
 COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
