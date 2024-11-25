@@ -275,3 +275,63 @@ services:
             retries: 5
         networks:
             network:
+
+    celery-worker:
+        build:
+            context: '.'
+            dockerfile: Dockerfile
+        restart: always
+        working_dir: /opt/scirius
+        entrypoint: celery
+        command: -A suricata worker --loglevel=info
+        environment:
+            - SECRET_KEY=c8c0d898133cd973ea6a7b7a14c377bbb12dddc574c3ccaa
+            - DATABASE_TYPE=postgres
+            - DATABASE_NAME=selks
+            - DATABASE_USERNAME=selks
+            - DATABASE_PASSWORD=example
+            - DATABASE_HOST=db
+            - DATABASE_PORT=5432
+        volumes:
+            - ./docker/containers-data/scirius/logs/:/logs/
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'celery --broker=amqp://guest:guest@rabbitmq:5672// -A suricata inspect ping',
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        depends_on:
+            rabbitmq:
+                condition: service_healthy
+
+    celery-flower:
+        build:
+            context: '.'
+            dockerfile: Dockerfile
+        restart: always
+        command: celery --broker=amqp://guest:guest@rabbitmq:5672// flower -A suricata
+        environment:
+            - SECRET_KEY=c8c0d898133cd973ea6a7b7a14c377bbb12dddc574c3ccaa
+        depends_on:
+            scirius:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_healthy
+            celery-worker:
+                condition: service_healthy
+        ports:
+            - 5555:5555
+
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        healthcheck:
+            test: rabbitmq-diagnostics -q ping
+            interval: 30s
+            timeout: 30s
+            retries: 3
+        ports:
+            - 5672:5672
+            - 15672:15672
