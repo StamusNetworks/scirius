@@ -66,3 +66,11 @@ Contributing
 
 From improving the documentation to coding new features, there is more than one way to contribute to Scirius. And for
 all contributions please use a `Pull Request <https://github.com/StamusNetworks/scirius/pulls>`_ on Github.
+
+You can run a local developement environment with the following step:
+docker compose up -d
+
+This will spin up a scirius container based on the local code with hot reload.
+This will also create dependencies containers like fluentd, postgres and elasticsearch.
+
+Please note, that this is development only and some services are going to be open to the local network (or more depending on your setup) without authentication. Please use ClearNDR with `stamusctl <https://github.com/StamusNetworks/stamusctl>` for production installation
