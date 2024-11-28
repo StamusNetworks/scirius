@@ -5,7 +5,6 @@ async
 billiard
 celery
 certifi
-cx_Freeze
 daemon
 Django>=4.2,<5
 django_ace
