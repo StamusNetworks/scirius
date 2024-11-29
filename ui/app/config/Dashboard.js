@@ -248,7 +248,7 @@ export const dashboard = [
         title: 'Fingerprints',
       },
       {
-        i: 'tls.ja4.hash',
+        i: 'tls.ja4',
         title: 'JA4 Hashes',
       },
       {

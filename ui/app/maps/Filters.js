@@ -529,7 +529,7 @@ export const FiltersList = [
   },
   {
     title: 'JA4',
-    id: 'tls.ja4.hash',
+    id: 'tls.ja4',
     category: FilterCategory.EVENT,
     convertible: 'host_id.tls.ja4.hash',
   },
