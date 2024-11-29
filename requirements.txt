@@ -5,6 +5,7 @@ async
 billiard
 celery
 certifi
+cryptography>=43.0.3
 daemon
 Django>=4.2,<5
 django_ace
@@ -57,7 +58,7 @@ psycopg2-binary
 Pygments
 pyinotify
 pyinotify
-pyOpenSSL>=24.1.0
+pyOpenSSL>=24.2.1
 python-dateutil>=2.8.1
 python-gnupg
 pytz
