@@ -12,7 +12,7 @@ django_ace
 django-auth-ldap
 django-bootstrap3
 django-celery-results
-django-chunked-upload<2
+django4-chunked-upload>=2.0.2
 django-cprofile-middleware
 django-cprofile-middleware
 django-csp
