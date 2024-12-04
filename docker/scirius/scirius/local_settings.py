@@ -176,12 +176,12 @@ CSP_EXCLUDE_URL_PREFIXES = tuple(os.getenv('CSP_EXCLUDE_URL_PREFIXES', '/evebox'
 
 GIT_SOURCES_BASE_DIRECTORY = '/data/git-sources/'
 
-APP_LONG_NAME = 'SELKS by Stamus Networks'
-APP_MEDIUM_NAME = 'SELKS Stamus'
-APP_SHORT_NAME = 'SELKS'
+APP_LONG_NAME = 'Clear NDR Community'
+APP_MEDIUM_NAME = 'Clear NDR CE'
+APP_SHORT_NAME = 'Clear NDR'
 APP_MNGT_NAME = 'Suricata Management'
-SCIRIUS_VERSION = "40.0.0"
-LOGO = 'rules/selks.png'
+SCIRIUS_VERSION = "1.0.0"
+LOGO = 'rules/stamus.png'
 
 ENGINE = "django.db.backends.postgresql"
 NAME = os.getenv('DATABASE_NAME', 'db.sqlite3')
