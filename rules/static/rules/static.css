@@ -509,7 +509,6 @@ div#highlight_info {
     display: grid;
     grid-template-columns: min-content 1fr;
     align-items: center;
-    justify-items: center;
     margin-bottom: 0;
     font-weight: inherit;
     cursor: pointer;
@@ -529,6 +528,7 @@ div#highlight_info {
     cursor: inherit;
     transition: all 0.2s;
     position: relative;
+    margin-right: 1rem;
 }
 .login__checkbox input:hover {
     backdrop-filter: blur(3px);
