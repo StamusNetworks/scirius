@@ -41,7 +41,7 @@ create_db() {
     echo "from django.contrib.auth.models import User, Group; u = User.objects.filter(username='selks-user').first(); g = Group.objects.filter(name='Superuser').first(); g.user_set.add(u)" | python manage.py shell
 
     python manage.py createcachetable my_cache_table
-    python manage.py addsource "ETOpen Ruleset" https://rules.emergingthreats.net/open/suricata-5.0/emerging.rules.tar.gz http sigs
+    python manage.py addsource "ETOpen Ruleset" https://rules.emergingthreats.net/open/suricata-7.0.3/emerging.rules.tar.gz http sigs
     python manage.py addsource "Lateral movement ruleset" https://ti.stamus-networks.io/open/stamus-lateral-rules.tar.gz http sigs
     python manage.py defaultruleset "Default ruleset"
     python manage.py disablecategory "Default ruleset" stream-events

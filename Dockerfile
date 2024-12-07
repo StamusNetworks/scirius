@@ -175,13 +175,13 @@ COPY --from=source /opt/scirius /opt/scirius
 
 RUN \
   echo "**** install packages ****" && \
-  echo "deb http://deb.debian.org/debian bullseye-backports main" > /etc/apt/sources.list.d/bullseye-backports.list && \
+  echo "deb https://deb.debian.org/debian/ bookworm-backports contrib main" > /etc/apt/sources.list.d/bookworm-backports.list && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
   curl \
   git \
   gunicorn && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -t bullseye-backports suricata -y && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -t bookworm-backports suricata -y && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
