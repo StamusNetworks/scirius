@@ -180,7 +180,7 @@ APP_LONG_NAME = 'Clear NDR Community'
 APP_MEDIUM_NAME = 'Clear NDR CE'
 APP_SHORT_NAME = 'Clear NDR'
 APP_MNGT_NAME = 'Suricata Management'
-SCIRIUS_VERSION = "1.0.0"
+SCIRIUS_VERSION = "0.9.0"
 LOGO = 'rules/stamus.png'
 
 ENGINE = "django.db.backends.postgresql"
