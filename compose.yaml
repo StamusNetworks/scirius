@@ -246,7 +246,7 @@ services:
             elasticsearch:
                 condition: service_healthy
         healthcheck:
-            test: ['CMD', 'curl', '-f', 'http://scirius:8000/moloch']
+            test: ['CMD', 'curl', '-f', 'http://scirius:8000/arkime']
             interval: 15s
             timeout: 5s
             retries: 3
