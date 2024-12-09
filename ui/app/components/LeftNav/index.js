@@ -36,7 +36,8 @@ function LeftNav() {
   const renderMenuItems = useCallback(
     groupId =>
       getGroupPages(groupId, permissions, commonStore.systemSettings).map(page => {
-        const title = pages[page].metadata.title || CamelCaseToNormal(page);
+        const computedTitle = pages[page].metadata.computedTitle ? pages[page].metadata.computedTitle(commonStore.systemSettings) : null;
+        const title = computedTitle || pages[page].metadata.title || CamelCaseToNormal(page);
         return (
           <Menu.Item key={`${APP_URL}/${pages[page].metadata.url}`} data-test="left-nav-menu-link-item">
             {typeof pages[page].metadata.url === 'function' ? (
