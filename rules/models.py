@@ -794,6 +794,18 @@ class SystemSettings(models.Model):
     custom_login_banner = models.TextField('Add your own banner on login page', blank=True, default='')
     session_cookie_age = models.IntegerField(default=0)
 
+    @property
+    def use_arkime(self):
+        return settings.USE_MOLOCH
+
+    @property
+    def use_opensearch(self):
+        return settings.USE_OPENSEARCH
+
+    @property
+    def arkime_url(self):
+        return '/arkime'
+
     def get_proxy_params(self):
         if self.use_http_proxy:
             return {'http': self.http_proxy, 'https': self.https_proxy}
