@@ -46,7 +46,9 @@ function LeftNav() {
                 <LinkOutlined />
               </LeftNavLink>
             ) : (
-              <Link to={`${APP_URL}/${pages[page].metadata.url}`}>{title}</Link>
+              <Link to={pages[page].metadata.url.startsWith('http') ? pages[page].metadata.url : `${APP_URL}/${pages[page].metadata.url}`}>
+                {title}
+              </Link>
             )}
           </Menu.Item>
         );
