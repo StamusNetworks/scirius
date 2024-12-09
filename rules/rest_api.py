@@ -3034,6 +3034,10 @@ class ESDeleteLogsViewSet(APIView):
 
 
 class SystemSettingsSerializer(serializers.ModelSerializer):
+    use_arkime = serializers.BooleanField(read_only=True)
+    use_opensearch = serializers.BooleanField(read_only=True)
+    arkime_url = serializers.CharField(read_only=True)
+
     def to_representation(self, data):
         data = super().to_representation(data)
         data.pop('elasticsearch_pass')

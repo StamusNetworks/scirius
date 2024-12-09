@@ -42,7 +42,7 @@ urlpatterns = [
     re_path(r'^(?P<path>logout/?.*$)', KibanaProxyView.as_view()),
 
     # Moloch proxy
-    re_path(r'^moloch/(?P<path>.*)$', MolochProxyView.as_view()),
+    re_path(r'^arkime/(?P<path>.*)$', MolochProxyView.as_view()),
 ]
 
 if settings.STATIC_AUTHENTICATED:
