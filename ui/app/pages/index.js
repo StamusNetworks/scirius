@@ -1,4 +1,5 @@
 import { Appliances, Users, Sources, Rulesets, Other } from './Administration/Administration';
+import Arkime from './Arkime/Arkime';
 import CyberChef from './CyberChef/CyberChef';
 import Dashboards from './Dashboards/Dashboards';
 import EveBox from './EveBox/EveBox';
@@ -17,6 +18,7 @@ export default {
   Sources,
   Rulesets,
   Other,
+  Arkime,
   Kibana,
   EveBox,
   CyberChef,
