@@ -109,7 +109,7 @@ class RulePage extends React.Component {
     ) {
       if (this.state.rule) {
         const rule = cloneDeep(this.state.rule);
-        updateHitsStats([rule], this.props.filterParams, this.updateRuleState, qfilter, this.props.store.tenantStore.tenant);
+        updateHitsStats([rule], this.props.filterParams, this.updateRuleState, qfilter, this.props.store.tenantStore?.tenant);
       }
     }
   }
