@@ -179,7 +179,7 @@ GIT_SOURCES_BASE_DIRECTORY = '/data/git-sources/'
 APP_LONG_NAME = 'Clear NDR Community'
 APP_MEDIUM_NAME = 'Clear NDR CE'
 APP_SHORT_NAME = 'Clear NDR'
-APP_MNGT_NAME = 'Suricata Management'
+APP_MNGT_NAME = 'Clear NDR CE Management'
 SCIRIUS_VERSION = "0.9.0"
 LOGO = 'rules/stamus.png'
 
