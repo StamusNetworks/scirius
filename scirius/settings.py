@@ -311,6 +311,9 @@ USE_LOGSTASH_STATS = False
 SURICATA_UNIX_SOCKET = None
 # SURICATA_UNIX_SOCKET = "/var/run/suricata/suricata-command.socket"
 
+# OpenSearch
+USE_OPENSEARCH = False
+
 # Influxdb
 USE_INFLUXDB = False
 INFLUXDB_HOST = "localhost"

@@ -338,7 +338,3 @@ def get_folder_size(folder):
 
 def is_ajax(request):
     return request.headers.get('x-requested-with') == 'XMLHttpRequest'
-
-
-def is_opensearch() -> bool:
-    return settings.USE_OPENSEARCH

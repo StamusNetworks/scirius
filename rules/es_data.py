@@ -36,7 +36,6 @@ from elasticsearch.exceptions import RequestError
 from rules.es_graphs import get_es_major_version, ESError
 from rules.es_query import ESQuery
 from rules.models import get_system_settings
-from scirius import utils
 
 # Avoid logging every request
 ES_LOGGER = logging.getLogger('elasticsearch')
@@ -1704,7 +1703,7 @@ class ESData(ESQuery):
             'content-type': 'application/json',
             # https://opensearch.org/docs/latest/troubleshoot/#requests-to-opensearch-dashboards-fail-with-request-must-contain-a-osd-xsrf-header
         }
-        if utils.is_opensearch():
+        if gsettings.use_opensearch:
             headers['osd-xsrf'] = True
         else:
             headers['kbn-xsrf'] = True
@@ -1833,7 +1832,7 @@ class ESData(ESQuery):
             content['config']['defaultIndex'] = idx
             self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body={'doc': content}, refresh=True)
 
-        if utils.is_opensearch():
+        if get_system_settings().use_opensearch:
             self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
         else:
             self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
