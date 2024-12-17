@@ -4,6 +4,7 @@ default:
 
 image: stamus/stamus-docker-qa:chromium_bookworm_http
 npm:
+  timeout: 10 min
   image: node:18-alpine
   stage: build
   artifacts:
