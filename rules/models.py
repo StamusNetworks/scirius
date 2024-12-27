@@ -2531,6 +2531,8 @@ class Category(models.Model, Transformable, Cache):
                     return TYPE(rt[0].value)
 
         else:
+            # This code is currently dead, not reachable from UI
+            # but it can be called from django shell
             category_str = Category.__name__.lower()
             ruleset_str = Ruleset.__name__.lower()
 
@@ -2539,8 +2541,8 @@ class Category(models.Model, Transformable, Cache):
                     return trans
 
             if override:
-                for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].items():
-                    if self.category.pk in tsets:
+                for trans, tsets in Category.TRANSFORMATIONS[key][ruleset_str].items():
+                    if tsets and ruleset.pk in tsets:
                         return trans
 
         return None
