@@ -62,7 +62,6 @@ const DashboardPage = () => {
   const { commonStore } = useStore();
   const filterParams = useFilterParams();
   const [chartTarget, setChartTarget] = useState(store.get('chartTarget') === true);
-  const hasPermissions = commonStore.user?.permissions.includes('rules.configuration_view');
 
   useEffect(() => {
     store.set('chartTarget', chartTarget);
@@ -86,10 +85,10 @@ const DashboardPage = () => {
             systemSettings={commonStore.systemSettings}
             eventTypes={commonStore.eventTypes}
           />
-          {hasPermissions && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
+          {(process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
             <Style.Switch>
               <Radio.Group
-                data-test="hide-empty-tiles-switch"
+                data-test="chart-target-switch"
                 options={chartOptions}
                 value={chartTarget}
                 onChange={({ target: { value } }) => setChartTarget(value)}
