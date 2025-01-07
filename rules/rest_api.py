@@ -2403,19 +2403,12 @@ class ESTimelineViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     =============================================================================================================================================================
     """
     REQUIRED_GROUPS = {
-        'READ': ('rules.configuration_view', 'rules.events_view'),
+        'READ': ('rules.events_view',),
     }
     no_tenant_check = True
 
     def _get(self, request, format=None):
         tags = False if request.GET.get('target', 'false') == 'false' else True
-
-        if request.user.has_perm('rules.events_view') and not request.user.has_perm('rules.configuration_view') and not tags:
-            raise PermissionDenied()
-
-        if not request.user.has_perm('rules.events_view') and request.user.has_perm('rules.configuration_view') and tags:
-            raise PermissionDenied()
-
         return Response(ESTimeline(request, view=self).get(tags=tags))
 
 
