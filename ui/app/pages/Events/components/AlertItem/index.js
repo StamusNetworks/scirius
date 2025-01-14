@@ -50,7 +50,7 @@ const protoMap = {
   Geneve: 'Geneve',
   Http: 'HTTP',
   Http2: 'HTTP2',
-  Ikev2: 'IKEv2',
+  Ike: 'IKE',
   Imap: 'IMAP',
   Krb5: 'KRB5',
   Modbus: 'Modbus',

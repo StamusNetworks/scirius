@@ -768,7 +768,7 @@ app-layer:
       enabled: yes
     snmp:
       enabled: yes
-    ikev2:
+    ike:
       enabled: yes
     tls:
       enabled: yes
