@@ -139,6 +139,7 @@ class CommonStore {
       } else {
         this._startDate = moment().subtract(PeriodEnum[this._relativeType].seconds, 'seconds').unix();
         this._endDate = moment().unix();
+        this.setTimePickerStorage();
       }
     }
     makeAutoObservable(this, {
