@@ -39,10 +39,10 @@ app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 extra_conf = {}
-if settings.MIDDLEWARE != 'suricata':
+if settings.RULESET_MIDDLEWARE != 'suricata':
     extra_conf.update({
         'tasks_routes': {
-            f'{settings.MIDDLEWARE}.tasks.run_refresh_host_id_counts': {
+            f'{settings.RULESET_MIDDLEWARE}.tasks.run_refresh_host_id_counts': {
                 'queue': 'host_id'
             }
         }
