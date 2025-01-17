@@ -1577,12 +1577,6 @@ def changelog_ruleset(request, ruleset_id):
     return get_middleware_module('common').changelog_ruleset(request, ruleset)
 
 
-@permission_required('rules.source_view', raise_exception=True)
-def test_ruleset(request, ruleset_id):
-    ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
-    return JsonResponse(ruleset.test())
-
-
 def edit_ruleset(request, ruleset_id):
     user = request.user
     if not user.has_perm('rules.ruleset_policy_edit') and not user.has_perm('rules.source_edit'):

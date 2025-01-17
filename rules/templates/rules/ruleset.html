@@ -322,67 +322,10 @@ function ruleset_rules_count(ruleset_pk)
     });
 }
 
-function test_ruleset(ruleset_pk)
-{
-    var tgturl = "{% url 'test_ruleset' ruleset.id %}?ajax=1";
-
-    $.ajax({
-        url: tgturl,
-        success: function(data) {
-            if ((data['rules_count'] != {{ ruleset.rules_count }}) || {{ ruleset.rules_count }} == 0) {
-                fadeChange($("#ruleset_rules_count"), data['rules_count']);
-            }
-            if (data['status'] == true) {
-                fadeChange($("#ruleset_status_menu"), "True");
-            } else {
-		        $("#ruleset_status_menu").empty();
-		        $("#ruleset_status_menu").append("<a href='#ruleset_status'>False</a>");
-		        $("#error").empty();
-		        $("#error").append("Ruleset has errors. See <a href='#ruleset_status'>list at bottom of page</a>.");
-		        $("#error").parent("div").toggle();
-
-                error_content = ""
-                if (data['errors']['format'] == 'raw') {
-                    error_content = data['errors']['message'];
-                    $("#ruleset_status").append('<pre>' + error_content + '</pre>');
-                } else {
-                    for (i = 0; i < data['errors'].length; i++) {
-                        if (data['errors'][i]['sid']) {
-                            error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="{% url 'rules_index' %}rule/';
-                            error_content += parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
-                        } else {
-                            error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
-                        }
-                    }
-                    $("#ruleset_status").append('<ul>' + error_content + '</ul>');
-                }
-                $("#ruleset_status_row").fadeIn();
-            }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            if (jqXHR.readyState != 4) {
-                // Handling of the request is not finished,
-                // triggered while exiting the page during the query
-                return;
-            }
-            $("#ruleset_status").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Unable to check ruleset validity' + errorThrown + '</p>');
-            $("#ruleset_status_row").fadeIn();
-            fadeChange($("#ruleset_status_menu"), "Unknown");
-        },
-        timeout: 120 * 1000
-    });
-}
-
 $( 'document' ).ready(function() {
     ruleset_rules_count({{ ruleset.pk }})
 });
-{% if ruleset.need_test %}
-    $( 'document' ).ready(function() {
-        test_ruleset({{ ruleset.pk }})
-    });
-{% else %}
-    {% if ruleset.errors|length > 2 %}$("#ruleset_status_row").show(duration=200);{% endif %}
-{% endif %}
+{% if ruleset.errors|length > 2 %}$("#ruleset_status_row").show(duration=200);{% endif %}
     </script>
 {% endif %}
 {% if mode  == 'display' %}

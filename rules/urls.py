@@ -56,7 +56,6 @@ urlpatterns = [
     path('ruleset/<int:ruleset_id>/export/', views.ruleset_export, name='export_ruleset'),
     path('ruleset/<int:ruleset_id>/copy/', views.copy_ruleset, name='copy_ruleset'),
     path('ruleset/<int:ruleset_id>/changelog/', views.changelog_ruleset, name='changelog_ruleset'),
-    path('ruleset/<int:ruleset_id>/test/', views.test_ruleset, name='test_ruleset'),
     path('rule/<int:rule_id>/disable/', views.disable_rule, name='disable_rule'),
     path('rule/<int:rule_id>/enable/', views.enable_rule, name='enable_rule'),
     path('rule/<int:rule_id>/delete/', views.delete_alerts, name='delete_alerts'),
