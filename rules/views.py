@@ -30,6 +30,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.db import IntegrityError
+from django.db.models import Case, When, BooleanField
 from django.db.models.functions import Greatest
 from django.conf import settings
 from django.core.exceptions import ValidationError, PermissionDenied
@@ -2112,7 +2113,14 @@ def status(request):
         if not request.GET.__contains__('show_hidden'):
             tasks_list = tasks_list.filter(hidden=False)
 
-        tasks_list = tasks_list.annotate(date=Greatest('finished', 'eta', 'created')).order_by('-date')[:qlength]
+        tasks_list = tasks_list.annotate(
+            date=Greatest('finished', 'eta', 'created'),
+            firsts=Case(
+                When(status='running', then=True),
+                default=False,
+                output_field=BooleanField()
+            )
+        ).order_by('-firsts', '-date')[:qlength]
         task_in_progress = False
 
         tasks = []
