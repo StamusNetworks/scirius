@@ -92,9 +92,9 @@ class RulesetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ruleset
-        fields = ('pk', 'name', 'descr', 'created_date', 'updated_date', 'need_test', 'validity',
+        fields = ('pk', 'name', 'descr', 'created_date', 'updated_date', 'validity',
                   'errors', 'rules_count', 'sources', 'categories', 'comment', 'warnings')
-        read_only_fields = ('pk', 'created_date', 'updated_date', 'need_test', 'validity', 'errors',
+        read_only_fields = ('pk', 'created_date', 'updated_date', 'validity', 'errors',
                             'rules_count', 'warnings')
 
     def create(self, validated_data):
@@ -124,7 +124,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":9,"name":"MyCreatedRuleset","descr":"","created_date":"2018-05-04T16:10:43.698843+02:00","updated_date":"2018-05-04T16:10:43.698852+02:00","need_test":true,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[27]}
+        {"pk":9,"name":"MyCreatedRuleset","descr":"","created_date":"2018-05-04T16:10:43.698843+02:00","updated_date":"2018-05-04T16:10:43.698852+02:00","validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[27]}
 
     ==== POST ====\n
     Create a ruleset:\n
@@ -132,7 +132,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 201 Created
-        {"pk":12,"name":"SonicRuleset","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":true,"validity":true,"errors":"","rules_count":0,"sources":[1],"categories":[27]}
+        {"pk":12,"name":"SonicRuleset","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","validity":true,"errors":"","rules_count":0,"sources":[1],"categories":[27]}
 
     Copy a ruleset:\n
         curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/copy/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST  -d '{"name": "copyRuleset1", "comment": "need a clone"}'
@@ -147,7 +147,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":12,"name":"SonicRulesetPatched","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[27,1]}
+        {"pk":12,"name":"SonicRulesetPatched","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[27,1]}
 
     ==== PUT ====\n
     Replace a ruleset:\n
@@ -155,7 +155,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":12,"name":"SonicRulesetReplaced","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[1]}
+        {"pk":12,"name":"SonicRulesetReplaced","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[1]}
 
     ==== DELETE ====\n
     Delete a ruleset:\n

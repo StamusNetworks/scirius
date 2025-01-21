@@ -305,6 +305,34 @@ class RulesetRulesAnalysis(SciriusTask, RulesetTask):
         ruleset.analyse_rules()
 
 
+class RulesetTestTask(SciriusTask, RulesetTask):
+    TITLE = 'Test ruleset'
+    ICON = 'certificate'
+    REQUIRED_GROUPS = {
+        'READ': 'rules.source_view',
+        'WRITE': 'rules.source_view'
+    }
+
+    def _parse_errors(self, errors):
+        res = ''
+        for error in errors:
+            key = error['content'] if 'sid' not in error else error['sid']
+            res += f'{key}: {error["message"]}\n'
+
+        return res
+
+    def _run(self, ruleset_pk):
+        ruleset = Ruleset.objects.get(pk=ruleset_pk)
+        test_results = ruleset.test()
+
+        if test_results['status'] is False:
+            if test_results.get('errors', []):
+                raise TaskFailure(self._parse_errors(test_results['errors']))
+        else:
+            if test_results.get('warnings', []):
+                raise TaskWarning(self._parse_errors(test_results['warnings']))
+
+
 class UpdateGenerateRuleset(SciriusTask):
     TITLE = 'Ruleset: update/generate'
     SHOW_IN_PENDING = True
@@ -322,6 +350,11 @@ class UpdateGenerateRuleset(SciriusTask):
                 user=self.celery_task.user,
                 ruleset_pk=ruleset_pk
             )
+            test = MIDDLEWARE.models.CeleryTask.new(
+                'RulesetTestTask',
+                ruleset_pk=ruleset_pk,
+                user=self.celery_task.user
+            )
             analyse = MIDDLEWARE.models.CeleryTask.new(
                 'RulesetRulesAnalysis',
                 ruleset_pk=ruleset_pk,
@@ -334,11 +367,11 @@ class UpdateGenerateRuleset(SciriusTask):
                     ruleset_pk=ruleset_pk
                 )
                 self.chain(
-                    [update], [build, analyse]
+                    [update], [build, test, analyse]
                 ).apply_async()
             else:
                 self.chain(
-                    [update], [analyse]
+                    [update], [test, analyse]
                 ).apply_async()
         elif generate:
             MIDDLEWARE.models.CeleryTask.spawn(

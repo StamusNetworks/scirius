@@ -23,14 +23,10 @@
         <li>
             <span class="type">All rules operational:</span>
             <span id="ruleset_status_menu">
-                {% if ruleset.need_test %}
-                    Checking
+                {% if ruleset.validity %}
+                    {{ ruleset.validity }}
                 {% else %}
-                    {% if ruleset.validity %}
-                        {{ ruleset.validity }}
-                    {% else %}
-                        <a href="#ruleset_status">{{ ruleset.validity }}</a>
-                    {% endif %}
+                    <a href="#ruleset_status">{{ ruleset.validity }}</a>
                 {% endif %}
             </span>
         </li>
@@ -270,7 +266,7 @@ $("#update_ruleset").click(function() {
                     </h2>
                     <div id="ruleset_status">
                     </div>
-                    {% if not ruleset.need_test and ruleset.errors %}
+                    {% if ruleset.errors %}
                         {% if ruleset.json_errors.format == 'raw' %}
                             <pre>{{ ruleset.json_errors.message }}</pre>
                         {% else %}

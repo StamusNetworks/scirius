@@ -1117,8 +1117,6 @@ def activate_source(request, source_id, ruleset_id):
     for cat in Category.objects.filter(source=src):
         cat.enable(ruleset, request=request)
 
-    ruleset.needs_test()
-    ruleset.save()
     return JsonResponse(True, safe=False)
 
 

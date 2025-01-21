@@ -99,7 +99,6 @@ class Suricata(models.Model):
             rfile.write(str(timezone.now()))
             rfile.close()
         # In case user has changed configuration file before reloading
-        self.ruleset.needs_test()
         return True
 
     def get_absolute_url(self):

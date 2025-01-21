@@ -908,7 +908,6 @@ class Source(models.Model):
     def add_self_in_rulesets(self, rulesets, request):
         for ruleset in rulesets:
             ruleset.sources.add(self)
-            ruleset.needs_test()
 
     def set_is_stamus(self):
         copyright_ = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules', 'COPYRIGHT')
@@ -931,7 +930,6 @@ class Source(models.Model):
             if cat not in ruleset.categories.all():
                 ruleset.categories.add(cat)
 
-        ruleset.needs_test()
         ruleset.save()
         if request:
             UserAction.create(
@@ -949,7 +947,6 @@ class Source(models.Model):
             if cat in ruleset.categories.all():
                 ruleset.categories.remove(cat)
 
-        ruleset.needs_test()
         ruleset.save()
         if request:
             UserAction.create(
@@ -1054,7 +1051,6 @@ class Source(models.Model):
         return 'pficon pficon-volume list-view-pf-icon-sm'
 
     def delete(self):
-        self.needs_test()
         # delete git tree
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         try:
@@ -1380,8 +1376,6 @@ class Source(models.Model):
                 rules_pk = [rule.sid for rule in self.updated_rules['deleted']]
                 Rule.objects.filter(pk__in=rules_pk).delete()
 
-                if self.datatype not in self.custom_data_type:
-                    self.needs_test()
         finally:
             source_lock.close()
 
@@ -1544,13 +1538,6 @@ class Source(models.Model):
             self.create_update()
         for rule in self.updated_rules["deleted"]:
             rule.delete()
-        self.needs_test()
-
-    def needs_test(self):
-        rulesets = Ruleset.objects.all()
-        for ruleset in rulesets:
-            if self in ruleset.sources.all():
-                ruleset.needs_test()
 
 
 class UserActionObject(models.Model):
@@ -2474,7 +2461,6 @@ class Category(models.Model, Transformable, Cache):
 
     def enable(self, ruleset, request=None, comment=None):
         ruleset.categories.add(self)
-        ruleset.needs_test()
         if request:
             UserAction.create(
                 action_type='enable_category',
@@ -2486,7 +2472,6 @@ class Category(models.Model, Transformable, Cache):
 
     def disable(self, ruleset, request=None, comment=None):
         ruleset.categories.remove(self)
-        ruleset.needs_test()
         if request:
             UserAction.create(
                 action_type='disable_category',
@@ -2525,7 +2510,6 @@ class Category(models.Model, Transformable, Cache):
                 value=value.value
             )
             c.save()
-        ruleset.needs_test()
 
     def get_transformation(self, ruleset, key=Transformation.ACTION, override=False):
         TYPE = None
@@ -2807,7 +2791,6 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
         return test
 
     def toggle_availability(self, version=None):
-        self.category.source.needs_test()
         ravs = self.ruleatversion_set.filter(version=version) if version is not None else self.ruleatversion_set.all()
 
         for rav in ravs:
@@ -2907,7 +2890,6 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
             key=key.value
         ).delete()
 
-        ruleset.needs_test()
         ruleset.save()
 
     def set_transformation(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
@@ -2921,7 +2903,6 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
         )
         r.save()
 
-        ruleset.needs_test()
         ruleset.save()
 
     def is_untrusted(self):
@@ -3095,7 +3076,6 @@ class RuleAtVersion(RangeCheckIntegerFields):
         return set(dependant_ravs)
 
     def toggle_availability(self):
-        self.rule.category.source.needs_test()
         self.state = not self.state
         self.save()
 
@@ -3273,7 +3253,6 @@ class Ruleset(models.Model, Transformable):
     descr = models.CharField(max_length=400, blank=True)
     created_date = models.DateTimeField('date created')
     updated_date = models.DateTimeField('date updated', blank=True)
-    need_test = models.BooleanField(default=True)
     validity = models.BooleanField(default=True)
     errors = models.TextField(blank=True)
     rules_count = models.IntegerField(default=0)
@@ -3411,7 +3390,6 @@ class Ruleset(models.Model, Transformable):
             key=key.value
         ).delete()
 
-        self.needs_test()
         self.save()
 
     def set_transformation(self, key=Transformation.ACTION, value=Transformation.A_DROP):
@@ -3424,7 +3402,6 @@ class Ruleset(models.Model, Transformable):
         )
         r.save()
 
-        self.needs_test()
         self.save()
 
     def get_transformed_categories(self,
@@ -3517,7 +3494,6 @@ class Ruleset(models.Model, Transformable):
         # Update timestamp if at least one source update was successful
         if sources.count() != 0 and sources.count() != len(update_errors):
             self.updated_date = timezone.now()
-            self.need_test = True
             self.save()
 
         if len(update_errors):
@@ -3739,7 +3715,6 @@ class Ruleset(models.Model, Transformable):
                     RuleAtVersion.write_analyse(content, version)
 
     def test(self):
-        self.need_test = False
         rule_buffer = self.to_buffer()
         result = self.test_rule_buffer(rule_buffer)
         result['rules_count'] = self.rules_count
@@ -3759,7 +3734,6 @@ class Ruleset(models.Model, Transformable):
 
         if len(suppr_ravs):
             SuppressedRuleAtVersion.objects.bulk_create(suppr_ravs)
-            self.needs_test()
 
     def enable_rules_at_version(self, ravs):
         restore_ravs = []
@@ -3769,11 +3743,6 @@ class Ruleset(models.Model, Transformable):
 
         if len(restore_ravs):
             SuppressedRuleAtVersion.objects.filter(rule_at_version__in=restore_ravs, ruleset=self).delete()
-            self.needs_test()
-
-    def needs_test(self):
-        self.need_test = True
-        self.save()
 
     @classmethod
     def create_ruleset(cls, name, sources=[], activate_categories=False):
