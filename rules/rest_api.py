@@ -1855,7 +1855,7 @@ class SourceSerializer(BaseSourceSerializer):
 
     class Meta(BaseSourceSerializer.Meta):
         model = BaseSourceSerializer.Meta.model
-        fields = BaseSourceSerializer.Meta.fields + ('method', 'uri', 'authkey', 'comment')
+        fields = BaseSourceSerializer.Meta.fields + ('method', 'uri', 'authkey', 'comment', 'remove_original_sids')
         read_only_fields = BaseSourceSerializer.Meta.read_only_fields
 
     def validate_datatype(self, value):
@@ -1869,6 +1869,12 @@ class SourceSerializer(BaseSourceSerializer):
         validated_data['public_source'] = None
         instance = super(SourceSerializer, self).create(validated_data)
         return instance
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.datatype not in instance.custom_data_type:
+            data.pop('remove_original_sids', None)
+        return data
 
 
 class SourceViewSet(BaseSourceViewSet):
