@@ -1841,7 +1841,7 @@ class PublicSourceViewSet(BaseSourceViewSet):
 
     =============================================================================================================================================================
     """
-    queryset = Source.objects.all()
+    queryset = Source.objects.filter(public_source__isnull=False)
     serializer_class = PublicSourceSerializer
     ordering = ('name',)
     ordering_fields = ('name', 'created_date', 'updated_date')
@@ -1923,7 +1923,7 @@ class SourceViewSet(BaseSourceViewSet):
 
     =============================================================================================================================================================
     """
-    queryset = Source.objects.all()
+    queryset = Source.objects.filter(public_source__isnull=True)
     serializer_class = SourceSerializer
     parser_classes = (MultiPartParser, JSONParser)
     ordering = ('name',)
