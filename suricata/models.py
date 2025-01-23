@@ -37,10 +37,14 @@ from datetime import datetime, timedelta
 from rules.models import Ruleset, Rule, export_iprep_files
 from suricata import tasks
 
+from celery.utils.log import get_task_logger
 from celery import result
 
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
+
+
+celery_logger = get_task_logger('task_logger')
 
 
 def validate_hostname(value):
@@ -134,6 +138,11 @@ class CeleryTaskResult(CeleryTaskResultBase):
 
 
 class CeleryTaskBase(models.Model):
+    LOGGER = {
+        'failed': 'error',
+        'warning': 'warning',
+        'success': 'info'
+    }
     STATUS = (
         ('scheduled', 'Scheduled'),
         ('running', 'Running'),
@@ -238,6 +247,8 @@ class CeleryTaskBase(models.Model):
             defaults={'status': status, 'message': msg},
             **kwargs
         )
+
+        getattr(celery_logger, self.LOGGER.get(status, 'info'))(f'Task {self.pk}, ({status}): {msg}')
 
         if not created:
             if msg:

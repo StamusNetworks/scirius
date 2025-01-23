@@ -58,6 +58,12 @@ LOGGING = {
             'filename': '/logs/elasticsearch.log',
             'formatter': 'raw',
         },
+        'task_error': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/logs/worker-error.log',
+            'formatter': 'raw',
+        },
         'error_log': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
@@ -80,6 +86,11 @@ LOGGING = {
     'loggers': {
         'elasticsearch': {
             'handlers': ['elasticsearch'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'task_logger': {
+            'handlers': ['task_error'],
             'level': 'INFO',
             'propagate': True,
         },
