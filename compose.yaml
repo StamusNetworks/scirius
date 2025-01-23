@@ -46,6 +46,7 @@ volumes:
     arkime-config:
     db-data:
     fluentd-pos:
+    scirius-tmp:
 
 services:
     elasticsearch:
@@ -168,6 +169,7 @@ services:
             - suricata-rules:/rules
             - suricata-run:/var/run/suricata
             - ./docker/containers-data/suricata/logs:/var/log/suricata:ro
+            - scirius-tmp:/tmp
         networks:
             network:
         depends_on:
@@ -289,11 +291,16 @@ services:
             - DATABASE_TYPE=postgres
             - DATABASE_NAME=selks
             - DATABASE_USERNAME=selks
-            - DATABASE_PASSWORD=example
+            - DATABASE_PASSWORD=selks
             - DATABASE_HOST=db
             - DATABASE_PORT=5432
         volumes:
+            - scirius-data:/data/
+            - suricata-rules:/rules
+            - suricata-run:/var/run/suricata
             - ./docker/containers-data/scirius/logs/:/logs/
+            - ./docker/containers-data/suricata/etc:/etc/suricata
+            - scirius-tmp:/tmp
         healthcheck:
             test:
                 [
@@ -306,6 +313,8 @@ services:
         depends_on:
             rabbitmq:
                 condition: service_healthy
+        networks:
+            network:
 
     celery-flower:
         build:
@@ -324,6 +333,8 @@ services:
                 condition: service_healthy
         ports:
             - 5555:5555
+        networks:
+            network:
 
     rabbitmq:
         image: rabbitmq:3-management-alpine
@@ -335,3 +346,5 @@ services:
         ports:
             - 5672:5672
             - 15672:15672
+        networks:
+            network:
