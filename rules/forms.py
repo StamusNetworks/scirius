@@ -401,7 +401,7 @@ class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
         source_id = self.cleaned_data['source_id']
         source = self.public_sources['sources'][source_id]
         source_uri = source['url']
-        params = {"__version__": "5.0"}
+        params = {"__version__": "7.0.3"}
         if 'secret_code' in self.cleaned_data:
             params.update({'secret-code': self.cleaned_data['secret_code']})
         source_uri = source_uri % params

@@ -1426,6 +1426,11 @@ class Source(models.Model):
 
     def update_ruleset_http(self, f):
         from scirius.utils import RequestsWrapper
+        from scirius.utils import get_middleware_module
+
+        if get_middleware_module('common').update_etpro_url(self):
+            self.uri = self.uri.replace('suricata-5.0', 'suricata-7.0.3')
+            self.save()
 
         hdrs = {'User-Agent': 'scirius'}
         if self.authkey:

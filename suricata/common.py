@@ -379,3 +379,7 @@ def run_celery_task_extra(*_):
 
 def stask_redirection(_):
     return 'view_stasks'
+
+
+def update_etpro_url(_):
+    return False
