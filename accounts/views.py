@@ -578,13 +578,13 @@ def delete_group(request, group_id):
         priority__gt=group.group.priority,
     ).update(priority=F('priority') - 1)
 
-    group.delete()
     UserAction.create(
         action_type='delete_group',
         comment=comment_form.cleaned_data['comment'],
         request=request,
         group=group
     )
+    group.delete()
     return JsonResponse({'redirect': '/accounts/role/'})
 
 
