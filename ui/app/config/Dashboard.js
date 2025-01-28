@@ -179,6 +179,10 @@ export const dashboard = [
         i: 'flow.dest_port',
         title: 'Server Ports',
       },
+      {
+        i: 'app_proto',
+        title: 'App Protocols',
+      },
     ],
   },
   {
