@@ -1133,6 +1133,7 @@ class DeepLinkViewSet(SciriusModelViewSet):
         'READ': ('rules.events_view',),
         'WRITE': ('rules.configuration_edit',),
     }
+    no_tenant_check = True
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
