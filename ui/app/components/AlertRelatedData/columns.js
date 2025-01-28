@@ -198,13 +198,13 @@ const columns = {
       ),
     },
     {
-      title: 'Mimetype',
+      title: 'File type',
       render: ({ rawJson }) => {
         if (rawJson.fileinfo && rawJson.fileinfo.mimetype) {
           return rawJson.fileinfo.mimetype;
         }
-        if (rawJson.fileinfo && rawJson.fileinfo.type) {
-          return rawJson.fileinfo.type;
+        if (rawJson.fileinfo && rawJson.fileinfo.magic) {
+          return rawJson.fileinfo.magic;
         }
         return null;
       },
