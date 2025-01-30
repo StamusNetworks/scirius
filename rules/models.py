@@ -1091,12 +1091,15 @@ class Source(models.Model):
                     existing_rules_hash['groups'][rule.category.name] = []
                 existing_rules_hash['groups'][rule.category.name].append(rav)
 
+        versions = []
         for f in os.listdir(os.path.join(source_git_dir, 'rules')):
             if f.endswith('.rules'):
                 match = catname.search(f)
                 version_match = re_version.search(f)
                 name = match.groups()[0] if not version_match else version_match.group(1)
                 version = int(version_match.group(2)) if version_match else 0
+                if version > 0:
+                    versions.append(version)
 
                 category = Category.objects.filter(source=self, name=name)
                 if not category:
@@ -1118,7 +1121,16 @@ class Source(models.Model):
                     existing_rules_hash=existing_rules_hash)
                 # get rules in this category
         for category in Category.objects.filter(source=self):
-            if not os.path.isfile(os.path.join(source_git_dir, category.filename)):
+            filenames = [category.filename]
+            for version in versions:
+                filenames.append(category.filename.replace('.rules', '-u%i.rules' % version))
+
+            delete = True
+            for filename in filenames:
+                if os.path.isfile(os.path.join(source_git_dir, filename)):
+                    delete = False
+                    break
+            if delete:
                 category.delete()
 
         existing_rules_hash.clear()
