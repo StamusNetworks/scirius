@@ -1442,6 +1442,7 @@ class Source(models.Model):
 
         if get_middleware_module('common').update_etpro_url(self):
             self.uri = self.uri.replace('suricata-5.0', 'suricata-7.0.3')
+            self.version = 0
             self.save()
 
         hdrs = {'User-Agent': 'scirius'}
