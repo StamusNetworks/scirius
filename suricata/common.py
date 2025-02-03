@@ -381,5 +381,5 @@ def stask_redirection(_):
     return 'view_stasks'
 
 
-def update_etpro_url(_):
-    return False
+def update_custom_sources_url(_):
+    pass
