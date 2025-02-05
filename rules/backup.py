@@ -188,7 +188,7 @@ class SCRestore(SCOperation):
         shutil.rmtree(settings.GIT_SOURCES_BASE_DIRECTORY, ignore_errors=True)
 
         if not os.path.exists(settings.GIT_SOURCES_BASE_DIRECTORY):
-            os.mkdir(settings.GIT_SOURCES_BASE_DIRECTORY)
+            os.makedirs(settings.GIT_SOURCES_BASE_DIRECTORY)
 
         os.chdir(settings.GIT_SOURCES_BASE_DIRECTORY)
         ts.extractall()
