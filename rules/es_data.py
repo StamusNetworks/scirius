@@ -1798,13 +1798,22 @@ class ESData(ESQuery):
         return tar_name, file_.name
 
     def _create_kibana_mappings(self):
-        try:
-            self.es.indices.delete(index='.kibana_1')
-        except:
-            pass
-        self.es.indices.create(index='.kibana_1', body={"mappings": get_kibana_mappings()})
-        self.es.indices.put_alias(index='.kibana_1', name='.kibana')
-        self.es.indices.refresh(index='.kibana_1')
+        if get_system_settings().use_opensearch:
+            try:
+                self.es.indices.delete(index='.kibana_1')
+            except:
+                pass
+            self.es.indices.create(index='.kibana_1', body={"mappings": get_kibana_mappings()})
+            self.es.indices.put_alias(index='.kibana_1', name='.kibana')
+            self.es.indices.refresh(index='.kibana_1')
+        else:
+            if not self.es.indices.exists('.kibana'):
+                self.es.indices.create(index='.kibana', body={"mappings": get_kibana_mappings()})
+                self.es.indices.refresh(index='.kibana')
+            elif "visualization" not in str(self.es.indices.get_mapping(index='.kibana')):
+                self.es.indices.delete(index='.kibana')
+                self.es.indices.create(index='.kibana', body={"mappings": get_kibana_mappings()})
+                self.es.indices.refresh(index='.kibana')
 
     def _kibana_inject(self, _type, _file):
         with open(_file) as file_:
