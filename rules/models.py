@@ -910,9 +910,6 @@ class Source(models.Model):
             ruleset.sources.add(self)
             ruleset.needs_test()
 
-            for cat in Category.objects.filter(source=self):
-                cat.enable(ruleset, request=request)
-
     def set_is_stamus(self):
         copyright_ = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules', 'COPYRIGHT')
         if os.path.exists(copyright_):
@@ -1271,6 +1268,9 @@ class Source(models.Model):
                 created_date=timezone.now(),
                 filename=os.path.join('rules', 'sigs.rules')
             )
+            for ruleset in self.ruleset_set.all():
+                if ruleset.activate_categories:
+                    ruleset.categories.add(category)
 
         category.get_rules(self)
         if Rule.objects.filter(category=category).count() == 0:
