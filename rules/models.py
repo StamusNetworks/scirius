@@ -991,6 +991,13 @@ class Source(models.Model):
                 if os.path.getsize(fullpath) < 50 * 1024:
                     with open(fullpath, 'r') as cf:
                         related_files[f] = cf.read()
+                else:
+                    related_files[f] = ''
+                    with open(fullpath, 'r') as cf:
+                        for idx, line in enumerate(cf.readlines()):
+                            if idx >= 1000:
+                                break
+                            related_files[f] += line
 
         shutil.rmtree(tmpdir)
         return related_files, cats_content, iprep_content
