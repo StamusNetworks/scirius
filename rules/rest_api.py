@@ -2404,7 +2404,7 @@ class ESTimelineViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     =============================================================================================================================================================
     """
     REQUIRED_GROUPS = {
-        'READ': ('rules.events_view',),
+        'READ': ('rules.events_view', 'rules.configuration_view'),
     }
     no_tenant_check = True
 
