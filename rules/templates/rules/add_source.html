@@ -41,6 +41,18 @@ function display_warning(method) {
     } else {
         $("#name_warning").hide(duration=200);
     }
+
+    if ($(this).find("option:selected").val() === "ioc") {
+        $('#id_ioc_type').parent().show(duration=200);
+        $('#id_ioc_meta_formset').show(duration=200);
+
+        build_rules();
+        $("#id_name").on('input', build_rules);
+    } else {
+        $('#id_ioc_type').parent().hide(duration=200);
+        $('#id_ioc_meta_formset').hide(duration=200);
+        $("#id_name").off('input');
+    }
 }
 
 function hide_fields() {
@@ -72,20 +84,30 @@ function select_fields() {
     }
 
     if ($("#id_datatype").find("option:selected").text() != "threat") {
-        $('#id_remove_original_sids').parent().hide(duration=200)
+        $('#id_remove_original_sids').parent().hide(duration=200);
+    }
+
+    if ($("#id_datatype").find("option:selected").val() === "ioc") {
+        $('#id_ioc_type').parent().show(duration=200);
+    } else {
+        $('#id_ioc_type').parent().hide(duration=200);
     }
 
     $("#id_method").change(display_field);
-    $("#id_datatype").change(display_warning);
 }
 
 function hide_threat_fields(src_type) {
-    if (src_type === 'threat') {
+    if (src_type === 'threat' || src_type === 'ioc') {
         $('#id_use_iprep').attr("checked", false);
         $('#id_use_iprep').parent().hide(duration=200);
         $('#id_untrusted').attr("checked", false);
         $('#id_untrusted').closest('.form-group').hide(duration=200);
-        $('#id_remove_original_sids').parent().show(duration=200)
+
+        if (src_type === 'threat') {
+            $('#id_remove_original_sids').parent().show(duration=200)
+        } else {
+            $('#id_remove_original_sids').parent().hide(duration=200)
+        }
     } else {
         $('#id_use_iprep').attr("checked", true);
         $('#id_use_iprep').parent().show(duration=200);
@@ -95,10 +117,126 @@ function hide_threat_fields(src_type) {
     }
 }
 
+function build_metadata() {
+    let metadata = [];
+    let nb_meta = parseInt($(`#id_form-TOTAL_FORMS`).val());
+    for (let idx = 0; idx < nb_meta; idx++) {
+        if ($(`#id_form-${idx}-DELETE`).val() == 1) {
+            continue;
+        }
+        let key = $(`#id_form-${idx}-key`).val();
+        let value = $(`#id_form-${idx}-value`).val();
+
+        if (key === '' && value === '') {
+            continue;
+        }
+        metadata.push(`${key} ${value}`);
+    }
+    return metadata;
+}
+
+function build_rules() {
+    let rules = {{ rules|safe }};
+    let type = $('#id_ioc_type').val();
+    let name = $('#id_name').val() || '{name}';
+
+    $('#id_rules').empty();
+    for (let idx = 0; idx < rules[type].length; idx++) {
+        let rule = rules[type][idx];
+
+        if (name !== '') {
+            rule = rule.replace(/{name}/g, name);
+        }
+
+        metadata = build_metadata();
+        if (metadata.length !== 0) {
+            rule = rule.replace(/{metadata}/g, `, ${metadata.join(', ')}`);
+        } else {
+            rule = rule.replace(/{metadata}/g, '');
+        }
+
+        $('#id_rules').append(rule);
+    }
+}
+
+function add_item() {
+    if ($(`#init-metadata-msg`).length == 1) {
+        $(`#init-metadata-msg`).remove()
+    }
+    let count = $('#metadata-form-container').children().length;
+    let tmpl = $(`#ioc-metadata-template`).html();
+    let item = tmpl.replace(/__prefix__/g, count);
+
+    $(`div#metadata-form-container`).append(item);
+    $(`#id_form-TOTAL_FORMS`).val((count + 1).toString());
+
+    $(`#id_form-${count}-key`).on('input', build_rules);
+    $(`#id_form-${count}-value`).on('input', build_rules);
+}
+
+function connect_items() {
+    if ($(`#init-metadata-msg`).length == 1) {
+        $(`#init-metadata-msg`).remove()
+    }
+    var count = $('#metadata-form-container').children().length;
+
+    for (let idx = 0; idx < count; idx++) {
+        $(`#id_form-${idx}-key`).on('input', build_rules);
+        $(`#id_form-${idx}-value`).on('input', build_rules);
+    }
+}
+
+function del(prefix) {
+    $(this).blur();
+    confirmModal({
+        title: `Delete metadata`,
+        msg: `Do you want to delete this metadata form ?`,
+        cb: function() {
+            const item_pk_tag = `#id_${prefix}-id`;
+            const item_pk = $(item_pk_tag).val();
+            const delete_tag = `#id_${prefix}-DELETE`;
+            $(delete_tag).val(1);
+
+            if (item_pk) {
+                $.ajax({
+                    type: 'POST',
+                    url: `/rules/ioc_metadata/${item_pk}/delete/`,
+                    context: $(this),
+                    success: function(data) {
+                        if ('error' in data) {
+                            $(`#results-${prefix}`).text('');
+                            $(`#results-${prefix}`).append('<br><hr>');
+                            $(`#results-${prefix}`).append('<strong>Errors:</strong><br>');
+                            $(`#results-${prefix}`).append(data['error']);
+                            $(`#results-${prefix}`).append('<hr>');
+                        } else {
+                            const form_tag = `#id_${prefix}`;
+                            $(form_tag).hide(duration=200);
+
+                            let count = $('#metadata-form-container').children().length;
+                            $(`#id_form-TOTAL_FORMS`).val((count).toString());
+                            build_rules();
+                        }
+                    }
+                });
+            } else {
+                const form_tag = `#id_${prefix}`;
+                $(form_tag).hide(duration=200);
+
+                let count = $('#metadata-form-container').children().length;
+                $(`#id_form-TOTAL_FORMS`).val((count).toString());
+                build_rules();
+            }
+        }
+    });
+    return false;
+}
+
 $('document').ready(function() {
     hide_fields();
     select_fields();
     $("#id_method").trigger("change");
+    $("#id_ioc_type").change(build_rules);
 
     let src_type = {% if not source %}undefined{% else %}"{{ source.datatype }}"{% endif %};
     if (src_type !== undefined) {
@@ -107,10 +245,29 @@ $('document').ready(function() {
 
     $('#id_datatype').change(function() {
         hide_threat_fields($(this).val());
-    })
+    });
+
+    $(`.add-item`).click(function(ev) {
+        ev.preventDefault();
+        add_item();
+    });
+    $("#id_datatype").trigger("change");
+
+    connect_items();
 
 });
     </script>
+
+    <script type="text/html" id="ioc-metadata-template">
+    <div class="no_error panel panel-default" id="id_form-__prefix__">
+        <div class="panel-body">
+            {% bootstrap_form ioc_meta_formset.empty_form %}
+            <a id="delete-metadata-form-__prefix__" class="btn btn-danger" onclick="del('form-__prefix__'); return false">Delete</a>
+        </div>
+    </div>
+    </script>
+
+
     <div class="alert alert-warning" id="name_warning">
         Warning: the name will be file name in Suricata rules directory
     </div>
@@ -120,7 +277,57 @@ $('document').ready(function() {
                 <div class="col-md-6">
                     <form class="form" enctype="multipart/form-data" action={% if source %}"{% url 'edit_source'  source.pk %}"{% else %}"{% url 'add_source' %}"{% endif %} method="post">
                         {% csrf_token %}
-                        {% bootstrap_form form %}
+                        {% bootstrap_field form.name %}
+                        {% bootstrap_field form.method %}
+                        {% bootstrap_field form.datatype %}
+                        {% bootstrap_field form.ioc_type %}
+                        {% bootstrap_field form.use_iprep %}
+                        {% bootstrap_field form.use_sys_proxy %}
+                        {% bootstrap_field form.untrusted %}
+                        {% if form.rulesets %}
+                            {% bootstrap_field form.rulesets %}
+                        {% endif %}
+                        {% bootstrap_field form.uri %}
+                        {% bootstrap_field form.authkey %}
+                        {% bootstrap_field form.cert_verif %}
+                        {% bootstrap_field form.file %}
+                        {% if form.remove_original_sids %}
+                            {% bootstrap_field form.remove_original_sids %}
+                        {% endif %}
+
+                        <div id="id_ioc_meta_formset" style="display: none">
+                            <div class="form-group">
+                                <label class="control-label">IoC rule Metadata</label>
+                            </div>
+                            <div class="form-group">
+                                {{ ioc_meta_formset.management_form }}
+                                {{ ioc_meta_formset.non_form_errors }}
+
+                                <div id="metadata-form-container" class="form-group">
+                                    {% for metadata_form in ioc_meta_formset %}
+                                        <div class="no_error panel panel-default" id="id_{{ metadata_form.prefix }}">
+                                            <div class="panel-body">
+                                                {% bootstrap_form metadata_form %}
+                                                <a id="delete-metadata-form-__prefix__" class="btn btn-danger" onclick="del('{{ metadata_form.prefix }}'); return false">Delete</a>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div id='init-metadata-msg' class="help-block">
+                                            Please click on "Add item" button to add a new rule Metadata
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="form-group">
+                                    <a href="#" id="add-item-button" class="btn btn-secondary add-item">
+                                        Add Item
+                                    </a>
+                                </div>
+                                <div class="form-group" id='id_rules'>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% bootstrap_field form.comment %}
                         {% buttons %}
                             <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Submit</button>
                         {% endbuttons %}

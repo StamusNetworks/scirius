@@ -74,6 +74,7 @@ urlpatterns = [
     path('history/', views.history, name='history'),
     path('comment/', views.history, name='comment'),
     path('policies/', views.policies, name='policies'),
+    path('ioc_metadata/<int:ioc_meta_id>/delete/', views.delete_ioc_metadata, name='delete_ioc_metadata'),
 
     path('status/', views.status, name='status'),
     path('stasks/', views.stasks, name='view_stasks'),

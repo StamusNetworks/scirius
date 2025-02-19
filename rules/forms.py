@@ -30,10 +30,11 @@ from django.db.models import F, fields
 from django.db import transaction
 from django.conf import settings
 from rules.models import (
-    RuleAtVersion, Ruleset, Source, Category, SystemSettings, Threshold, Transformation,
+    IoCMeta, RuleAtVersion, Ruleset, Source, Category, SystemSettings, Threshold, Transformation,
     RuleProcessingFilter, RuleProcessingFilterDef, FilterSet,
     validate_source_datatype
 )
+from rules.validators import no_space_validator
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -290,24 +291,51 @@ class SourceForm(forms.ModelForm, CommentForm):
 
         if source.datatype in dict(Source.CONTENT_TYPE).keys():
             self.fields.pop('remove_original_sids')
+            if source.datatype == 'ioc':
+                self.fields['name'].disabled = True
+                self.fields['ioc_type'].disabled = True
 
-    def update(self, request, prev_uri):
-        if self.instance.method == 'local' and 'file' in request.FILES:
-            file_ = request.FILES['file']
-            with tempfile.NamedTemporaryFile(delete=False) as tmpfile:
-                path = tmpfile.name
-                for chunk in file_.chunks():
-                    tmpfile.write(chunk)
+    def clean(self):
+        cleaned_data = super(SourceForm, self).clean()
+        # validate file content
+        # validation is done in the task if method is http
+        if cleaned_data['method'] == 'local' and cleaned_data.get('file') and self.instance.datatype == 'ioc':
 
-            MIDDLEWARE.models.CeleryTask.spawn(
-                'SourceUpdateParentTask',
-                source_pk=self.instance.pk,
-                user=request.user,
-                path=path
-            )
+            validator = Source.IOC_MAPPING[self.instance.ioc_type]['validator']
+            file = cleaned_data['file']
+
+            for line in file:
+                try:
+                    validator(line.decode().strip())
+                except ValidationError as e:
+                    self.add_error('file', e.message)
+                    # if we have set a wrong file with 1000 items
+                    # we avoid to show all errors on the page
+                    break
+            file.seek(0)
+        return cleaned_data
+
+    def update(self, request, prev_uri, prev_method):
+        need_update = False
+
+        # task is run only if a new dataset is uploaded
+        kwargs = {}
+        if self.instance.method == 'local':
+            if 'file' in request.FILES:
+                file_ = request.FILES['file']
+                with tempfile.NamedTemporaryFile(delete=False) as tmpfile:
+                    kwargs = {'path': tmpfile.name}
+                    for chunk in file_.chunks():
+                        tmpfile.write(chunk)
+
+                need_update = True
+            else:
+                # we don t run a task because we don t have uploaded file
+                # we just update the rules
+                self.instance._update_ioc_rules()
 
         # do a soft reset of rules in the source if URL changes
-        elif self.instance.method == 'http' and self.instance.uri != prev_uri:
+        elif (self.instance.method == 'http' and self.instance.uri != prev_uri) or self.instance.method != prev_method:
             RuleAtVersion.objects.filter(rule__category__source=self.instance).update(rev=0)
             self.instance.version = 1
             self.instance.save()
@@ -320,12 +348,75 @@ class SourceForm(forms.ModelForm, CommentForm):
                 category.name = '%s Sigs' % self.cleaned_data['name']
                 category.save()
 
+        if need_update:
+            MIDDLEWARE.models.CeleryTask.spawn(
+                'SourceUpdateParentTask',
+                source_pk=self.instance.pk,
+                user=request.user,
+                **kwargs
+            )
+
+        return need_update
+
+
+class IoCMetaForm(forms.ModelForm):
+    key = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True,
+        validators=[no_space_validator]
+    )
+    value = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True,
+        validators=[no_space_validator]
+    )
+
+    class Meta:
+        model = IoCMeta
+        fields = ('key', 'value')
+
+
+class IoCMetaFormset(forms.BaseModelFormSet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.forms:
+            form.empty_permitted = False
+
+    # https://docs.djangoproject.com/en/2.2/topics/forms/formsets/#adding-additional-fields-to-a-formset
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        form.fields['DELETE'].widget = forms.HiddenInput()
+
+    def clean(self):
+        if any(self.errors):
+            return
+
+        for form in self.forms:
+            if self.can_delete and self._should_delete_form(form):
+                continue
+
+        return super().clean()
+
+
+def get_ioc_meta_formset():
+    IoCMetaFormset_ = forms.modelformset_factory(
+        IoCMeta,
+        can_delete=True,
+        form=IoCMetaForm,
+        formset=IoCMetaFormset,
+        extra=0
+    )
+    return IoCMetaFormset_
+
 
 class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
     file = forms.FileField(required=False)
     authkey = forms.CharField(max_length=100, label="Optional authorization key", required=False)
     rulesets_label = "Add source to the following ruleset(s)"
     untrusted = forms.BooleanField(label='Source sanitization', required=False, help_text='If you uncheck the box then signatures can potentially modify the probe or run arbitrary code.', initial=True)
+    ioc_type = forms.ChoiceField(choices=Source.IOC_TYPE, required=False, label='IoC datatype')
 
     class Meta:
         model = Source
@@ -349,8 +440,23 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
         except ValidationError as e:
             self.add_error('datatype', e.message)
 
-        if cleaned_data.get('method') == 'local' and cleaned_data.get('file') is None:
-            self.add_error('file', 'This field is required.')
+        if cleaned_data.get('method') == 'local':
+            if cleaned_data.get('file') is None:
+                self.add_error('file', 'This field is required.')
+            else:
+                if cleaned_data['datatype'] == 'ioc':
+                    validator = Source.IOC_MAPPING[cleaned_data['ioc_type']]['validator']
+                    file = cleaned_data['file']
+                    file.seek(0)
+
+                    for line in file:
+                        try:
+                            validator(line.decode().strip())
+                        except ValidationError as e:
+                            self.add_error('file', e.message)
+                            # if we have set a wrong file with 1000 items
+                            # we avoid to show all errors on the page
+                            break
 
         return cleaned_data
 

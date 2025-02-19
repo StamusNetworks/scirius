@@ -46,7 +46,7 @@ from scirius.utils import (
 )
 
 from rules.es_data import ESData
-from rules.models import RuleAtVersion, Ruleset, Source, SourceUpdate, Category, Rule, SuppressedRuleAtVersion, dependencies_check, get_system_settings
+from rules.models import IoCMeta, RuleAtVersion, Ruleset, Source, SourceUpdate, Category, Rule, SuppressedRuleAtVersion, dependencies_check, get_system_settings
 from rules.models import Threshold, Transformation, RulesetTransformation, UserAction
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, SourceUpdateTable
 
@@ -58,7 +58,7 @@ from suricata.tasks import tasks_permission_required, check_task_perms
 from .tables import RuleTable, CategoryTable, RulesetTable, CategoryRulesetTable, RuleHostTable, ESIndexessTable
 from .tables import RuleThresholdTable, RuleSuppressTable, RulesetThresholdTable, RulesetSuppressTable
 from .tables import EditCategoryTable, EditRuleTable, EditSourceTable
-from .forms import RuleCommentForm, RuleTransformForm, CategoryTransformForm, RulesetSuppressForm, CommentForm
+from .forms import RuleCommentForm, RuleTransformForm, CategoryTransformForm, RulesetSuppressForm, CommentForm, get_ioc_meta_formset
 from .forms import AddRuleThresholdForm, AddRuleSuppressForm, AddSourceForm, AddPublicSourceForm, SourceForm
 from .forms import (
     RulesetForm, RulesetEditForm, RulesetCopyForm,
@@ -1146,15 +1146,28 @@ def changelog_source(request, source_id):
 
 @permission_required('rules.source_edit', raise_exception=True)
 def add_source(request):
+    IoCMetaFormset = get_ioc_meta_formset()
     if request.method == 'POST':
         form = AddSourceForm(request.POST, request.FILES)
-        if form.is_valid():
+        ioc_meta_formset = IoCMetaFormset(request.POST)
+
+        if form.is_valid() and ioc_meta_formset.is_valid():
             try:
                 src: Source = form.save()
+                ioc_metadata_instances = ioc_meta_formset.save()
+
+                for ioc_meta in ioc_metadata_instances:
+                    src.ioc_meta.add(ioc_meta)
+
                 src.add_self_in_rulesets(form.cleaned_data.get('rulesets', []), request)
                 form.update(request)
             except IntegrityError as error:
-                return scirius_render(request, 'rules/add_source.html', {'form': form, 'error': error})
+                return scirius_render(request, 'rules/add_source.html', {
+                    'form': form,
+                    'ioc_meta_formset': ioc_meta_formset,
+                    'rules': Source.ioc_rules(highlight=True),
+                    'error': error
+                })
 
             UserAction.create(
                 action_type='create_source',
@@ -1165,15 +1178,26 @@ def add_source(request):
 
             return redirect('status')
         else:
+            errors = [error for error in ioc_meta_formset.errors if error] + [form.errors.as_json()]
             return scirius_render(
                 request,
                 'rules/add_source.html',
-                {'form': form, 'error': 'form is not valid'}
+                {
+                    'form': form,
+                    'ioc_meta_formset': ioc_meta_formset,
+                    'rules': Source.ioc_rules(highlight=True),
+                    'error': f'form is not valid: {errors}'
+                }
             )
     else:
         form = AddSourceForm()  # An unbound form
+        ioc_meta_formset = IoCMetaFormset(queryset=IoCMeta.objects.none())
 
-    return scirius_render(request, 'rules/add_source.html', {'form': form})
+    return scirius_render(request, 'rules/add_source.html', {
+        'form': form,
+        'ioc_meta_formset': ioc_meta_formset,
+        'rules': Source.ioc_rules(highlight=True)
+    })
 
 
 def fetch_public_sources():
@@ -1281,23 +1305,51 @@ def add_public_source(request):
 
 
 @permission_required('rules.source_edit', raise_exception=True)
+def delete_ioc_metadata(request, ioc_meta_id):
+    ioc_meta = get_object_or_404(IoCMeta, pk=ioc_meta_id)
+    if not request.method == 'POST' or not is_ajax(request):
+        data = {'errors': 'Method not allowed.', 'status': False}
+        return JsonResponse(data)
+
+    ioc_meta.delete()
+    return JsonResponse({'status': True})
+
+
+@permission_required('rules.source_edit', raise_exception=True)
 def edit_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
+    IoCMetaFormset = get_ioc_meta_formset()
 
     if request.method == 'POST':  # If the form has been submitted...
         prev_uri = source.uri
+        prev_method = source.method
         form = SourceForm(request.POST, request.FILES, instance=source)
-        if form.is_valid():
+        ioc_meta_formset = IoCMetaFormset(request.POST)
+
+        if form.is_valid() and ioc_meta_formset.is_valid():
             try:
                 form.save()
-                form.update(request, prev_uri)
+                ioc_metadata_instances = ioc_meta_formset.save()
+
+                # add new ioc_meta to source
+                # keep old ioc_meta
+                for ioc_meta in ioc_metadata_instances:
+                    source.ioc_meta.add(ioc_meta)
+
+                need_update = form.update(request, prev_uri, prev_method)
             except Exception as e:
                 if isinstance(e, ValidationError):
                     e = e.message
                 return scirius_render(
                     request,
                     'rules/add_source.html',
-                    {'form': form, 'source': source, 'error': e}
+                    {
+                        'form': form,
+                        'source': source,
+                        'ioc_meta_formset': ioc_meta_formset,
+                        'rules': Source.ioc_rules(highlight=True, src_instance=source),
+                        'error': e
+                    }
                 )
             else:
                 UserAction.create(
@@ -1307,14 +1359,50 @@ def edit_source(request, source_id):
                     source=source
                 )
 
-                return redirect(source)
+                if need_update:
+                    return redirect('status')
+
+                messages.success(
+                    request,
+                    "All changes are saved. Don't forget to update/push ruleset."
+                )
+                return scirius_render(
+                    request,
+                    'rules/add_source.html',
+                    {
+                        'form': form,
+                        'source': source,
+                        'ioc_meta_formset': IoCMetaFormset(queryset=IoCMeta.objects.filter(ioc_source=source)),
+                        'rules': Source.ioc_rules(highlight=True, src_instance=source)
+                    }
+                )
+
+        else:
+            errors = [error for error in ioc_meta_formset.errors if error] + [form.errors.as_json()]
+            return scirius_render(
+                request,
+                'rules/add_source.html',
+                {
+                    'form': form,
+                    'ioc_meta_formset': ioc_meta_formset,
+                    'rules': Source.ioc_rules(highlight=True, src_instance=source),
+                    'error': f'form is not valid: {errors}'
+                }
+            )
     else:
         form = SourceForm(instance=source)
+        ioc_meta_formset = IoCMetaFormset(queryset=IoCMeta.objects.filter(ioc_source=source))
 
     return scirius_render(
         request,
         'rules/add_source.html',
-        {'form': form, 'source': source, 'object_path': [source]}
+        {
+            'form': form,
+            'source': source,
+            'ioc_meta_formset': ioc_meta_formset,
+            'rules': Source.ioc_rules(highlight=True, src_instance=source),
+            'object_path': [source]
+        }
     )
 
 

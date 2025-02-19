@@ -32,6 +32,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html, format_html_join
 from scirius.settings import DATA_LIKE
+from django.db.models.functions import Coalesce
 from idstools import rule as rule_idstools
 from enum import Enum, unique
 from copy import deepcopy
@@ -49,9 +50,11 @@ from datetime import date as datetime_date
 import logging
 from ipware.ip import get_client_ip
 
+from rules.suripyg import SuriHTMLFormat
 from rules.tests_rules import TestRules
 from rules.validators import validate_addresses_or_networks
 from rules.filter_sets import FILTER_SETS
+from rules.ioc_mapping import IOC_MAPPING as IOC_MAP
 
 from django.contrib.auth.models import User
 
@@ -886,10 +889,18 @@ class Source(models.Model):
     CONTENT_TYPE = [
         ('sigs', 'Signatures files in tar archive'),
         ('sig', 'Individual Signatures file'),
+        ('ioc', 'IoC'),
         # ('iprep', 'IP reputation files'),
         ('other', 'Other content'),
         ('b64dataset', 'String dataset file'),
     ]
+    IOC_TYPE = [
+        ('hostname', 'Hostname'),
+        ('domain_name', 'Domain Name'),
+        ('ip', 'IP'),
+    ]
+    IOC_MAPPING = IOC_MAP
+
     TMP_DIR = "/tmp/"
     REFRESH_LOCK_ID = 'source-lock'
     REFRESH_LOCK_EXPIRE = 60 * 10
@@ -899,6 +910,8 @@ class Source(models.Model):
     updated_date = models.DateTimeField('date updated', blank=True, null=True)
     method = models.CharField(max_length=10, choices=FETCH_METHOD)
     datatype = models.CharField(max_length=10)
+    # ioc fields
+    ioc_type = models.CharField(max_length=20, blank=True, null=True, choices=IOC_TYPE)
     uri = models.CharField(max_length=400, blank=True, null=True)
     cert_verif = models.BooleanField('Check certificates', default=True)
     authkey = models.CharField(max_length=400, blank=True, null=True)
@@ -909,8 +922,6 @@ class Source(models.Model):
     untrusted = models.BooleanField(default=True, verbose_name='Source sanitization')
     is_stamus = models.BooleanField(default=False)
     remove_original_sids = models.BooleanField(default=True)
-
-    editable = True
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
@@ -923,6 +934,59 @@ class Source(models.Model):
 
         from scirius.utils import get_middleware_module
         self.custom_data_type = get_middleware_module('common').custom_source_datatype()
+
+    def build_ioc_metadata(self):
+        items = []
+        for item in self.ioc_meta.values('key', 'value'):
+            items.append(f"{item['key']} {item['value']}")
+        return items
+
+    @staticmethod
+    def ioc_rules(highlight=False, src_instance=None):
+        rules = {}
+        func = SuriHTMLFormat if highlight else lambda x: x
+
+        rules_info = RuleAtVersion.objects.none()
+        if src_instance:
+            rules_info = RuleAtVersion.objects.select_related('rule').filter(
+                rule__category__source=src_instance,
+            ).order_by('rule__sid', 'rev')
+
+        for ioc_type, value in Source.IOC_MAPPING.items():
+            for idx, rule in enumerate(value['signatures']):
+                if ioc_type not in rules:
+                    rules[ioc_type] = []
+
+                found = True
+                updated = timezone.now().strftime('%Y_%m_%d')
+
+                rule_data = {
+                    'metadata': '{metadata}',
+                    'updated_at': updated,
+                }
+
+                if src_instance:
+                    if ioc_type == src_instance.ioc_type:
+                        rule_data.update({
+                            'sid': rules_info[idx].rule.sid,
+                            'rev': rules_info[idx].rev + 1,
+                            'created_at': rules_info[idx].created.strftime('%Y_%m_%d')
+                        })
+                    else:
+                        found = False
+                else:
+                    rule_data.update({
+                        'sid': Rule.get_ioc_next_sid() + idx,
+                        'rev': 1,
+                        'created_at': updated
+                    })
+
+                if found:
+                    rules[ioc_type].append(func(rule.format(
+                        name='{name}',
+                        **rule_data
+                    )))
+        return rules
 
     def add_self_in_rulesets(self, rulesets, request):
         for ruleset in rulesets:
@@ -1060,6 +1124,12 @@ class Source(models.Model):
                 self.use_iprep = False
             if self.untrusted:
                 self.untrusted = False
+
+        elif self.datatype == 'ioc':
+            self.untrusted = False
+            self.use_iprep = False
+            self.remove_original_sids = False
+            self.is_stamus = True
         return super().save(*args, **kwargs)
 
     @staticmethod
@@ -1260,6 +1330,57 @@ class Source(models.Model):
     def handle_b64dataset(self, f):
         return self.handle_other_file(f, b64encode=True)
 
+    def handle_ioc_file(self, f_dataset):
+        f_dataset.seek(0)
+
+        validator = Source.IOC_MAPPING[self.ioc_type]['validator']
+        if validator:
+            for line in f_dataset:
+                validator(line.decode().strip())
+
+        if Source.IOC_MAPPING[self.ioc_type]['encoding'] == 'b64':
+            self.handle_b64dataset(f_dataset)
+        else:
+            self.handle_other_file(f_dataset)
+
+        self._update_ioc_rules()
+
+    def _update_ioc_rules(self):
+
+        # to know if source is edited or added
+        added_source = not self.category_set.exists()
+        rules_info = RuleAtVersion.objects.none()
+        if not added_source:
+            # there is only 1 rav for 1 rule
+            rules_info = RuleAtVersion.objects.select_related('rule').filter(
+                rule__category__source=self
+            ).order_by('rule__sid', 'rev', 'rule__created')
+
+        with tempfile.NamedTemporaryFile(dir=self.TMP_DIR, mode='w') as f_rules:
+            for idx, rule in enumerate(self.IOC_MAPPING[self.ioc_type]['signatures']):
+                updated = timezone.now().strftime('%Y_%m_%d')
+                metadata = '' if not self.ioc_meta.exists() else f", {', '.join(self.build_ioc_metadata())}"
+
+                if added_source:
+                    sid = Rule.get_ioc_next_sid() + idx
+                    rev = 1
+                    created = timezone.now().strftime('%Y_%m_%d')
+                else:
+                    sid = rules_info[idx].rule.sid
+                    rev = rules_info[idx].rev + 1
+                    created = rules_info[idx].rule.created.strftime('%Y_%m_%d')
+
+                f_rules.write(rule.format(
+                    name=self.name,
+                    metadata=metadata,
+                    sid=sid,
+                    rev=rev,
+                    created_at=created,
+                    updated_at=updated
+                ))
+                f_rules.write('\n')
+            self.handle_rules_file(f_rules)
+
     def handle_rules_file(self, f):
         f.seek(0)
         if (tarfile.is_tarfile(f.name)):
@@ -1403,7 +1524,7 @@ class Source(models.Model):
         cats_content = ''
         iprep_content = ''
 
-        datatypes = ['sig', 'sigs']
+        datatypes = ['sig', 'sigs', 'ioc']
         if self.custom_data_type:
             datatypes.append(self.custom_data_type[0])
 
@@ -1511,6 +1632,8 @@ class Source(models.Model):
                 self.handle_other_file(_file)
             elif self.datatype == 'b64dataset':
                 self.handle_b64dataset(_file)
+            elif self.datatype == 'ioc':
+                self.handle_ioc_file(_file)
             elif self.datatype in self.custom_data_type:
                 self.handle_custom_file(_file, upload=upload)
         except DuplicateSidException as e:
@@ -1557,6 +1680,18 @@ class Source(models.Model):
             self.create_update()
         for rule in self.updated_rules["deleted"]:
             rule.delete()
+
+
+class IoCMeta(models.Model):
+    key = models.CharField(max_length=100, null=False, blank=False)
+    value = models.CharField(max_length=100, null=False, blank=False)
+    ioc_source = models.ForeignKey(
+        Source,
+        on_delete=models.CASCADE,
+        related_name='ioc_meta',
+        null=True,
+        blank=True
+    )
 
 
 class UserActionObject(models.Model):
@@ -2648,12 +2783,23 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
     # initialized in AppConfig or when adding stamus source or stay empty
     SID_RANGES = {}
 
+    IOC_RANGE = [3120786, 3120985]
+
     def __str__(self):
         return str(self.sid) + ":" + self.msg
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
         Cache.__init__(self)
+
+    @classmethod
+    def get_ioc_next_sid(cls) -> int:
+        return cls.objects.filter(  # pyright: ignore
+            sid__range=cls.IOC_RANGE
+        ).aggregate(
+            # remove 1 because we add 1 in the next line
+            max_sid=Coalesce(models.Max('sid'), cls.IOC_RANGE[0] - 1)
+        ).get('max_sid') + 1
 
     def is_in_stamus_range(self):
         for values in self.SID_RANGES.values():

@@ -19,9 +19,40 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+import re
 import IPy
 
 from django.core.exceptions import ValidationError
+
+
+def no_space_validator(value):
+    if ' ' in value:
+        raise ValidationError('"%s" contains space' % value)
+
+
+def validate_hostname(value):
+    no_space_validator(value)
+    if '_' in value:
+        raise ValidationError('"%s" contains underscore' % value)
+
+    # http://www.regextester.com/23
+    HOSTNAME_RX = r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+
+    if re.match(HOSTNAME_RX, value):
+        return
+    raise ValidationError(f'"{value}": Invalid hostname', code='invalid_hostname')
+
+
+def validate_dns(value):
+    if ' ' in value:
+        raise ValidationError('"%s" contains space' % value)
+
+    # based on http://www.regextester.com/23 + '_'
+    HOSTNAME_RX = r'^(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\-_]*[a-zA-Z0-9_])\.)*([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\-_]*[A-Za-z0-9_])$'
+
+    if re.match(HOSTNAME_RX, value):
+        return
+    raise ValidationError('Invalid hostname', code='invalid_hostname')
 
 
 def validate_addresses_or_networks(value):
