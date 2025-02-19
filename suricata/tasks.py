@@ -380,7 +380,7 @@ class AddUpdateSourceTask(SourceTask):
             msg = '%s: %s' % (_msg, errors)
             if add:
                 source.delete()
-            raise TaskFailure(msg)
+            raise Exception(msg)
 
 
 class UploadAddEditSourceTask(SourceTask):
@@ -399,7 +399,7 @@ class UploadAddEditSourceTask(SourceTask):
                     error = str(error)
             if add:
                 source.delete()
-            raise TaskFailure(error)
+            raise Exception(error)
         finally:
             os.remove(path)
 
