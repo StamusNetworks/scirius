@@ -101,8 +101,13 @@ const FilterSets = () => {
     }
 
     if (process.env.REACT_APP_HAS_TAG) {
-      const alertTag = row.content.filter(f => f.id === 'alert.tag')[0];
+      const alertTag = row.content.find(f => f.id === 'alert.tag');
       dispatch(setTag(alertTag));
+      if (alertTag) {
+        Object.entries(alertTag.value).forEach(([key, value]) => {
+          commonStore.setAlertTag(key, value);
+        });
+      }
     }
 
     history.push(`/stamus/${huntUrls[row.page]}`);
