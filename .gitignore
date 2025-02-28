@@ -11,3 +11,7 @@ stamus-docs/build/
 .idea/*
 ui/.idea*
 ui/cypress.env.json
+static/
+.direnv
+.envrc
+db.sqlite3

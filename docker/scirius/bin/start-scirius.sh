@@ -20,7 +20,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-cd /opt/scirius/
+cd /code
+
+cp /code/docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
+cp -rf /ui/* /code/rules/static
+# cp /ui/webpack-stats-ui.prod.json /code/rules/static/webpack-stats-ui.prod.json
 
 migrate_db() {
     python manage.py makemigrations --noinput
@@ -60,7 +64,6 @@ start() {
     python manage.py collectstatic --noinput
     echo "Starting suri-reloader daemon..."
     rm -f /var/run/suri_reloader.pid
-    python /opt/scirius/docker/scirius/suricata/scripts/suri_reloader &
     echo "Starting scirius server..."
     if [ "$DEBUG" == "True" ]; then
         echo DEBUG
@@ -72,15 +75,15 @@ start() {
 
 if [ ! -e "/data/scirius.data" ]; then
     create_db
-    /opt/scirius/docker/scirius/bin/reset_dashboards.sh
-    # /opt/scirius/docker/scirius/bin/create_ILM_policy.sh
+    /code/docker/scirius/bin/reset_dashboards.sh
+    # /code/docker/scirius/bin/create_ILM_policy.sh
 else
     migrate_db
 fi
 
 if [ -n "$KIBANA_RESET_DASHBOARDS" ]; then
     echo "Resetting Kibana dashboards..."
-    /opt/scirius/docker/scirius/bin/reset_dashboards.sh
+    /code/docker/scirius/bin/reset_dashboards.sh
 fi
 
 start

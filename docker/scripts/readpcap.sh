@@ -313,14 +313,11 @@ fi
 echo "Running suricata-replay container"
 docker run --name suricata-replay --rm -it \
   --cap-add=net_admin --cap-add=sys_nice \
-  -v ${BASEDIR}/containers-data/suricata/logs:/var/log/suricata \
+  -v scirius_suricata-logs:/var/log/suricata \
   -v scirius_suricata-rules:/etc/suricata/rules \
-  -v ${BASEDIR}/containers-data/suricata/etc:/etc/suricata \
+  -v ${BASEDIR}/configs/suricata/:/config/suricata \
   -v ${HOST_PATH}:${LOCAL_PATH} \
   ${RULE_MOUNT} \
-  --entrypoint /etc/suricata/new_entrypoint.sh \
+  --entrypoint /config/suricata/new_entrypoint.sh \
   ${IMAGE} -k none -r ${LOCAL_PATH} --runmode ${MODE} -l /var/log/suricata --set sensor-name=${FILENAME} ${OPTIONSTRING}
 echo "Done"
-
-docker cp ${HOST_PATH} arkime:/readpcap/
-docker exec scirius-arkime-1 bash -c "\$ARKIMEDIR/bin/capture -r /readpcap/${FILENAME} -t ${FILENAME} >> \$ARKIMEDIR/logs/capture-readpcap.log 2>&1 && rm -rf /readpcap/* "

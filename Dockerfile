@@ -18,12 +18,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #Base containers
-FROM python:3.11-slim-bookworm as base
+FROM python:3.11-slim-bookworm AS base
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
   echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
 #Download STEP
-FROM base as source
+FROM base AS source
 ARG VERSION
 ENV VERSION ${VERSION:-master}
 
@@ -56,17 +56,17 @@ RUN \
 RUN echo  "**** COPY Scirius ****"
 RUN apt-get install -y git
 RUN pip install GitPython
-WORKDIR /opt/scirius
-COPY . /opt/scirius
+WORKDIR /code
+COPY . /code
 RUN git config user.email "bot@stamus-networks.com"
 RUN git config user.name "stamus bot"
 RUN ./tests/master-build.py --app-branch HEAD --master-branch "remotes/origin/master" --remote "" .
-RUN mv /opt/scirius/docker/scirius/scirius/local_settings.py /opt/scirius/scirius/local_settings.py
-RUN chmod ugo+x /opt/scirius/docker/scirius/bin/*
+RUN mv /code/docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
+RUN chmod ugo+x /code/docker/scirius/bin/*
 
 
 # BUILD JS stuff
-FROM base as build_js
+FROM base AS build_js
 RUN \
   echo "**** install packages ****" && \
   apt-get update && \
@@ -85,15 +85,15 @@ RUN \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
   nodejs
 
-COPY --from=source /opt/scirius/*.js* /opt/scirius/.eslintrc /opt/scirius/
-COPY --from=source /opt/scirius/ui /opt/scirius/ui
-COPY --from=source /opt/scirius/npm /opt/scirius/npm
-COPY --from=source /opt/scirius/scss /opt/scirius/scss
-COPY --from=source /opt/scirius/rules/static /opt/scirius/rules/static
+COPY --from=source /code/*.js* /code/.eslintrc /code/
+COPY --from=source /code/ui /code/ui
+COPY --from=source /code/npm /code/npm
+COPY --from=source /code/scss /code/scss
+COPY --from=source /code/rules/static /code/rules/static
 
 ENV REACT_APP_HAS_ACTION 1
 
-WORKDIR /opt/scirius
+WORKDIR /code
 RUN echo "**** install Node.js dependencies for Scirius ****" && \
   npm install && \
   npm install -g webpack webpack-cli && \
@@ -103,8 +103,8 @@ RUN echo "**** install Node.js dependencies for Scirius ****" && \
   npm run build && mv webpack-stats-ui.prod.json ../rules/static/
 
 # Install python packages
-FROM base as python_modules
-COPY --from=source /opt/scirius/requirements.txt /opt/scirius/requirements.txt
+FROM base AS python_modules
+COPY --from=source /code/requirements.txt /code/requirements.txt
 RUN \
   echo "**** install packages ****" && \
   apt-get update && \
@@ -119,14 +119,14 @@ RUN \
   git
 RUN \
   echo "**** install Python dependencies for Scirius ****" && \
-  cd /opt/scirius && \
+  cd /code && \
   python -m pip install --user --upgrade\
   six \
   python-daemon \
   suricatactl &&\
   python -m pip install --user -r requirements.txt
 
-FROM base as gophercap
+FROM base AS gophercap
 RUN \
   echo "**** install tools to get gophercap ****" && \
   apt-get update && \
@@ -143,7 +143,7 @@ RUN \
   chmod +x /usr/local/bin/gopherCap
 
 #BUILD doc
-FROM base as build_docs
+FROM base AS build_docs
 RUN \
   echo "**** install packages ****" && \
   apt-get update && \
@@ -154,10 +154,10 @@ RUN \
   gcc \
   libc-dev \
   python3-sphinx
-COPY --from=source /opt/scirius/doc /opt/scirius/doc
+COPY --from=source /code/doc /code/doc
 RUN \
   echo "**** build docs ****" && \
-  cd /opt/scirius/doc && \
+  cd /code/doc && \
   make html
 
 # PACKAGING STEP
@@ -171,7 +171,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
   org.label-schema.vcs-ref=$VCS_REF \
   org.label-schema.schema-version="1.0.0-rc1"
 
-COPY --from=source /opt/scirius /opt/scirius
+COPY --from=source /code /code
 
 RUN \
   echo "**** install packages ****" && \
@@ -188,10 +188,10 @@ RUN \
 RUN pip install --no-cache-dir gunicorn celery flower "sqlalchemy==1.4"
 
 
-COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
+COPY --from=build_js /code/rules/static /code/rules/static
 COPY --from=python_modules /root/.local /root/.local
 COPY --from=gophercap /usr/local/bin/gopherCap /usr/local/bin/gopherCap
-COPY --from=build_docs /opt/scirius/doc/_build/html /static/doc
+COPY --from=build_docs /code/doc/_build/html /static/doc
 COPY --from=source /opt/kibana7-dashboards /opt/kibana7-dashboards
 COPY --from=source /tmp/cyberchef /static/cyberchef/
 
@@ -204,4 +204,4 @@ VOLUME /rules /data /static /logs
 
 EXPOSE 8000
 
-CMD ["/bin/bash", "/opt/scirius/docker/scirius/bin/start-scirius.sh"]
+CMD ["/bin/bash", "/code/docker/scirius/bin/start-scirius.sh"]

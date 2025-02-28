@@ -16,6 +16,8 @@ fix_perms() {
     chown -R suricata:suricata /var/run/suricata
 }
 
+cp /config/suricata/selks6-addin.yaml /etc/suricata/selks6-addin.yaml
+
 for src in /etc/suricata.dist/*; do
     filename=$(basename ${src})
     dst="/etc/suricata/${filename}"

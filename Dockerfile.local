@@ -1,0 +1,63 @@
+FROM ubuntu AS kibana
+
+RUN apt-get update && apt-get install -y wget
+
+RUN wget --no-check-certificate --content-disposition -O /tmp/kibana7-dashboards.tar.gz https://github.com/StamusNetworks/KTS7/tarball/dbbac5cbe9e76838ab2bcb2b8b41e8fef19082f9 && \
+    mkdir /tmp/kibana7-dashboards && \
+    tar zxf /tmp/kibana7-dashboards.tar.gz -C /tmp/kibana7-dashboards --strip-components 1 && \
+    mv /tmp/kibana7-dashboards /opt/kibana7-dashboards
+
+FROM node:18 AS build_js
+
+WORKDIR /code
+
+COPY package.json /code/package.json
+COPY package-lock.json /code/package-lock.json
+
+RUN npm install
+RUN npm install -g webpack webpack-cli
+
+COPY webpack.config.js /code/webpack.config.js
+COPY npm /code/npm
+COPY rules /code/rules
+COPY scss /code/scss
+COPY .eslintrc /code/.eslintrc
+
+RUN webpack
+
+COPY ./ui /code/ui
+
+RUN cd ui && npm install && npm run build
+
+
+
+FROM python:3.11-slim-bookworm AS final
+
+RUN apt-get update &&\
+    apt-get install -y gcc gfortran gnupg2 libffi-dev libldap2-dev libsasl2-dev openssh-client libssl-dev libz-dev libpq-dev &&\
+    pip install --no-cache-dir --upgrade pip
+
+RUN apt-get update &&\
+    apt-get install -y ansible curl git gnupg suricata libffi-dev libldap2-dev libsasl2-dev openssh-client libssl-dev libz-dev libpq-dev &&\
+    pip install --no-cache-dir gunicorn celery flower pylint astroid mypy flake8 bandit python-daemon suricatactl six "sqlalchemy==1.4"
+
+COPY ./requirements-base.txt /code/.
+COPY ./requirements-app.txt /code/.
+
+WORKDIR /code
+
+RUN  pip install --no-cache-dir --user -r requirements-base.txt && \
+    pip install --no-cache-dir --user -r requirements-app.txt
+
+COPY ./ /code
+COPY ./docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
+RUN chmod +x /code/docker/scirius/bin/start-scirius.sh &&\
+    mkdir -p /var/log/celery && \
+    touch /var/log/celery/ansible.log
+
+
+COPY --from=build_js /code/rules/static /ui
+COPY --from=kibana /opt/kibana7-dashboards /opt/kibana7-dashboards
+
+ENTRYPOINT [ "sh", "-c" ]
+CMD ["/code/docker/scirius/bin/start-scirius.sh"]
