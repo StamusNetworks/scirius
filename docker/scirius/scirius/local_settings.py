@@ -187,10 +187,6 @@ CSP_EXCLUDE_URL_PREFIXES = tuple(os.getenv('CSP_EXCLUDE_URL_PREFIXES', '/evebox'
 
 GIT_SOURCES_BASE_DIRECTORY = '/data/git-sources/'
 
-APP_LONG_NAME = 'Clear NDR Community'
-APP_MEDIUM_NAME = 'Clear NDR CE'
-APP_SHORT_NAME = 'Clear NDR'
-APP_MNGT_NAME = 'Clear NDR CE Management'
 SCIRIUS_VERSION = "0.9.0"
 LOGO = 'rules/stamus.png'
 
@@ -215,30 +211,39 @@ DATABASES = {
 
 RULESET_MIDDLEWARE = os.getenv('RULESET_MIDDLEWARE', 'suricata')
 
-INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_tables2',
-    'bootstrap3',
-    'viz',
-    'rules',
-    'scirius',
-    'suricata',
-    'django_celery_results',
-    'accounts',
-    'rest_framework',
-    'rest_framework.authtoken',
-    'django_filters',
-    'webpack_loader',
-    'chunked_upload',
-    'django_ace',
-)
-
-
 USE_OPENSEARCH = True
 
-CELERY_BROKER = 'amqp://guest:guest@rabbitmq:5672//'
-CELERY_RESULT_BACKEND = 'db+postgresql://' + USER + ':' + PASSWORD + '@' + HOST + ':' + PORT + '/' + NAME
+CELERY_BROKER = os.getenv("CELERY_BROKER", 'amqp://guest:guest@rabbitmq:5672//')
+CELERY_RESULT_BACKEND = f'db+postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'
+
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://localhost:5173",
+]
+
+
+# CORS_ALLOWED_ORIGINS = [
+#     "*",
+# ]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_HEADERS = ["authorization", "cookies", "withcredentials", "content-type"]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:8000',
+    'http://localhost',
+    'https://localhost',
+    os.getenv('HTTP_HOST', "http://localhost:8000"),
+    os.getenv('STATIC_URL', "http://localhost:3001"),
+    os.getenv('FRONT_URL', "http://localhost:3002")
+]
+
+ANSIBLE_BASE_DIR = "/ansible"
+ANSIBLE_PATH = "ansible"
+USE_ANSIBLE_TO_GET_MAC = False
