@@ -710,11 +710,16 @@ class AlertItem extends React.Component {
                           <EventField filter={new Filter('tls.ja3s.hash', data.tls.ja3s.hash)} />
                         </ErrorHandler>
                       )}
-                      {data.tls.ja4 && data.tls.ja4 !== undefined && (
-                        <ErrorHandler>
-                          <EventField filter={new Filter('tls.ja4', data.tls.ja4)} />
-                        </ErrorHandler>
-                      )}
+                      {data.tls.ja4 &&
+                        (typeof data.tls.ja4 === 'string' ? (
+                          <ErrorHandler>
+                            <EventField filter={new Filter('tls.ja4', data.tls.ja4)} />
+                          </ErrorHandler>
+                        ) : data.tls.ja4?.hash !== undefined ? (
+                          <ErrorHandler>
+                            <EventField filter={new Filter('tls.ja4', data.tls.ja4.hash)} />
+                          </ErrorHandler>
+                        ) : null)}
                       {data.tls.alpn_ts !== undefined && (
                         <ErrorHandler>
                           <EventsField filters={data.tls.alpn_ts.map(value => new Filter('tls.alpn_ts', value))} />
