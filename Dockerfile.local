@@ -57,6 +57,7 @@ RUN chmod +x /code/docker/scirius/bin/start-scirius.sh &&\
 
 
 COPY --from=build_js /code/rules/static /ui
+COPY --from=build_js /code/ui/webpack-stats-ui.prod.json /ui/webpack-stats-ui.prod.json
 COPY --from=kibana /opt/kibana7-dashboards /opt/kibana7-dashboards
 
 ENTRYPOINT [ "sh", "-c" ]
