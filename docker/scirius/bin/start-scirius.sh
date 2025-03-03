@@ -24,7 +24,7 @@ cd /code
 
 cp /code/docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
 cp -rf /ui/* /code/rules/static
-# cp /ui/webpack-stats-ui.prod.json /code/rules/static/webpack-stats-ui.prod.json
+cp /ui/webpack-stats-ui.prod.json /code/rules/static/webpack-stats-ui.prod.json
 
 migrate_db() {
     python manage.py makemigrations --noinput
