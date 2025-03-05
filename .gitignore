@@ -6,3 +6,8 @@ node_modules
 rules/static/dist
 rules/static/doc
 doc/_build/
+stamus-docs/build/
+.DS_Store
+.idea/*
+ui/.idea*
+ui/cypress.env.json
