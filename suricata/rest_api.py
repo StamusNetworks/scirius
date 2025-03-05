@@ -65,22 +65,6 @@ class SuricataViewSet(APIView):
         return Response({'update_push_all': msg})
 
 
-def get_custom_urls():
-    urls = [
-        path("rules/ruleset/<int:pk>/update_generate/", SuricataRulesetCeleryTaskViewSet.as_view()),
-        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/status/$', FilestoreViewSet.as_view({'get': 'status'}), name='filestore_status'),
-        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/retrieve/$', FilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_retrieve'),
-        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/download/$', FilestoreViewSet.as_view({'get': 'download'}), name='filestore_download'),
-
-        re_path(r'rules/filestore_pcap/upload/$', PcapFilestoreViewSet.as_view({'post': 'upload'}), name='filestore_pcap_upload'),
-        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/extract_pcap/$', PcapFilestoreViewSet.as_view({'post': 'extract_pcap'}), name='filestore_pcap_extract'),
-        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/status/$', PcapFilestoreViewSet.as_view({'get': 'status'}), name='filestore_pcap_status'),
-        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/retrieve/$', PcapFilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_pcap_retrieve'),
-        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/download/$', PcapFilestoreViewSet.as_view({'get': 'download'}), name='filestore_pcap_download')
-    ]
-    return urls
-
-
 class PcapFilestoreViewSet(viewsets.ViewSet):
     '''
     '''
@@ -217,6 +201,22 @@ class FilestoreViewSet(viewsets.ViewSet):
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = 'attachment; filename="%s.data"' % sha256
         return response
+
+
+def get_custom_urls():
+    urls = [
+        path("rules/ruleset/<int:pk>/update_generate/", SuricataRulesetCeleryTaskViewSet.as_view()),
+        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/status/$', FilestoreViewSet.as_view({'get': 'status'}), name='filestore_status'),
+        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/retrieve/$', FilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_retrieve'),
+        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/download/$', FilestoreViewSet.as_view({'get': 'download'}), name='filestore_download'),
+
+        re_path(r'rules/filestore_pcap/upload/$', PcapFilestoreViewSet.as_view({'post': 'upload'}), name='filestore_pcap_upload'),
+        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/extract_pcap/$', PcapFilestoreViewSet.as_view({'post': 'extract_pcap'}), name='filestore_pcap_extract'),
+        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/status/$', PcapFilestoreViewSet.as_view({'get': 'status'}), name='filestore_pcap_status'),
+        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/retrieve/$', PcapFilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_pcap_retrieve'),
+        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/download/$', PcapFilestoreViewSet.as_view({'get': 'download'}), name='filestore_pcap_download')
+    ]
+    return urls
 
 
 router = DefaultRouter()
