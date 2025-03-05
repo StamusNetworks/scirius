@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Calendar, Button, notification } from 'antd';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { CalendarHeader } from 'ui/components/CalendarHeader';
@@ -34,10 +35,10 @@ const CalendarStyled = styled(Calendar)`
   }
 `;
 
-const DateRangePicker = () => {
+const DateRangePicker = ({ selectedFromDate, selectedToDate }) => {
   const { commonStore } = useStore();
-  const [startDate, setStartDate] = useState(moment());
-  const [endDate, setEndDate] = useState(moment());
+  const [startDate, setStartDate] = useState(moment(selectedFromDate * 1000) || moment());
+  const [endDate, setEndDate] = useState(moment(selectedToDate * 1000) || moment());
 
   const disabledDate = (type, current) => {
     if (!current) {
@@ -117,6 +118,11 @@ const DateRangePicker = () => {
       </SubmitDate>
     </div>
   );
+};
+
+DateRangePicker.propTypes = {
+  selectedFromDate: PropTypes.number,
+  selectedToDate: PropTypes.number,
 };
 
 export default observer(DateRangePicker);

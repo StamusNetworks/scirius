@@ -100,16 +100,7 @@ const TimeRangePickersContainer = () => {
           {
             key: 'absolute',
             tab: 'Date & Time Range',
-            children: (
-              <DateRangePicker
-                selectedFromDate={commonStore.startDate}
-                selectedToDate={commonStore.endDate}
-                onOk={(startDate, endDate) => {
-                  commonStore.setAbsoluteTimeRange(startDate, endDate);
-                  dispatch(actions.setTimeSpan(startDate, endDate));
-                }}
-              />
-            ),
+            children: <DateRangePicker selectedFromDate={commonStore.startDate} selectedToDate={commonStore.endDate} />,
           },
         ]}
       />

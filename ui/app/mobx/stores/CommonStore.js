@@ -1,4 +1,4 @@
-import { message } from 'antd';
+import { message, notification } from 'antd';
 import { isEqual } from 'lodash';
 import { makeAutoObservable, toJS } from 'mobx';
 import moment from 'moment';
@@ -139,7 +139,6 @@ class CommonStore {
       } else {
         this._startDate = moment().subtract(PeriodEnum[this._relativeType].seconds, 'seconds').unix();
         this._endDate = moment().unix();
-        this.setTimePickerStorage();
       }
     }
     makeAutoObservable(this, {
@@ -294,10 +293,13 @@ class CommonStore {
       const maxTimestamp = parseInt(maxValue, 10);
       const correct = !Number.isNaN(minTimestamp) && !Number.isNaN(maxTimestamp);
 
-      // If the difference between min and max timestamp is less than a week, set the default period to D7
-      if (!correct || maxTimestamp - minTimestamp < 60 * 60 * 24 * 7) {
-        this._minTimestamp = null;
-        this._maxTimestamp = null;
+      if (!correct) {
+        notification.error({
+          message: 'Invalid data',
+          description: 'Min/Max timestamps are invalid',
+        });
+        this._minTimestamp = new Date().getTime() - 30 * 24 * 60 * 60;
+        this._maxTimestamp = new Date().getTime();
       } else {
         this._minTimestamp = minTimestamp;
         this._maxTimestamp = maxTimestamp;
@@ -476,16 +478,14 @@ class CommonStore {
       return 0;
     }
     if (this._relativeType === 'Auto') {
-      // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return moment(this._minTimestamp).unix() || moment().subtract(7, 'days').unix();
+      return moment(this._minTimestamp).unix();
     }
     return moment().subtract(PeriodEnum[this._relativeType].seconds, 'seconds').unix();
   }
 
   get endDate() {
     if (this._relativeType === 'Auto') {
-      // D7 period is the default one if min/max timestamp boundaries are incorrect
-      return moment(this._maxTimestamp).unix() || moment().unix();
+      return moment(this._maxTimestamp).unix();
     }
     return this._endDate;
   }
@@ -564,8 +564,8 @@ class CommonStore {
   }
 
   setTimePickerStorage() {
-    localStorage.setItem('startDate', this._startDate);
-    localStorage.setItem('endDate', this._endDate);
+    localStorage.setItem('startDate', this.startDate);
+    localStorage.setItem('endDate', this.endDate);
     localStorage.setItem(
       'str-timespan',
       JSON.stringify({
