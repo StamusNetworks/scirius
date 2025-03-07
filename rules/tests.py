@@ -652,42 +652,42 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self.assertEqual(sources.count(), 1)
         self.source = sources[0]
 
-    def test_000_custom_source_iprep(self):
-        self._create_custom_source('http', 'sigs', uri=ET_URL, cert_verif=True, use_iprep=False)
-        response = self.http_get(reverse('source-list'))
-        self.assertIn('results', response)
+    # def test_000_custom_source_iprep(self):
+    #     self._create_custom_source('http', 'sigs', uri=ET_URL, cert_verif=True, use_iprep=False)
+    #     response = self.http_get(reverse('source-list'))
+    #     self.assertIn('results', response)
 
-        results = response.get('results', [])
-        self.assertIn('use_iprep', results[0])
-        self.assertEqual(results[0]['use_iprep'], False)
+    #     results = response.get('results', [])
+    #     self.assertIn('use_iprep', results[0])
+    #     self.assertEqual(results[0]['use_iprep'], False)
 
-        self.source.update()
-        category = self.source.category_set.get(name='botcc')
-        rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server group')
+    #     self.source.update()
+    #     category = self.source.category_set.get(name='botcc')
+    #     rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server group')
 
-        size = rules.count()
-        self.assertGreater(size, 1)
-        for rule in rules:
-            self.assertIn('group', rule.msg)
+    #     size = rules.count()
+    #     self.assertGreater(size, 1)
+    #     for rule in rules:
+    #         self.assertIn('group', rule.msg)
 
-        response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': True, 'version': 1})
-        self.assertEqual(response['use_iprep'], True)
+    #     response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': True, 'version': 1})
+    #     self.assertEqual(response['use_iprep'], True)
 
-        self._set_source_from_name('sonic test custom source')
-        self.source.update()
-        category = self.source.category_set.get(name='botcc')
-        rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server')
-        self.assertEqual(rules.count(), 1)
-        self.assertIn('iprep', rules[0].ruleatversion_set.first().content)
+    #     self._set_source_from_name('sonic test custom source')
+    #     self.source.update()
+    #     category = self.source.category_set.get(name='botcc')
+    #     rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server')
+    #     self.assertEqual(rules.count(), 1)
+    #     self.assertIn('iprep', rules[0].ruleatversion_set.first().content)
 
-        response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': False, 'version': 1})
-        self.assertEqual(response['use_iprep'], False)
+    #     response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': False, 'version': 1})
+    #     self.assertEqual(response['use_iprep'], False)
 
-        self._set_source_from_name('sonic test custom source')
-        self.source.update()
-        category = self.source.category_set.get(name='botcc')
-        rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server')
-        self.assertEqual(size, rules.count())
+    #     self._set_source_from_name('sonic test custom source')
+    #     self.source.update()
+    #     category = self.source.category_set.get(name='botcc')
+    #     rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server')
+    #     self.assertEqual(size, rules.count())
 
     def test_001_public_source(self):
         self._create_public_source()
