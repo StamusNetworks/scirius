@@ -507,7 +507,8 @@ class SourceUpdateParentTask(SciriusTask, SourceTask):
         if source.method == 'local':
             if path is None:
                 # no new archive to upadte from
-                return
+                raise TaskFailure('No file to update from')
+
             main_task_params.update({
                 'task': 'UploadAddSourceTask' if add else 'UploadEditSourceTask',
                 'path': path
