@@ -4,9 +4,11 @@ import { Calendar, Button, notification } from 'antd';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { CalendarHeader } from 'ui/components/CalendarHeader';
+import actions from 'ui/containers/App/actions';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const SubmitDate = styled(Button)`
@@ -36,6 +38,7 @@ const CalendarStyled = styled(Calendar)`
 `;
 
 const DateRangePicker = ({ selectedFromDate, selectedToDate }) => {
+  const dispatch = useDispatch();
   const { commonStore } = useStore();
   const [startDate, setStartDate] = useState(moment(selectedFromDate * 1000) || moment());
   const [endDate, setEndDate] = useState(moment(selectedToDate * 1000) || moment());
@@ -110,6 +113,7 @@ const DateRangePicker = ({ selectedFromDate, selectedToDate }) => {
               placement: 'topLeft',
             });
           } else {
+            dispatch(actions.setTimeSpan(startDate, endDate));
             commonStore.setAbsoluteTimeRange(startDate.unix(), endDate.unix());
           }
         }}
