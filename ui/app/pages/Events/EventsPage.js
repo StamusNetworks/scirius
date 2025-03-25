@@ -115,7 +115,7 @@ const EventsPage = () => {
       onHeaderCell: () => ({
         'data-test': 'method',
       }),
-      render: val => <EventValue filter={new Filter('alert.signature', val)} />,
+      render: (val, row) => (row.isValidMethod ? <EventValue filter={new Filter('alert.signature', val)} /> : val),
     },
     {
       title: 'Source IP',
@@ -167,13 +167,14 @@ const EventsPage = () => {
   const dataSource = alerts.map(rule => ({
     key: rule._id,
     timestamp: moment(rule.timestamp).format('YYYY-MM-DD, hh:mm:ss a'),
-    method: rule.alert.signature,
+    method: rule.alert?.signature || rule.stamus?.threat_name || '',
+    isValidMethod: !!rule.alert?.signature,
     source_ip: rule.src_ip,
     destination_ip: rule.dest_ip,
     proto: rule.app_proto || rule.proto,
     probe: rule.host,
-    category: rule.alert.category,
-    tag: rule.alert.tag || 'untagged',
+    category: rule.alert?.category || '',
+    tag: rule.alert?.tag || 'untagged',
     rule, // we need this to access the rule data in the `expandedRowRender` below
   }));
 
