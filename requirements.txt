@@ -51,6 +51,7 @@ markdown
 markdown
 MarkupSafe
 medusa
+opensearch-py>=2.8.0
 paramiko
 psutil
 psycopg2-binary

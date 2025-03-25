@@ -3051,12 +3051,12 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     ==== PUT/PATCH ====\n
-        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}'
-        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}'
+        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"use_http_proxy":false,"http_proxy":"","https_proxy":"","custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}'
+        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"use_http_proxy":false,"http_proxy":"","https_proxy":"","custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}'
 
     Return:\n
         HTTP/1.1 200 OK
-        {"id":1,"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}
+        {"id":1,"use_http_proxy":false,"http_proxy":"","https_proxy":"","custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}
 
     =============================================================================================================================================================
     """

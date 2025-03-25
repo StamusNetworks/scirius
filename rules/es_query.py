@@ -10,7 +10,6 @@ import json
 import re
 import urllib.parse
 
-from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
 from elasticsearch.helpers import bulk
 
 from django.conf import settings
@@ -20,6 +19,11 @@ from rest_framework.utils.urls import replace_query_param, remove_query_param
 from rules.models import get_system_settings
 from scirius.utils import get_middleware_module
 from scirius.rest_utils import SciriusSetPagination
+
+if get_system_settings(static=True).use_opensearch_2():
+    from opensearchpy import OpenSearch as Elasticsearch, OpenSearchException as ElasticsearchException, Transport, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
+else:
+    from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
 
 
 # ES requests timeout (keep this below Scirius's ajax requests timeout)
@@ -234,7 +238,7 @@ class ESQuery:
 
             es_params.update({
                 'use_ssl': True,
-                'verify_certs': True,
+                'verify_certs': False,
                 'ca_certs': ca_certs
             })
 
@@ -402,7 +406,10 @@ class ESQuery:
         idxs = list(indexes)
 
         for idx in idxs:
-            if idx.startswith('.kibana') or idx.startswith('.geoip_databases') or idx.startswith('.security-'):
+            if idx.startswith(
+                ('.kibana', '.geoip_databases', '.security-', '.ql-datasources',
+                 '.plugins-ml-config', '.opensearch-observability', '.opendistro_security')
+            ):
                 indexes.pop(indexes.index(idx))
 
         return indexes

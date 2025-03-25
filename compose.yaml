@@ -54,31 +54,45 @@ volumes:
 
 services:
     elasticsearch:
-        image: opensearchproject/opensearch:1
+        image: opensearchproject/opensearch:2.19.0
+        container_name: elasticsearch
         restart: ${RESTART_MODE:-unless-stopped}
         healthcheck:
-            test: ['CMD-SHELL', 'curl --silent --fail localhost:9200/_cluster/health || exit 1']
+            test: ['CMD-SHELL', 'curl -k --silent --fail http://localhost:9200/_cluster/health?waitforstatus=green&timeout=1s || exit 1']
             interval: 10s
             timeout: 5s
             retries: 3
             start_period: 30s
         environment:
-            - plugins.security.disabled=true
-            - discovery.type=single-node
+            - DISABLE_SECURITY_PLUGIN=true
+            # - XLOGGING_LEVEL=DEBUG
+            # - OPENSEARCH_SSL_ENABLED=false
+            # - OPENSEARCH_SSL_VERIFY_PEER=false
+            # - OPENSEARCH_SSL_VERIFY_CA=false
+            - cluster.name=opensearch-cluster
+            - node.name=elasticsearch
+            - discovery.seed_hosts=elasticsearch
+            - cluster.initial_cluster_manager_nodes=elasticsearch
+            - bootstrap.memory_lock=true
+            - OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m
+            - OPENSEARCH_INITIAL_ADMIN_PASSWORD=YH8pq2lqNSnVEQZ
         volumes:
             - ${ELASTIC_DATAPATH:-elastic-data}:/usr/share/opensearch/data
         ports:
             - 9200:9200
+            - 9600:9600  # required for Performance Analyzer
         mem_limit: ${ELASTIC_MEMORY:-3G}
         ulimits:
             memlock:
                 soft: -1
                 hard: -1
+            nofile:
+                soft: 65536
+                hard: 65536
         networks:
             network:
 
     kibana:
-        # image: opensearchproject/opensearch-dashboards:1
         build:
             context: docker/opensearch-dashboards
             dockerfile: Dockerfile
@@ -87,16 +101,24 @@ services:
             - source: opensearch-dashboard-config
               target: /usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
         healthcheck:
-            test: ['CMD-SHELL', 'curl --silent --fail localhost:5601 || exit 1']
+            test: ['CMD-SHELL', 'curl --silent --fail http://localhost:5601 || exit 1']
             interval: 30s
             timeout: 5s
             retries: 3
             start_period: 30s
+        environment:
+            XLOGGING_LEVEL: DEBUG
+            OPENSEARCH_SSL_ENABLED: false
+            OPENSEARCH_SSL_VERIFY_CA: false
+            OPENSEARCH_SSL_VERIFY_PEER: false
+            OPENSEARCH_HOSTS: '["http://elasticsearch:9200"]'
         depends_on:
             elasticsearch:
                 condition: service_healthy
         ports:
             - 5601:5601
+        expose:
+            - '5601'
         networks:
             network:
 
@@ -131,7 +153,9 @@ services:
             - SECRET_KEY=${SCIRIUS_SECRET_KEY:-$(openssl rand -hex 32)}
             - DEBUG=${SCIRIUS_DEBUG:-True}
             - SCIRIUS_IN_SELKS=True
-            - USE_ELASTICSEARCH=True
+            # check scirius.settings.DATA_LIKE
+            - USE_DATA_LIKE=OPENSEARCH_2
+            - ELASTICSEARCH_VERIFY_CERTS=True
             - USE_KIBANA=True
             - ALLOWED_HOSTS=* #allow connexions from anywhere
             - KIBANA7_DASHBOARDS_PATH=/opt/selks/kibana7-dashboards #where to find kibana dashboards

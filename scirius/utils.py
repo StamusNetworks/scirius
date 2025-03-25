@@ -89,27 +89,26 @@ class CustomCSPMiddleware(object):
 
 
 def complete_context(request, context):
-    if get_system_settings().use_elasticsearch:
-        if request.GET.__contains__('duration'):
-            duration = int(request.GET.get('duration', '24'))
-            if duration > 24 * 30:
-                duration = 24 * 30
-            request.session['duration'] = duration
-        else:
-            duration = int(request.session.get('duration', '24'))
+    if request.GET.__contains__('duration'):
+        duration = int(request.GET.get('duration', '24'))
+        if duration > 24 * 30:
+            duration = 24 * 30
+        request.session['duration'] = duration
+    else:
+        duration = int(request.session.get('duration', '24'))
 
-        from_date = int((time() - (duration * 3600)) * 1000)
-        if duration <= 24:
-            date = '%ih' % int(duration)
-        else:
-            date = '%id' % int(duration / 24)
+    from_date = int((time() - (duration * 3600)) * 1000)
+    if duration <= 24:
+        date = '%ih' % int(duration)
+    else:
+        date = '%id' % int(duration / 24)
 
-        context['draw_func'] = 'draw_sunburst'
-        context['draw_elt'] = 'path'
+    context['draw_func'] = 'draw_sunburst'
+    context['draw_elt'] = 'path'
 
-        context['date'] = date
-        context['from_date'] = from_date
-        context['time_range'] = duration * 3600
+    context['date'] = date
+    context['from_date'] = from_date
+    context['time_range'] = duration * 3600
 
 
 def scirius_render(request, template, context):
@@ -131,15 +130,16 @@ def scirius_render(request, template, context):
         context['logstash_stats'] = 1
     if settings.HAVE_NETINFO_AGG:
         context['netinfo_agg'] = 1
-    if gsettings.use_elasticsearch:
-        context['elasticsearch'] = 1
-        context['custom_elasticsearch'] = gsettings.custom_elasticsearch
-        if settings.USE_KIBANA:
-            context['kibana'] = 1
-            if settings.KIBANA_PROXY:
-                context['kibana_url'] = "/kibana"
-            else:
-                context['kibana_url'] = settings.KIBANA_URL
+
+    context['elasticsearch'] = 1
+    context['custom_elasticsearch'] = gsettings.custom_elasticsearch
+    if settings.USE_KIBANA:
+        context['kibana'] = 1
+        if settings.KIBANA_PROXY:
+            context['kibana_url'] = "/kibana"
+        else:
+            context['kibana_url'] = settings.KIBANA_URL
+
     if settings.USE_EVEBOX:
         context['evebox'] = 1
         context['evebox_url'] = "/evebox"

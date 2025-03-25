@@ -1985,32 +1985,27 @@ class RestAPISystemSettingsTestCase(RestAPITestBase, APITestCase):
         self.assertEqual('elasticsearch_url' in content, True)
         self.assertEqual('http_proxy' in content, True)
         self.assertEqual('use_http_proxy' in content, True)
-        self.assertEqual('use_elasticsearch' in content, True)
 
     def test_002_system_settings_update(self):
         params = {
             'use_http_proxy': True,
             'http_proxy': '',
             'https_proxy': '',
-            'use_elasticsearch': True,
             'custom_elasticsearch': False,
             'elasticsearch_url': 'http://elasticsearch:9200/'
         }
         content = self.http_patch(reverse('systemsettings'), params)
         self.assertEqual(content['use_http_proxy'], True)
-        self.assertEqual(content['use_elasticsearch'], True)
 
         params = {
             'use_http_proxy': False,
             'http_proxy': '',
             'https_proxy': '',
-            'use_elasticsearch': False,
             'custom_elasticsearch': False,
             'elasticsearch_url': 'http://elasticsearch:9200/'
         }
         content = self.http_put(reverse('systemsettings'), params)
         self.assertEqual(content['use_http_proxy'], False)
-        self.assertEqual(content['use_elasticsearch'], False)
 
 
 class ModelRulesetTestCase(TestCase):

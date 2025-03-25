@@ -35,8 +35,7 @@ from rules.models import SuppressedRuleAtVersion, dependencies_check
 from rules.models import UserAction, Rule
 
 from django.conf import settings
-if settings.USE_ELASTICSEARCH:
-    from rules.es_graphs import *  # noqa: F403, F401
+from rules.es_graphs import *  # noqa: F403, F401
 
 
 def get_suri():
@@ -64,8 +63,7 @@ def index(request, error=None):
                 suppressed = ",".join([str(x.sid) for x in suppr_rules.all()])
                 context['suppressed'] = suppressed
 
-        if settings.USE_ELASTICSEARCH:
-            context['rules'] = True
+        context['rules'] = True
 
         return scirius_render(request, 'suricata/index.html', context)
     else:

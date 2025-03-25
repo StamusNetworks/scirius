@@ -369,9 +369,17 @@ SCIRIUS_IN_SELKS = True
 # Sources update
 DEFAULT_SOURCE_INDEX_URL = "https://ti.stamus-networks.io/index.yaml"
 
-# Elastic search
 
-USE_ELASTICSEARCH = True
+# Elastic search / OpenSearch
+class DATA_LIKE:
+    ES_6 = 'ELASTICSEARCH_6'
+    ES_7 = 'ELASTICSEARCH_7'
+    ES_8 = 'ELASTICSEARCH_8'
+    OS_1 = 'OPENSEARCH_1'
+    OS_2 = 'OPENSEARCH_2'
+
+
+USE_DATA_LIKE = DATA_LIKE.ES_7
 # ELASTICSEARCH_ADDRESS = "127.0.0.1:9200"
 ELASTICSEARCH_ADDRESS = "localhost:9200"
 # You can use a star to avoid timestamping expansion for example 'logstash-*'
@@ -418,9 +426,6 @@ USE_LOGSTASH_STATS = False
 # based info
 SURICATA_UNIX_SOCKET = None
 # SURICATA_UNIX_SOCKET = "/var/run/suricata/suricata-command.socket"
-
-# OpenSearch
-USE_OPENSEARCH = False
 
 # Influxdb
 USE_INFLUXDB = False

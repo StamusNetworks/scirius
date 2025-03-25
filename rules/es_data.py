@@ -30,12 +30,17 @@ from time import strftime, sleep
 import urllib.request
 
 from django.conf import settings
-from elasticsearch import ConnectionError
-from elasticsearch.exceptions import RequestError
 
 from rules.es_graphs import get_es_major_version, ESError
 from rules.es_query import ESQuery
 from rules.models import get_system_settings
+
+if get_system_settings(static=True).use_opensearch_2():
+    from opensearchpy import ConnectionError
+    from opensearchpy.exceptions import RequestError
+else:
+    from elasticsearch import ConnectionError
+    from elasticsearch.exceptions import RequestError
 
 # Avoid logging every request
 ES_LOGGER = logging.getLogger('elasticsearch')
@@ -1692,9 +1697,15 @@ class ESData(ESQuery):
 
     def __init__(self):
         super().__init__(None)
-        self.doc_type = '_doc'
-        if get_es_major_version() == 6:
-            self.doc_type = 'doc'
+        self.es_extra_params = {}
+
+        if not get_system_settings(static=True).use_opensearch_2():
+            doc_type = '_doc'
+            # TODO: remove when ES 6 not supported anymore
+            if get_es_major_version() == 6:
+                doc_type = 'doc'
+
+            self.es_extra_params = {'doc_type': doc_type}
 
     @staticmethod
     def _kibana_request(url, data, method='GET'):
@@ -1726,7 +1737,7 @@ class ESData(ESQuery):
         body['query']['query_string']['query'] = query
 
         while True:
-            res = self.es.search(index='.kibana', from_=i, doc_type=self.doc_type, body=body, request_cache=False)
+            res = self.es.search(index='.kibana', from_=i, body=body, request_cache=False, **self.es_extra_params)
             if len(res['hits']['hits']) == 0:
                 break
             i += 10
@@ -1735,7 +1746,7 @@ class ESData(ESQuery):
             ids += _ids
 
         for _id in ids:
-            self.es.delete(index='.kibana', doc_type=self.doc_type, id=_id, refresh=True, ignore=[404])
+            self.es.delete(index='.kibana', id=_id, refresh=True, ignore=[404], **self.es_extra_params)
 
     def _kibana_export_obj(self, dest, _type, body):
         i = 0
@@ -1756,7 +1767,7 @@ class ESData(ESQuery):
                 filename = os.path.join(dest, _id)
                 filename += '.json'
 
-                res = self.es.get(index='.kibana', doc_type=self.doc_type, id=_id)
+                res = self.es.get(index='.kibana', id=_id, **self.es_extra_params)
 
                 with open(filename, 'w') as file_:
                     file_.write(json.dumps(res['_source'], separators=(',', ':')))
@@ -1798,7 +1809,7 @@ class ESData(ESQuery):
         return tar_name, file_.name
 
     def _create_kibana_mappings(self):
-        if get_system_settings().use_opensearch:
+        if get_system_settings(static=True).use_opensearch_2():
             try:
                 self.es.indices.delete(index='.kibana_1')
             except:
@@ -1818,33 +1829,34 @@ class ESData(ESQuery):
     def _kibana_inject(self, _type, _file):
         with open(_file) as file_:
             content = file_.read()
+            content = content.replace("logstash-", settings.ELASTICSEARCH_LOGSTASH_INDEX)
         name = _file.rsplit('/', 1)[1]
         name = name.rsplit('.', 1)[0]
 
         # Delete the document first, to prevent an error when it's already there
-        self.es.delete(index='.kibana', doc_type=self.doc_type, id=name, refresh=True, ignore=[404])
+        self.es.delete(index='.kibana', id=name, refresh=True, ignore=[404], **self.es_extra_params)
 
         try:
-            self.es.create(index='.kibana', doc_type=self.doc_type, id=name, body=content, refresh=True)
+            self.es.create(index='.kibana', id=name, body=content, refresh=True, **self.es_extra_params)
         except Exception:
             print('While processing %s:\n' % _file)
             raise
 
     def _kibana_set_default_index(self, idx):
         body = {'query': {'query_string': {'query': 'type: config'}}}
-        res = self.es.search(index='.kibana', doc_type=self.doc_type, body=body, request_cache=False)
+        res = self.es.search(index='.kibana', body=body, request_cache=False, **self.es_extra_params)
 
         for hit in res['hits']['hits']:
             content = hit['_source']
 
             content['config'] = content.get('config', {})
             content['config']['defaultIndex'] = idx
-            self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body={'doc': content}, refresh=True)
+            self.es.update(index='.kibana', id=hit['_id'], body={'doc': content}, refresh=True, **self.es_extra_params)
 
-        if get_system_settings().use_opensearch:
-            self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
+        if get_system_settings(static=True).use_opensearch_2():
+            self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX}-*'}, method='POST')
         else:
-            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
+            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX}-*'}, method='POST')
 
     @staticmethod
     def _get_dashboard_dir():
@@ -1952,7 +1964,7 @@ class ESData(ESQuery):
             else:
                 raise
 
-        self._kibana_set_default_index('logstash-*')
+        self._kibana_set_default_index(f'{settings.ELASTICSEARCH_LOGSTASH_INDEX}-*')
 
     def es_clear(self):
         indexes = self.get_indexes()
@@ -1967,7 +1979,7 @@ class ESData(ESQuery):
                     if error:
                         errors.append(error)
                         continue
-                raise
+                raise Exception(f'{e} on index {idx}')
         return len(indexes), errors
 
     def wait_until_up(self):

@@ -31,6 +31,7 @@ from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html, format_html_join
+from scirius.settings import DATA_LIKE
 from idstools import rule as rule_idstools
 from enum import Enum, unique
 from copy import deepcopy
@@ -777,7 +778,6 @@ class SystemSettings(models.Model):
         help_text='Proxy address of the form "host:port".'
     )
     https_proxy = models.CharField(max_length=200, validators=[validate_proxy], default="", blank=True)
-    use_elasticsearch = models.BooleanField(default=True)
     custom_elasticsearch = models.BooleanField(default=False)
     elasticsearch_url = models.CharField(
         max_length=4096,
@@ -798,9 +798,35 @@ class SystemSettings(models.Model):
     def use_arkime(self):
         return settings.USE_MOLOCH
 
-    @property
-    def use_opensearch(self):
-        return settings.USE_OPENSEARCH
+    @staticmethod
+    def has_es7_behavior():
+        ES_7 = DATA_LIKE.ES_7
+        OS_1 = DATA_LIKE.OS_1
+        return settings.USE_DATA_LIKE in (ES_7, OS_1)
+
+    @staticmethod
+    def use_opensearch_2():
+        return settings.USE_DATA_LIKE == DATA_LIKE.OS_2
+
+    @staticmethod
+    def use_elasticsearch_6():
+        return settings.USE_DATA_LIKE == DATA_LIKE.ES_6
+
+    @staticmethod
+    def use_elasticsearch_8():
+        return settings.USE_DATA_LIKE == DATA_LIKE.ES_8
+
+    @staticmethod
+    def use_elasticsearch():
+        return settings.USE_DATA_LIKE in (DATA_LIKE.ES_6, DATA_LIKE.ES_7, DATA_LIKE.ES_8)
+
+    @staticmethod
+    def use_opensearch():
+        return settings.USE_DATA_LIKE in (DATA_LIKE.OS_1, DATA_LIKE.OS_2)
+
+    # @property
+    # def use_opensearch(self):
+    #     return settings.USE_OPENSEARCH
 
     @property
     def arkime_url(self):
@@ -816,23 +842,20 @@ class SystemSettings(models.Model):
         from scirius.utils import get_middleware_module
         from rules.es_query import build_es_url
 
-        if self.use_elasticsearch and self.custom_elasticsearch:
+        if self.custom_elasticsearch:
             es_url = build_es_url(self.elasticsearch_url, self.elasticsearch_user, self.elasticsearch_pass)
             get_middleware_module('common').check_es_template_needed(es_url)
 
         super().save(*args, **kwargs)
 
 
-def get_system_settings():
-    gsettings = SystemSettings.objects.all()
-    if gsettings.count():
-        return gsettings[0]
-    else:
+def get_system_settings(static=False):
+    if static:
+        return SystemSettings
+
+    gsettings = SystemSettings.objects.first()
+    if gsettings is None:
         gsettings = SystemSettings.objects.create()
-        if settings.USE_ELASTICSEARCH:
-            gsettings.use_elasticsearch = True
-        else:
-            gsettings.use_elasticsearch = False
         if settings.USE_PROXY:
             gsettings.use_http_proxy = True
             gsettings.http_proxy = settings.PROXY_PARAMS['http']
@@ -840,7 +863,7 @@ def get_system_settings():
         else:
             gsettings.use_http_proxy = False
         gsettings.save()
-        return gsettings
+    return gsettings
 
 
 def get_es_address():
