@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
-import StamusLogo from 'ui/assets/images/stamus.png';
+import HeaderLogo from 'ui/components/Header/logo';
 import HelpMenu from 'ui/components/HelpMenu';
 import { ReloadButton } from 'ui/components/ReloadButton';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
@@ -30,10 +30,10 @@ const Header = ({ menuItems = [] }) => {
   return (
     <HeaderStyled>
       <Logo to="/stamus">
-        <img src={StamusLogo} alt="Scirius UI" />
+        <HeaderLogo />
       </Logo>
       <ConfigProvider theme={{ components: { Menu: { darkItemSelectedBg: 'rgb(0, 87, 146)' } } }}>
-        <Menu theme="dark" mode="horizontal">
+        <Menu theme="dark" mode="horizontal" selectable={false}>
           <Menu.Item key="reload">
             <Tooltip title="Reload now">
               <ReloadButton />

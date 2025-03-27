@@ -1,12 +1,13 @@
 import React, { useCallback, useMemo } from 'react';
 
 import { LinkOutlined } from '@ant-design/icons';
-import { Menu, Spin } from 'antd';
+import { ConfigProvider, Menu, Spin } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useLocation, withRouter } from 'react-router-dom';
 
 import { default as Icon } from 'ui/components/IconAntd';
 import { APP_URL } from 'ui/config';
+import { COLOR_ANT_MENU } from 'ui/constants/colors';
 import { CamelCaseToNormal } from 'ui/helpers';
 import { Link } from 'ui/helpers/Link';
 import { LeftNavMap } from 'ui/maps/LeftNavMap';
@@ -79,18 +80,20 @@ function LeftNav() {
 
   return (
     <LeftNavStyled width={200}>
-      <Menu
-        mode="inline"
-        selectedKeys={[useLocation().pathname.split('/').slice(0, 4).join('/')]}
-        defaultOpenKeys={LeftNavMap.map(group => group.id)}
-      >
-        {renderSubMenus}
-        {commonStore.user === null && (
-          <Menu.Item key="loading">
-            <Spin />
-          </Menu.Item>
-        )}
-      </Menu>
+      <ConfigProvider theme={{ token: { colorPrimary: COLOR_ANT_MENU } }}>
+        <Menu
+          mode="inline"
+          selectedKeys={[useLocation().pathname.split('/').slice(0, 4).join('/')]}
+          defaultOpenKeys={LeftNavMap.map(group => group.id)}
+        >
+          {renderSubMenus}
+          {commonStore.user === null && (
+            <Menu.Item key="loading">
+              <Spin />
+            </Menu.Item>
+          )}
+        </Menu>
+      </ConfigProvider>
     </LeftNavStyled>
   );
 }

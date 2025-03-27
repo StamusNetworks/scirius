@@ -47,24 +47,25 @@ export const HeaderStyled = styled(Header)`
     justify-content: flex-end;
     align-items: center;
     height: 100%;
-    background-color: rgb(0, 87, 146);
+    background-color: ${COLOR_ANT_MENU};
+  }
+
+  & .ant-menu-item:hover {
+    backdrop-filter: brightness(0.85) !important;
   }
 
   & .ant-menu-item {
     padding: 0 !important;
-    border-right: 1px solid #00426e !important;
-    border-left: 1px solid #226b9d !important;
-    transition: all 0.3s;
+    border-right: 1px solid rgba(0, 0, 0, 0.2) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+    transition: all 0.1s;
+    position: relative;
 
     &:first-child:after {
-      border-right: 1px solid #00426e !important;
+      border-right: 1px solid rgba(0, 0, 0, 0.2) !important;
       height: 100%;
       width: 1px;
       left: -2px;
-    }
-
-    &:hover {
-      background: #004d80 !important;
     }
   }
 
@@ -91,8 +92,12 @@ export const Logo = styled(Link)`
   align-items: center;
 
   & img {
-    height: 30px;
+    max-height: 30px;
     padding-bottom: 3px;
+
+    & + img {
+      margin-left: 0.5rem;
+    }
   }
 `;
 

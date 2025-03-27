@@ -1,6 +1,8 @@
 import { Layout } from 'antd';
 import styled from 'styled-components';
 
+import { COLOR_ANT_MENU, COLOR_ANT_MENU_ITEM } from 'ui/constants/colors';
+
 const { Sider } = Layout;
 
 export const LeftNavStyled = styled(Sider)`
@@ -44,8 +46,12 @@ export const LeftNavStyled = styled(Sider)`
 
   .ant-menu-submenu-title .anticon > svg,
   .ant-menu-title-content {
-    fill: rgb(0, 87, 146);
-    color: rgb(0, 87, 146);
+    fill: ${COLOR_ANT_MENU};
+    color: ${COLOR_ANT_MENU};
+  }
+
+  .ant-menu-title-content a {
+    color: ${COLOR_ANT_MENU_ITEM};
   }
 
   .ant-menu-item {
