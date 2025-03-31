@@ -31,7 +31,7 @@ import Title from './Title.styled';
 const FilterContainer = styled.div`
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: 1fr repeat(2, 150px) 10px 150px;
+  grid-template-columns: 1fr repeat(3, 150px) 10px 150px;
 `;
 
 const Separator = styled.div`
@@ -106,6 +106,8 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
 
   const Component = commonStore.stickyFilters ? Affix : Static;
 
+  const isHostPage = page === 'HOST_INSIGHT' || page === 'INVENTORY';
+
   return (
     <Component offsetTop={10} id="filters-bar">
       <UICard style={{ marginBottom: '10px' }}>
@@ -132,6 +134,27 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
             <Divider style={{ margin: '15px 0' }} />
             <FilterList filterTypes={filterTypes} />
           </div>
+          <div>
+            {page !== 'HISTORY' && (
+              <>
+                <Title>Filters</Title>
+                <Space>
+                  <UISwitch
+                    size="small"
+                    checkedChildren="ON"
+                    unCheckedChildren="OFF"
+                    checked={commonStore.alert.value.novelty}
+                    onChange={() => {
+                      commonStore.toggleAlertTag('novelty');
+                    }}
+                    disabled={isHostPage}
+                    data-test="Outlier-switch"
+                  />
+                  <UISwitchLabel disabled={isHostPage}>Outlier events</UISwitchLabel>
+                </Space>
+              </>
+            )}
+          </div>
           <Space direction="vertical">
             {page !== 'HISTORY' && <AdditionalFilters page={page} />}
             {/* 'INVENTORY' should be included when backend is fixed */}
@@ -154,10 +177,10 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
                       onChange={() => {
                         commonStore.toggleAlertTag('informational');
                       }}
-                      disabled={page === 'HOST_INSIGHT'}
+                      disabled={isHostPage}
                       data-test="Informational-switch"
                     />
-                    <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Informational</UISwitchLabel>
+                    <UISwitchLabel disabled={isHostPage}>Informational</UISwitchLabel>
                   </Space>
                   <Space>
                     <UISwitch
@@ -169,10 +192,10 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
                       onChange={() => {
                         commonStore.toggleAlertTag('relevant');
                       }}
-                      disabled={page === 'HOST_INSIGHT'}
+                      disabled={isHostPage}
                       data-test="Relevant-switch"
                     />
-                    <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Relevant</UISwitchLabel>
+                    <UISwitchLabel disabled={isHostPage}>Relevant</UISwitchLabel>
                   </Space>
                   <Space>
                     <Switch
@@ -183,10 +206,10 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
                       onChange={() => {
                         commonStore.toggleAlertTag('untagged');
                       }}
-                      disabled={page === 'HOST_INSIGHT'}
+                      disabled={isHostPage}
                       data-test="Untagged-switch"
                     />
-                    <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Untagged</UISwitchLabel>
+                    <UISwitchLabel disabled={isHostPage}>Untagged</UISwitchLabel>
                   </Space>
                 </Space>
               </div>

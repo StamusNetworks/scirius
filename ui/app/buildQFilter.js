@@ -55,6 +55,9 @@ export function buildQFilter(activeFilters, systemSettings, returnType = 'legacy
         if (tagFilters.length !== 0) {
           qfilter.push(`(${tagFilters.join(' OR ')})`);
         }
+        if (filters[i].value.novelty === true) {
+          qfilter.push('stamus_novel:true');
+        }
       } else if (filters[i].id === 'msg' || filters[i].id === 'not_in_msg') {
         // continue
       } else if (filters[i].id === 'content' || filters[i].id === 'not_in_content') {
