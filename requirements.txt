@@ -15,7 +15,7 @@ django-celery-results
 django4-chunked-upload>=2.0.2
 django-cprofile-middleware
 django-cprofile-middleware
-django-csp
+django-csp==3.8
 django-dbbackup>4
 django-filter
 django-filter
