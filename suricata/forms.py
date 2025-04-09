@@ -30,7 +30,7 @@ class SuricataForm(forms.ModelForm, CommentForm):
     class Meta:
         model = Suricata
         exclude = ('created_date', 'updated_date')
-        if settings.SURICATA_NAME_IS_HOSTNAME:
+        if hasattr(settings, 'SURICATA_NAME_IS_HOSTNAME') and settings.SURICATA_NAME_IS_HOSTNAME:
             exclude = exclude + ('name', )
 
 

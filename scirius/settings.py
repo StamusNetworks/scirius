@@ -2,10 +2,10 @@
 Django settings for scirius project.
 
 For more information on this file, see
-https://docs.djangoproject.com/en/1.6/topics/settings/
+https://docs.djangoproject.com/en/4.2/topics/settings/
 
 For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.6/ref/settings/
+https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 
@@ -16,18 +16,20 @@ from django import get_version
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-APP_LONG_NAME = 'Scirius Community Edition'
-APP_MEDIUM_NAME = 'Scirius CE'
-APP_SHORT_NAME = APP_MEDIUM_NAME
-APP_MNGT_NAME = 'Suricata Management'
-PRODUCT_LONG_NAME = 'Clear NDR Community Edition'
-PRODUCT_SHORT_NAME = 'Clear NDR'
-PRODUCT_MEDIUM_NAME = 'Clear NDR CE'
-SCIRIUS_VERSION = "40.0.1"
-LOGO = 'rules/selks.png'
+
+APP_LONG_NAME = os.getenv('APP_LONG_NAME', 'Scirius Community Edition')
+APP_MEDIUM_NAME = os.getenv('APP_MEDIUM_NAME', 'Scirius CE')
+APP_SHORT_NAME = os.getenv('APP_SHORT_NAME', APP_MEDIUM_NAME)
+APP_MNGT_NAME = os.getenv('APP_MNGT_NAME', 'Clear NDR CE Management')
+PRODUCT_LONG_NAME = os.getenv('PRODUCT_LONG_NAME', 'Clear NDR Community Edition')
+PRODUCT_SHORT_NAME = os.getenv('PRODUCT_SHORT_NAME', 'Clear NDR')
+PRODUCT_MEDIUM_NAME = os.getenv('PRODUCT_MEDIUM_NAME', 'Clear NDR CE')
+LOGO = os.getenv('LOGO', 'rules/selks.png')
+
+SCIRIUS_VERSION = "41.0.0"
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'p8o5%vq))8h2li08c%k3id(wwo*u(^dbdmx2tv#t(tb2pr9@n-'
@@ -35,10 +37,9 @@ SECRET_KEY = 'p8o5%vq))8h2li08c%k3id(wwo*u(^dbdmx2tv#t(tb2pr9@n-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,11 +53,14 @@ INSTALLED_APPS = (
     'rules',
     'scirius',
     'suricata',
+    'django_celery_results',
     'accounts',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
     'webpack_loader',
+    'chunked_upload',
+    'django_ace',
 )
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
@@ -116,7 +120,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Database
-# https://docs.djangoproject.com/en/1.6/ref/settings/#databases
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -161,16 +165,114 @@ LOGGING = {
         'raw': {
             'format': '%(asctime)s %(message)s'
         },
+        'jsonformat': {
+            'format': '%(message)s'
+        },
+        'celeryformat': {
+            'format': '%(asctime)s %(processName)s %(levelname)s %(message)s'
+        }
     },
     'handlers': {
+        'file_log': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/django.log',
+            'formatter': 'fileformat',
+        },
+        'null_log': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'sql_log': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/django-sql.log',
+            'formatter': 'fileformat',
+        },
+        'error_log': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/django-error.log',
+            'formatter': 'fileformat',
+        },
+        'security_log': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/django-security.log',
+            'formatter': 'fileformat',
+        },
+        'auth_log': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/django-auth.log',
+            'formatter': 'fileformat',
+        },
+        'ansible_log': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/ansible.log',
+            'formatter': 'fileformat',
+        },
+        'celery_tasks': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/celery_tasks.log',
+            'formatter': 'celeryformat',
+        },
+        'user_actions': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/user_actions.log',
+            'formatter': 'jsonformat',
+        },
         'elasticsearch': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': '/var/log/scirius/elasticsearch.log',
+            'filename': '/var/log/celery/elasticsearch.log',
             'formatter': 'raw',
         },
     },
     'loggers': {
+        'django.db.backends': {
+            'handlers': ['null_log'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['error_log'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django_auth_ldap': {
+            'handlers': ['auth_log'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'djangosaml2': {
+            'handlers': ['auth_log'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'authentication': {
+            'handlers': ['auth_log'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'ansible': {
+            'handlers': ['ansible_log'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'celery_tasks': {
+            'handlers': ['celery_tasks'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'user_actions': {
+            'handlers': ['user_actions'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'elasticsearch': {
             'handlers': ['elasticsearch'],
             'level': 'INFO',
@@ -196,7 +298,7 @@ CELERY_QUEUES += [Queue(queue, [
 ])]
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.6/topics/i18n/
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -227,6 +329,7 @@ CSP_REPORT_URI = ("'none'",)
 CSP_REPORT_TO = ("'none'",)
 CSP_INCLUDE_NONCE_IN = ['script-src']
 CSP_EXCLUDE_URL_PREFIXES = ('/evebox',)
+CSP_BASE_URI = ("'self'",)
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
@@ -246,7 +349,7 @@ REST_FRAMEWORK = {
 }
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.6/howto/static-files/
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
@@ -297,6 +400,7 @@ KIBANA_INDEX = "kibana-int"
 # Path to Kibana's dashboards installation
 KIBANA_DASHBOARDS_PATH = '/opt/kibana-dashboards/'
 KIBANA6_DASHBOARDS_PATH = '/opt/kibana6-dashboards/'
+KIBANA7_DASHBOARDS_PATH = '/opt/kibana7-dashboards/'
 KIBANA_ALLOW_GRAPHQL = True
 
 USE_EVEBOX = False
@@ -327,7 +431,7 @@ INFLUXDB_PASSWORD = "grafana"
 INFLUXDB_DATABASE = "scirius"
 
 # Moloch
-USE_MOLOCH = True
+USE_MOLOCH = False
 MOLOCH_URL = "https://localhost:8005"
 
 SURICATA_OUTPUT_DIRECTORY = '/rules'
@@ -374,7 +478,7 @@ HAVE_NETINFO_AGG = False
 try:
     from .local_settings import *  # noqa: F403, F401
 except:
-    pass
+    raise
 
 if KIBANA_PROXY:
     INSTALLED_APPS += ('revproxy',)
