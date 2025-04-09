@@ -18,9 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #Base containers
-FROM python:3.11-slim-bookworm AS base
-RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
-  echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
+FROM python:3.11.10-slim-bookworm AS base
 
 #Download STEP
 FROM base AS source
@@ -116,10 +114,13 @@ RUN \
   libldap2-dev \
   libssl-dev \
   python3-pip \
+  python3-dev python3-venv python3-wheel python-wheel-common \
   git
 RUN \
   echo "**** install Python dependencies for Scirius ****" && \
   cd /code && \
+  pip install wheel && \
+  pip3 install wheel && \
   python -m pip install --user --upgrade\
   six \
   python-daemon \
@@ -180,6 +181,7 @@ RUN \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
   curl \
   git \
+  python3-dev python3-venv python3-wheel python-wheel-common \
   gunicorn && \
   DEBIAN_FRONTEND=noninteractive apt-get install -t bookworm-backports suricata -y && \
   apt-get clean && \

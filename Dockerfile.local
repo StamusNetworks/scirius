@@ -31,7 +31,7 @@ RUN cd ui && npm install && npm run build
 
 
 
-FROM python:3.11-slim-bookworm AS final
+FROM python:3.11.10-slim-bookworm AS final
 
 RUN apt-get update &&\
     apt-get install -y gcc gfortran gnupg2 libffi-dev libldap2-dev libsasl2-dev openssh-client libssl-dev libz-dev libpq-dev &&\
