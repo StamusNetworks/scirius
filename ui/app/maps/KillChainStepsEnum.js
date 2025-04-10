@@ -65,12 +65,12 @@ export const KillChainToInt = {
 };
 
 export const KillChainFromInt = {
-  1: 'reconnaissance',
-  2: 'weaponization',
-  3: 'delivery',
-  4: 'exploitation',
-  5: 'installation',
-  6: 'command_and_control',
-  7: 'actions_on_objectives',
-  '-1': 'policy_violation',
+  0: 'reconnaissance',
+  1: 'weaponization',
+  2: 'delivery',
+  3: 'exploitation',
+  4: 'installation',
+  5: 'command_and_control',
+  6: 'actions_on_objectives',
+  '-1': 'pre_condition',
 };
