@@ -478,7 +478,7 @@ HAVE_NETINFO_AGG = False
 try:
     from .local_settings import *  # noqa: F403, F401
 except:
-    raise
+    pass
 
 if KIBANA_PROXY:
     INSTALLED_APPS += ('revproxy',)
