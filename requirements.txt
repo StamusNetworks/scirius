@@ -68,6 +68,6 @@ requests
 six
 smmap
 subprocess32
-suricata-language-server>=0.9.6
+suricata-language-server>=0.9.7
 vine
 web.py
