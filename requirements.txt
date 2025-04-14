@@ -26,7 +26,6 @@ django-tables2
 django-webpack-loader
 ecdsa
 elasticsearch<7
-enum34
 flup
 gevent
 gitdb
