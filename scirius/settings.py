@@ -363,9 +363,6 @@ SURICATA_NAME_IS_HOSTNAME = False
 # Do we have the doc
 SCIRIUS_HAS_DOC = True
 
-# Scirius run in SELKS
-SCIRIUS_IN_SELKS = True
-
 # Sources update
 DEFAULT_SOURCE_INDEX_URL = "https://ti.stamus-networks.io/index.yaml"
 

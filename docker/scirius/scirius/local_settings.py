@@ -115,7 +115,6 @@ LOGGING = {
 
 # Scirius
 SCIRIUS_HAS_DOC = True
-SCIRIUS_IN_SELKS = bool(strtobool(os.getenv('SCIRIUS_IN_SELKS', '0')))
 
 # Internationalization
 LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'en-us')
