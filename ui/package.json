@@ -77,7 +77,7 @@
     "cross-env": "7.0.3",
     "d3": "^7.8.2",
     "d3-org-chart": "^3.1.1",
-    "dompurify": "^2.5.7",
+    "dompurify": "^3.2.5",
     "escape-html": "^1.0.3",
     "express": "^4.20.0",
     "fontfaceobserver": "2.1.0",
