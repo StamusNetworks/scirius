@@ -119,19 +119,27 @@ const EventsPage = () => {
     },
     {
       title: 'Source IP',
-      dataIndex: 'source_ip',
       onHeaderCell: () => ({
         'data-test': 'source-ip',
       }),
-      render: val => <EventValue filter={new Filter('src_ip', val)} />,
+      render: (_, row) =>
+        row.flow?.src_ip ? (
+          <EventValue filter={new Filter('flow.src_ip', row.flow.src_ip)} />
+        ) : (
+          <EventValue filter={new Filter('src_ip', row.source_ip)} />
+        ),
     },
     {
       title: 'Destination IP',
-      dataIndex: 'destination_ip',
       onHeaderCell: () => ({
         'data-test': 'destination-ip',
       }),
-      render: val => <EventValue filter={new Filter('dest_ip', val)} />,
+      render: (_, row) =>
+        row.flow?.dest_ip ? (
+          <EventValue filter={new Filter('flow.dest_ip', row.flow.dest_ip)} />
+        ) : (
+          <EventValue filter={new Filter('dest_ip', row.destination_ip)} />
+        ),
     },
     {
       title: 'Proto',
@@ -175,6 +183,10 @@ const EventsPage = () => {
     probe: rule.host,
     category: rule.alert?.category || '',
     tag: rule.alert?.tag || 'untagged',
+    flow: {
+      src_ip: rule.flow?.src_ip,
+      dest_ip: rule.flow?.dest_ip,
+    },
     rule, // we need this to access the rule data in the `expandedRowRender` below
   }));
 
