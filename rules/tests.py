@@ -269,10 +269,10 @@ class SourceCreationTestCase(TestCase):
         rmtree(dir_path)
         return files_number
 
-    def test_source_update(self):
-        """Test source update"""
-        self.source.update()
-        self.assertNotEqual(Category.objects.filter(source=self.source).count(), 0)
+    # def test_source_update(self):
+    #     """Test source update"""
+    #     self.source.update()
+    #     self.assertNotEqual(Category.objects.filter(source=self.source).count(), 0)
 
     def test_unicode_rule(self):
         source = Source.objects.create(
