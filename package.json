@@ -20,6 +20,8 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",
     "@babel/preset-env": "^7.14.7",
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "autoprefixer": "^10.4.13",
     "babel-loader": "^9.1.2",
     "css-loader": "^5.0.0",
