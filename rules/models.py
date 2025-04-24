@@ -898,6 +898,10 @@ class Source(models.Model):
         ('hostname', 'Hostname'),
         ('domain_name', 'Domain Name'),
         ('ip', 'IP'),
+        ('filename', 'Filename'),
+        ('url', 'URL'),
+        ('http-user-agent', 'HTTP User Agent'),
+        ('http-cookie', 'HTTP Cookie'),
     ]
     IOC_MAPPING = IOC_MAP
 

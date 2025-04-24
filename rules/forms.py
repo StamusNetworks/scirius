@@ -449,14 +449,15 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
                     file = cleaned_data['file']
                     file.seek(0)
 
-                    for line in file:
-                        try:
-                            validator(line.decode().strip())
-                        except ValidationError as e:
-                            self.add_error('file', e.message)
-                            # if we have set a wrong file with 1000 items
-                            # we avoid to show all errors on the page
-                            break
+                    if validator:
+                        for line in file:
+                            try:
+                                validator(line.decode().strip())
+                            except ValidationError as e:
+                                self.add_error('file', e.message)
+                                # if we have set a wrong file with 1000 items
+                                # we avoid to show all errors on the page
+                                break
 
         return cleaned_data
 
