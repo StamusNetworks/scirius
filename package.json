@@ -41,7 +41,7 @@
     "c3": "^0.4.18",
     "d3": "^3.4.4",
     "eonasdan-bootstrap-datetimepicker": "^4.15.35",
-    "jquery": "^3.5.1",
+    "jquery": "^3.6.4",
     "jquery-knob": "^1.2.11",
     "jquery-ui": "^1.13.2",
     "nvd3": "^1.8.6",
@@ -52,6 +52,7 @@
     "webpack-cli": "4.2.0"
   },
   "overrides": {
-    "moment-timezone": "^0.5.35"
+    "moment-timezone": "^0.5.35",
+    "jquery": "^3.6.4"
   }
 }
