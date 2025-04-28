@@ -1,7 +1,6 @@
 export const getRuleData = rule => ({
   generalData: getSignatureGeneralData(rule),
-  engines: getEnginesData(rule.analysis.engines),
-  lists: getEnginesData(Object.entries(rule.analysis.lists).map(([name, data]) => ({ ...data, name })) || []),
+  engines: getEnginesData(rule.analysis),
   metadata: getSignatureMetadata(rule),
   references: getSignatureReferences(rule.content),
 });
@@ -58,20 +57,45 @@ const getSignatureGeneralData = rule => {
   };
 };
 
-const getEnginesData = engines =>
-  engines?.reduce((prev, cur) => {
-    if (prev.find(obj => obj.name === cur.name)) return prev;
-    const currentEngine = {
-      ...cur,
-      transforms: cur.transforms?.map(transform => transform.name),
-      matches: cur.matches?.map(match => ({
+const getEnginesData = analysis => {
+  const { engines, lists } = analysis;
+  const { payload, packet } = lists;
+  const engineBlocks =
+    engines?.reduce((prev, cur) => {
+      if (prev.find(obj => obj.name === cur.name)) return prev;
+      const currentEngine = {
+        ...cur,
+        transforms: cur.transforms?.map(transform => transform.name),
+        matches: cur.matches?.map(match => ({
+          label: match.name,
+          value: decodeUnicodeEscapeSequence(match[match.name]?.pattern || ''),
+          tags: getMatchTags(match),
+        })),
+      };
+      return [...prev, currentEngine];
+    }, []) || [];
+  if (payload) {
+    engineBlocks.push({
+      name: 'Payload',
+      matches: payload.matches?.map(match => ({
         label: match.name,
-        value: decodeUnicodeEscapeSequence(match[match.name]?.pattern || ''),
+        value: match.name === 'byte_test' ? match[match.name]?.nbytes : decodeUnicodeEscapeSequence(match[match.name]?.pattern || ''),
         tags: getMatchTags(match),
       })),
-    };
-    return [...prev, currentEngine];
-  }, []) || [];
+    });
+  }
+  if (packet) {
+    engineBlocks.push({
+      name: 'Packet',
+      matches: packet.matches?.map(match => ({
+        label: match.name,
+        value: '',
+        tags: getMatchTags(match),
+      })),
+    });
+  }
+  return engineBlocks;
+};
 
 const getMatchTags = match => {
   const blacklist = ['is_mpm', 'no_double_inspect'];
