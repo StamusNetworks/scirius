@@ -1714,7 +1714,7 @@ class ESData(ESQuery):
             'content-type': 'application/json',
             # https://opensearch.org/docs/latest/troubleshoot/#requests-to-opensearch-dashboards-fail-with-request-must-contain-a-osd-xsrf-header
         }
-        if gsettings.use_opensearch:
+        if gsettings.use_opensearch():
             headers['osd-xsrf'] = True
         else:
             headers['kbn-xsrf'] = True

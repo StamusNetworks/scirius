@@ -824,10 +824,6 @@ class SystemSettings(models.Model):
     def use_opensearch():
         return settings.USE_DATA_LIKE in (DATA_LIKE.OS_1, DATA_LIKE.OS_2)
 
-    # @property
-    # def use_opensearch(self):
-    #     return settings.USE_OPENSEARCH
-
     @property
     def arkime_url(self):
         return '/arkime'
