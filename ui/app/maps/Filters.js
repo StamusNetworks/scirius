@@ -406,6 +406,12 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
+    title: 'Community ID',
+    id: 'community_id',
+    wildcardable: false,
+    category: FilterCategory.EVENT,
+  },
+  {
     title: 'Country',
     id: 'geoip.country_name',
     category: FilterCategory.EVENT,
