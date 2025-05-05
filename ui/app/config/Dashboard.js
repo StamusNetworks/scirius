@@ -33,6 +33,10 @@ export const dashboard = [
         i: 'host',
         title: 'Probes',
       },
+      {
+        i: 'community_id',
+        title: 'Community ID',
+      },
     ],
   },
   {
