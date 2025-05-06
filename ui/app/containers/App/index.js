@@ -17,6 +17,7 @@ import { createStructuredSelector } from 'reselect';
 
 import AppSpinner from 'ui/components/AppSpinner';
 import Content from 'ui/components/Content';
+import Deeplink from 'ui/components/Deeplink';
 import ErrorHandler from 'ui/components/ErrorHandler';
 import FilterSets from 'ui/components/FilterSets';
 import Header from 'ui/components/Header';
@@ -131,6 +132,9 @@ const App = ({ setSessionActivity }) => {
                   ) : (
                     <Redirect to={`${APP_URL}/hunting/dashboards`} />
                   )}
+                </Route>
+                <Route exact path={`${APP_URL}/deeplink/`}>
+                  <Deeplink />
                 </Route>
                 <ProxyRoute />
               </Switch>
