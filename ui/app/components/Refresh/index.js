@@ -5,16 +5,11 @@ import { ReloadOutlined } from '@ant-design/icons';
 import { Button, Space, Select, Tooltip, Progress } from 'antd';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useDispatch } from 'react-redux';
-import styled from 'styled-components';
 
 import actions from 'ui/containers/App/actions';
 import { ReloadPeriodEnum } from 'ui/maps/ReloadPeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
-const SpaceStyled = styled(Space)`
-  margin-left: 10px;
-  padding-top: 5px;
-`;
 const Refresh = () => {
   const { commonStore } = useStore();
   const dispatch = useDispatch();
@@ -41,7 +36,7 @@ const Refresh = () => {
 
   return (
     <>
-      <SpaceStyled>
+      <Space>
         <Select
           onChange={value => {
             if (value === 'NONE') {
@@ -75,10 +70,10 @@ const Refresh = () => {
             icon={<ReloadOutlined />}
           />
         </Tooltip>
-      </SpaceStyled>
+      </Space>
       {commonStore.refreshTime && (
         <>
-          <Progress percent={(timer.secondsPassed / commonStore.refreshTime) * 100} size={[300, 20]} showInfo={false} strokeColor="#005792" />
+          <Progress percent={(timer.secondsPassed / commonStore.refreshTime) * 100} showInfo={false} strokeColor="#005792" />
           {commonStore.refreshTime > 0 && timer.secondsPassed < commonStore.refreshTime && (
             <>{(commonStore.refreshTime - timer.secondsPassed) / 1000} seconds left...</>
           )}
