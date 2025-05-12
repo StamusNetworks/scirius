@@ -1642,11 +1642,8 @@ class BaseSourceSerializer(serializers.ModelSerializer):
         read_only_fields = ('pk', 'created_date', 'updated_date', 'method', 'datatype', 'cert_verif')
 
     def create(self, validated_data):
-        validated_data['created_date'] = timezone.now()
-        validated_data['updated_date'] = timezone.now()
         validated_data['cert_verif'] = True
-        instance = super(BaseSourceSerializer, self).create(validated_data)
-        return instance
+        return super().create(validated_data)
 
 
 class BaseSourceViewSet(viewsets.ModelViewSet):
@@ -1801,10 +1798,26 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def rules_analysis(self, request, pk):
+        """
+        Start the analysis of a source.
+
+        The source needs to be updated first!
+        """
+        source = self.get_object()
+        if source.updated_date is None:
+            raise serializers.ValidationError({'analysis': ['Source needs to be updated first']})
         return self._process_action(request, SourceRulesAnalysisTaskSerializer)
 
     @action(detail=True, methods=['post'])
     def test(self, request, pk):
+        """
+        Start the test of a source.
+
+        The source needs to be updated first!
+        """
+        source = self.get_object()
+        if source.updated_date is None:
+            raise serializers.ValidationError({'test': ['Source needs to be updated first']})
         return self._process_action(request, SourceTestTaskSerializer)
 
 
