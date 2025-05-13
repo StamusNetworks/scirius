@@ -908,6 +908,7 @@ class Source(models.Model):
     TMP_DIR = "/tmp/"
     REFRESH_LOCK_ID = 'source-lock'
     REFRESH_LOCK_EXPIRE = 60 * 10
+    DATASET_PATH = '/var/log/suricata/dataset/'
 
     name = models.CharField(max_length=100, unique=True)
     created_date = models.DateTimeField('date created', auto_now_add=True)
@@ -1101,7 +1102,7 @@ class Source(models.Model):
 
             if contents:
                 content = testor.rules_infos(
-                    '\n'.join(contents),
+                    '\n'.join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH}',
                     related_files=related_files,
                     cats_content=cats_content,
                     iprep_content=iprep_content
@@ -3886,7 +3887,7 @@ class Ruleset(models.Model, Transformable):
 
                 if contents:
                     content = testor.rules_infos(
-                        '\n'.join(contents),
+                        '\n'.join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH}',
                         related_files=related_files,
                         cats_content=cats_content,
                         iprep_content=iprep_content
