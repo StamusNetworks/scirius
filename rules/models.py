@@ -1194,8 +1194,8 @@ class Source(models.Model):
                 if version > 0:
                     versions.append(version)
 
-                category = Category.objects.filter(source=self, name=name)
-                if not category:
+                category = Category.objects.filter(source=self, name=name).first()
+                if category is None:
                     category = Category.objects.create(
                         source=self,
                         name=name,
@@ -1205,8 +1205,17 @@ class Source(models.Model):
                     for ruleset in self.ruleset_set.all():
                         if ruleset.activate_categories:
                             ruleset.categories.add(category)
-                else:
-                    category = category[0]
+                            # disable transformation for custom sources (stamus)
+                            category.toggle_transformation(
+                                ruleset,
+                                Transformation.TARGET,
+                                Transformation.T_NONE
+                            )
+                            category.toggle_transformation(
+                                ruleset,
+                                Transformation.LATERAL,
+                                Transformation.L_NO
+                            )
                 category.get_rules(
                     self,
                     version=version,
