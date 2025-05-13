@@ -6,3 +6,4 @@ export const RULE_PATH = '/rest/rules/rule';
 export const CURRENT_USER_PATH = '/rest/accounts/sciriususer/current_user/';
 export const LOGIN_PATH = '/accounts/login/';
 export const HOME_PATH = '/stamus';
+export const EDITION = 'community';

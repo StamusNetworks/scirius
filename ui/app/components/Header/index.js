@@ -17,6 +17,7 @@ import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
+import { Newsfeed } from './newsfeed';
 import { HeaderStyled, Logo, RangePreview } from './styles';
 
 const { DATE_TIME_FORMAT } = constants;
@@ -77,6 +78,9 @@ const Header = ({ menuItems = [] }) => {
             <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" open={helpPopOver} onOpenChange={setHelpPopOver}>
               <QuestionCircleOutlined /> Help
             </Popover>
+          </Menu.Item>
+          <Menu.Item key="newsfeed" className="newsfeed-dropdown">
+            <Newsfeed />
           </Menu.Item>
           {commonStore.user && (
             <Menu.Item data-test="username-link" key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
