@@ -135,7 +135,7 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
             <FilterList filterTypes={filterTypes} />
           </div>
           <div>
-            {page !== 'HISTORY' && (
+            {page !== 'HISTORY' && commonStore.systemSettings?.license?.nta && (
               <>
                 <Title>Filters</Title>
                 <Space>
