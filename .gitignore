@@ -16,6 +16,10 @@ static/
 .envrc
 db.sqlite3
 .venv
+mypy.ini
+ruff.toml
+pyrightconfig.json
+docker/containers-data/
 
 # VSCode
 .vscode/*
