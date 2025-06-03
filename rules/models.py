@@ -1205,17 +1205,18 @@ class Source(models.Model):
                     for ruleset in self.ruleset_set.all():
                         if ruleset.activate_categories:
                             ruleset.categories.add(category)
-                            # disable transformation for custom sources (stamus)
-                            category.toggle_transformation(
-                                ruleset,
-                                Transformation.TARGET,
-                                Transformation.T_NONE
-                            )
-                            category.toggle_transformation(
-                                ruleset,
-                                Transformation.LATERAL,
-                                Transformation.L_NO
-                            )
+                            if name == 'stamus':
+                                # disable transformation for custom sources (stamus)
+                                category.toggle_transformation(
+                                    ruleset,
+                                    Transformation.TARGET,
+                                    Transformation.T_NONE
+                                )
+                                category.toggle_transformation(
+                                    ruleset,
+                                    Transformation.LATERAL,
+                                    Transformation.L_NO
+                                )
                 category.get_rules(
                     self,
                     version=version,
