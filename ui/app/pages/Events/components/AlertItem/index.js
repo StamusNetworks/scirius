@@ -886,7 +886,7 @@ class AlertItem extends React.Component {
               </UICard>
             )}
 
-            {data.app_proto === 'smb' && <SMBAlertCard data={data} />}
+            {data.app_proto === 'smb' && !_.isEmpty(data.smb) && <SMBAlertCard data={data} />}
 
             {!_.isEmpty(data.discovery) && (
               <UICard title="Sightings" fullHeight>
