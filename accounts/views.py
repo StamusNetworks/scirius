@@ -464,13 +464,13 @@ def delete_user(request, user_id):
     if not comment_form.is_valid():
         return JsonResponse({'error': '\n'.join(comment_form.errors)})
 
-    user.delete()
     UserAction.create(
         action_type='delete_user',
         comment=comment_form.cleaned_data['comment'],
         request=request,
         old_user=user
     )
+    user.delete()
     return JsonResponse({'redirect': '/accounts/user/'})
 
 
