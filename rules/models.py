@@ -1110,7 +1110,7 @@ class Source(models.Model):
                 RuleAtVersion.write_analyse(content, version)
 
     def test(self):
-        rule_buffer = self.to_buffer()
+        rule_buffer = self.to_buffer() + "\n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000"
         return self.test_rule_buffer(rule_buffer)
 
     @classmethod
