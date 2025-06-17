@@ -473,16 +473,6 @@ class AlertItem extends React.Component {
                     <EventField filter={new Filter('tunnel.depth', data.tunnel.depth)} />
                   </ErrorHandler>
                 )}
-                {data.flow_id && (
-                  <ErrorHandler>
-                    <EventField filter={new Filter('flow_id', data.flow_id)} />
-                  </ErrorHandler>
-                )}
-                {data.community_id && (
-                  <ErrorHandler>
-                    <EventField filter={new Filter('community_id', data.community_id)} />
-                  </ErrorHandler>
-                )}
               </DlHorizontal>
             </UICard>
 
@@ -578,6 +568,16 @@ class AlertItem extends React.Component {
                     <ErrorHandler>
                       <EventField filter={new Filter('flow.pkts_toclient', data.flow.pkts_toclient)} />
                     </ErrorHandler>
+                    {data.flow_id && (
+                      <ErrorHandler>
+                        <EventField filter={new Filter('flow_id', data.flow_id)} />
+                      </ErrorHandler>
+                    )}
+                    {data.community_id && (
+                      <ErrorHandler>
+                        <EventField filter={new Filter('community_id', data.community_id)} />
+                      </ErrorHandler>
+                    )}
                   </React.Fragment>
                 )}
               </DlHorizontal>
