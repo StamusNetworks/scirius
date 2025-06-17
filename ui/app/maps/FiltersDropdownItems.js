@@ -6,6 +6,7 @@ const FiltersDropdownItems = {
     { id: 'alert.signature' },
     { id: 'alert.signature_id' },
     { id: 'es_filter' },
+    { id: 'community_id' },
     {
       id: 'protocol',
       label: 'Protocol',
