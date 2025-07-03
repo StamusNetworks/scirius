@@ -6,7 +6,7 @@ export const getRuleData = rule => ({
 });
 
 const getSignatureGeneralData = rule => {
-  const ruleArray = rule.content.split(' ');
+  const { originIp, originPort, destinationIp, destinationPort } = parseRuleContent(rule.content);
   let destination = 'unknown';
   if (rule.analysis.flags?.includes('toclient')) destination = 'client';
   if (rule.analysis.flags?.includes('toserver')) destination = 'server';
@@ -26,19 +26,19 @@ const getSignatureGeneralData = rule => {
   return {
     originIp: {
       label: 'Origin IP',
-      value: ruleArray[2],
+      value: formatString(originIp),
     },
     originPort: {
       label: 'Origin Port',
-      value: ruleArray[3],
+      value: formatString(originPort),
     },
     destinationIp: {
       label: 'Destination IP',
-      value: ruleArray[5],
+      value: formatString(destinationIp),
     },
     destinationPort: {
       label: 'Destination Port',
-      value: ruleArray[6],
+      value: formatString(destinationPort),
     },
     protocol: {
       label: 'Protocol',
@@ -158,4 +158,115 @@ export function decodeUnicodeEscapeSequence(str) {
   return str.replace(/\\u[\dA-F]{4}/gi, function (match) {
     return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
   });
+}
+
+const fallback = {
+  originIp: 'unknown',
+  originPort: 'unknown',
+  destinationIp: 'unknown',
+  destinationPort: 'unknown',
+};
+
+const parseRuleContent = content => {
+  // Find the rule header section (before the first parenthesis)
+  const headerEnd = content.indexOf('(');
+  if (headerEnd === -1) return fallback;
+
+  const header = content.substring(0, headerEnd).trim();
+  const tokens = tokenizeHeader(header);
+
+  // Snort rule format: alert <protocol> <source_ip> <source_port> -> <destination_ip> <destination_port>
+  // We need to find the arrow (->) to separate source and destination
+  const arrowIndex = tokens.findIndex(token => token === '->' || token === '=>' || token === '<>');
+  if (arrowIndex === -1 || arrowIndex < 3) return fallback;
+
+  // Extract source IP and port (before the arrow)
+  const sourceIp = tokens[arrowIndex - 2];
+  const sourcePort = tokens[arrowIndex - 1];
+
+  // Extract destination IP and port (after the arrow)
+  const destinationIp = tokens[arrowIndex + 1];
+  const destinationPort = tokens[arrowIndex + 2];
+
+  return {
+    originIp: sourceIp || fallback.originIp,
+    originPort: sourcePort || fallback.originPort,
+    destinationIp: destinationIp || fallback.destinationIp,
+    destinationPort: destinationPort || fallback.destinationPort,
+  };
+};
+
+const tokenizeHeader = header => {
+  const tokens = [];
+  let currentToken = '';
+  let bracketDepth = 0;
+  let i = 0;
+
+  while (i < header.length) {
+    const char = header[i];
+
+    // Check for negation followed by bracket
+    if (char === '!' && i + 1 < header.length && header[i + 1] === '[' && bracketDepth === 0 && currentToken === '') {
+      // Start a new token with negation
+      currentToken = '![';
+      bracketDepth = 1;
+      i += 2; // Skip both ! and [
+      /* eslint-disable-next-line no-continue */
+      continue;
+    }
+
+    if (char === '[') {
+      if (bracketDepth === 0) {
+        // Start of a new bracket group
+        if (currentToken.trim()) {
+          tokens.push(currentToken.trim());
+          currentToken = '';
+        }
+        currentToken = '[';
+        bracketDepth = 1;
+      } else {
+        // Nested bracket
+        currentToken += char;
+        bracketDepth += 1;
+      }
+    } else if (char === ']') {
+      bracketDepth -= 1;
+      currentToken += char;
+      if (bracketDepth === 0) {
+        // End of bracket group
+        tokens.push(currentToken);
+        currentToken = '';
+      }
+    } else if (char === ' ' && bracketDepth === 0) {
+      // Space outside brackets - end of token
+      if (currentToken.trim()) {
+        tokens.push(currentToken.trim());
+        currentToken = '';
+      }
+    } else {
+      // Add character to current token
+      currentToken += char;
+    }
+    i += 1;
+  }
+  // Add any remaining token
+  if (currentToken.trim()) {
+    tokens.push(currentToken.trim());
+  }
+  return tokens.filter(token => token.length > 0);
+};
+
+function trimOuterBrackets(string) {
+  const start = string.indexOf('[');
+  const end = string.lastIndexOf(']');
+  if (start !== 0 || end === -1) return string;
+  return string.slice(start + 1, end);
+}
+
+function addSpaceAfterComma(string) {
+  return string.replaceAll(',', ', ');
+}
+
+function formatString(string) {
+  return trimOuterBrackets(addSpaceAfterComma(string));
 }
