@@ -949,6 +949,11 @@ class Source(models.Model):
     @staticmethod
     def ioc_rules(highlight=False, src_instance=None):
         rules = {}
+
+        if src_instance and src_instance.datatype != 'ioc':
+            # we cannot edit datatype on source edition page
+            return rules
+
         func = SuriHTMLFormat if highlight else lambda x: x
 
         rules_info = RuleAtVersion.objects.none()
