@@ -3333,10 +3333,9 @@ class RuleAtVersion(RangeCheckIntegerFields):
         T_SOURCE = Transformation.T_SOURCE
         T_DESTINATION = Transformation.T_DESTINATION
         T_AUTO = Transformation.T_AUTO
-        T_NONE = Transformation.T_NONE
 
         trans = self.rule.get_transformation(key=TARGET, ruleset=ruleset, override=True)
-        if trans in (T_SOURCE, T_DESTINATION, T_AUTO, T_NONE):
+        if trans in (T_SOURCE, T_DESTINATION, T_AUTO):
             content = self.rule.apply_transformation(content, key=Transformation.TARGET, value=trans)
 
         return content
