@@ -14,22 +14,6 @@ export const dashboard = [
         title: 'Categories',
       },
       {
-        i: 'alert.severity',
-        title: 'Severities',
-        format: value => {
-          switch (value.toString()) {
-            case '1':
-              return 'Severe';
-            case '2':
-              return 'Suspicious';
-            case '3':
-              return 'Contextual';
-            default:
-              return value;
-          }
-        },
-      },
-      {
         i: 'host',
         title: 'Probes',
       },
