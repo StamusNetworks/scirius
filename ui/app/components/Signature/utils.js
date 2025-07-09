@@ -68,8 +68,8 @@ const getEnginesData = analysis => {
         transforms: cur.transforms?.map(transform => transform.name),
         matches: cur.matches?.map(match => ({
           label: match.name,
-          value: decodeUnicodeEscapeSequence(match[match.name]?.pattern || ''),
-          tags: getMatchTags(match),
+          value: match.name === 'bsize' ? getBsizeDescription(match.bsize) : decodeUnicodeEscapeSequence(match[match.name]?.pattern || ''),
+          tags: match.name === 'bsize' ? [] : getMatchTags(match),
         })),
       };
       return [...prev, currentEngine];
@@ -269,4 +269,26 @@ function addSpaceAfterComma(string) {
 
 function formatString(string) {
   return trimOuterBrackets(addSpaceAfterComma(string));
+}
+
+function getBsizeDescription(bsize) {
+  const { mode, arg1, arg2 } = bsize || {};
+  switch (mode) {
+    case 'eq':
+      return `val = ${arg1}`;
+    case 'neq':
+      return `val != ${arg1}`;
+    case 'gt':
+      return `val > ${arg1}`;
+    case 'ge':
+      return `val >= ${arg1}`;
+    case 'lt':
+      return `val < ${arg1}`;
+    case 'le':
+      return `val <= ${arg1}`;
+    case 'range':
+      return `${arg1} < val < ${arg2}`;
+    default:
+      return 'unknown';
+  }
 }
