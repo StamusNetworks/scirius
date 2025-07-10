@@ -50,7 +50,6 @@ RUN  pip install --no-cache-dir --user -r requirements-base.txt && \
     pip install --no-cache-dir --user -r requirements-app.txt
 
 COPY ./ /code
-COPY ./docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
 RUN chmod +x /code/docker/scirius/bin/start-scirius.sh &&\
     mkdir -p /var/log/celery && \
     touch /var/log/celery/ansible.log

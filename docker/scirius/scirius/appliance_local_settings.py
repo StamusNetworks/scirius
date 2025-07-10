@@ -22,6 +22,7 @@ Django settings for the Scirius project.
 
 import os
 
+
 def strtobool(val):
     """Convert a string representation of truth to True or False."""
     val = str(val).lower()
@@ -31,6 +32,7 @@ def strtobool(val):
         return False
     else:
         raise ValueError(f"Invalid truth value: {val}")
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -268,10 +270,7 @@ class DATA_LIKE:
 
 USE_DATA_LIKE = DATA_LIKE.OS_2
 
-
-
-## Appliance specific settings
-
+# Appliance specific settings
 GPG_SEE_PASSPHRASE = 'xG3jVHnwhEA4tPJfBqgH'
 GPG_SEE_MAIL = 'unique-id@stamus-networks.com'
 PASSIVE_PROBE_TIMEOUT = 20  # minutes
@@ -345,7 +344,7 @@ BOOTSTRAP3 = {
     'field_renderers': {
         'default': 'bootstrap3.renderers.FieldRenderer',
         'inline': 'bootstrap3.renderers.InlineFieldRenderer',
-        'template':'appliances.templates.TemplateFieldRenderer'
+        'template': 'appliances.templates.TemplateFieldRenderer'
     }
 }
 
