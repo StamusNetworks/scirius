@@ -22,9 +22,17 @@
 
 cd /code
 
-cp /code/docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
-cp -rf /ui/* /code/rules/static
-cp /ui/webpack-stats-ui.prod.json /code/rules/static/webpack-stats-ui.prod.json
+set -e
+
+if [ "$RULESET_MIDDLEWARE" == "appliances" ]; then
+    echo "Using appliances ruleset middleware"
+    cp /code/docker/scirius/scirius/appliance_local_settings.py /code/scirius/local_settings.py
+else
+    echo "Using suricata ruleset middleware"
+    cp /code/docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
+fi
+cp -rf /ui/* /code/rules/static || true
+cp /ui/webpack-stats-ui.prod.json /code/rules/static/webpack-stats-ui.prod.json || true
 
 migrate_db() {
     python manage.py makemigrations --noinput
