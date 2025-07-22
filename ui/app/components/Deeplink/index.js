@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom/cjs/react-router-dom';
 import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
 
 import { APP_URL } from 'ui/config';
+import isNumeric from 'ui/helpers/isNumeric';
 import { FiltersList } from 'ui/maps/Filters';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Dashboards from 'ui/pages/Dashboards/Dashboards';
@@ -22,11 +23,10 @@ export default () => {
       if (key === 'page') return;
       if (!FiltersList.find(f => f.id === key)) return;
 
-      if (value.startsWith('"') && value.endsWith('"')) {
-        commonStore.addFilter(new Filter(key, value.slice(1, -1)));
-      } else {
-        commonStore.addFilter(new Filter(key, value));
-      }
+      const trimmedValue = value.startsWith('"') && value.endsWith('"') ? value.slice(1, -1).trim() : value.trim();
+      const typedValue = isNumeric(trimmedValue) ? Number(trimmedValue) : trimmedValue;
+
+      commonStore.addFilter(new Filter(key, typedValue));
     });
   }, []);
 
