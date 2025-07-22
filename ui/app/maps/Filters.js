@@ -19,6 +19,8 @@ export const FilterType = {
   NETWORK_INFO: 'NETWORK_INFO',
   STAMUS_ASSET: 'STAMUS_ASSET',
   SHA256: 'SHA256',
+  COMMUNITY_ID: 'COMMUNITY_ID',
+  FLOW_ID: 'FLOW_ID',
 };
 
 export const FiltersList = [
@@ -404,11 +406,13 @@ export const FiltersList = [
     id: 'flow_id',
     wildcardable: false,
     category: FilterCategory.EVENT,
+    type: FilterType.FLOW_ID,
   },
   {
     title: 'Community ID',
     id: 'community_id',
     wildcardable: false,
+    type: FilterType.COMMUNITY_ID,
     category: FilterCategory.EVENT,
   },
   {

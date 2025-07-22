@@ -26,7 +26,9 @@ const allOptions = [
   },
 ];
 
-const filterTypeOptions = Object.values(FilterType).map(type => ({ value: type }));
+const filterTypeOptions = Object.values(FilterType)
+  .sort()
+  .map(type => ({ value: type }));
 
 export const CreateModal = ({ initialValues, onSuccess }) => {
   const isCreate = initialValues === undefined;
