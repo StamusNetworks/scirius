@@ -882,6 +882,11 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
     format: value => (value ? 'Yes' : 'No'),
   },
+  {
+    title: 'Event ID',
+    id: 'uuid',
+    category: FilterCategory.EVENT,
+  },
   /* HISTORY */
   {
     title: 'User',
