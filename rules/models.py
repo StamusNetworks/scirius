@@ -3303,7 +3303,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
         content = self.content
 
         if self.rule.is_untrusted() and (self.match_luajit() or self.match_dataset()):
-            return 'disabled as source is untrusted: %s' % content
+            return 'disabled_as_source_is_untrusted: %s' % content
 
         # explicitely set prio on transformation here
         # Action
