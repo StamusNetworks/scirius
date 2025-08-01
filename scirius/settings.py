@@ -61,6 +61,8 @@ INSTALLED_APPS = (
     'webpack_loader',
     'chunked_upload',
     'django_ace',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 )
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
@@ -328,7 +330,7 @@ CSP_FORM_ACTION = ("'self'",)
 CSP_REPORT_URI = ("'none'",)
 CSP_REPORT_TO = ("'none'",)
 CSP_INCLUDE_NONCE_IN = ['script-src']
-CSP_EXCLUDE_URL_PREFIXES = ('/evebox',)
+CSP_EXCLUDE_URL_PREFIXES = ('/evebox', '/schema', '/redoc', '/swagger')
 CSP_BASE_URI = ("'self'",)
 
 REST_FRAMEWORK = {
@@ -345,7 +347,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 30
+    'PAGE_SIZE': 30,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Static files (CSS, JavaScript, Images)
@@ -476,3 +479,17 @@ except:
 
 if KIBANA_PROXY:
     INSTALLED_APPS += ('revproxy',)
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Clear NDR',
+    'DESCRIPTION': 'Clear NDR API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': True,
+    'OAS_VERSION': '3.0.3',
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    'SCHEMA_COERCE_PATH_PK_SUFFIX': True,
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
+    'COMPONENT_SPLIT_REQUEST': True,
+}
