@@ -1,6 +1,7 @@
 
 from django.urls import re_path, include, path
 from django.conf import settings
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from .views import homepage, KibanaProxyView, EveboxProxyView, MolochProxyView, static_redirect, ui_view
 from .rest_api import router
@@ -43,6 +44,11 @@ urlpatterns = [
 
     # Moloch proxy
     re_path(r'^arkime/(?P<path>.*)$', MolochProxyView.as_view()),
+
+    # OpenAPI doc
+    path(r'schema/', SpectacularAPIView.as_view(), name='schema'),
+    path(r'swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path(r'redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 
 if settings.STATIC_AUTHENTICATED:

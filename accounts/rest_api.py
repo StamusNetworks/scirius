@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import password_validation, logout
 from django.conf import settings
 from django.utils import timezone
-
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
 from rest_framework.response import Response
@@ -121,10 +121,12 @@ class TokenUserSerializer(serializers.ModelSerializer):
         model = SciriusTokenUser
         fields = ('pk', 'token_name', 'token_role', 'token', 'description', 'is_active', 'permissions')
 
-    def get_permissions(self, instance):
+    @extend_schema_field(dict[str, str])
+    def get_permissions(self, instance) -> dict[str, str]:
         return instance.user.groups.first().permissions.values('name', 'codename')
 
-    def get_token(self, instance):
+    @extend_schema_field(str)
+    def get_token(self, instance) -> str:
         return Token.objects.filter(user=instance.user).first().key
 
 
