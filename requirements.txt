@@ -24,6 +24,7 @@ django-revproxy>=0.11.0
 djangosaml2
 django-tables2
 django-webpack-loader
+drf-spectacular[sidecar]
 ecdsa
 elasticsearch<7
 flup
