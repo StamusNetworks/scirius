@@ -56,7 +56,7 @@ export const ExpandedSignature = ({ rule, Flow, MethodTitle, additionalCards = [
       .forEach((version, i) => {
         items.push({
           key: i,
-          label: `Version ${version.version === 0 ? '< 39' : version.version}`,
+          label: `Version ${version.version}`,
           children: <Signature rule={version} key={version.id} />,
         });
       });
