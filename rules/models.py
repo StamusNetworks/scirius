@@ -1639,8 +1639,7 @@ class Source(models.Model):
             resp = RequestsWrapper().get(url=self.uri, headers=hdrs, verify=self.cert_verif, use_proxy=self.use_sys_proxy)
             f.write(resp.content)
 
-            if self.version < version_server:
-                self.version = version_server
+            self.version = max(self.version, version_server)
 
             return True
 
