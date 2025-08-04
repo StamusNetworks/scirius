@@ -175,7 +175,7 @@ class RulePage extends React.Component {
       this.state.rule.versions.forEach((version, i) => {
         items.push({
           key: i,
-          label: `Version ${version.version === 0 ? '< 39' : version.version}`,
+          label: `Version ${version.version}`,
           children: <Signature rule={version} id={version.id} />,
         });
       });
