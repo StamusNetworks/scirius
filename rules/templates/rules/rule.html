@@ -329,9 +329,7 @@ $(document).ready(function(){
                     <ul class="nav nav-tabs" id="rule-sub-info">
                         {% for rav in rules_at_version %}
                             <li class="{% if forloop.first %}active{% endif %}">
-                                <a href="#rule_{{ rav.version }}">
-                                    {% if rav.version < 39 %}< v39 {% else %}v{{ rav.version }}{% endif %}
-                                </a>
+                                <a href="#rule_{{ rav.version }}">v{{ rav.version }}</a>
                             </li>
                         {% endfor %}
                     </ul>
