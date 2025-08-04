@@ -36,9 +36,7 @@
     <ul class="nav nav-tabs" id="category-info">
         {% for rule in rules %}
             <li class="{% if forloop.first %}active{% endif %}">
-                <a href="#version_{{ rule.version }}">
-                    {% if rule.version < 39 %}< v39 {% else %}v{{ rule.version }}{% endif %}
-                </a>
+                <a href="#version_{{ rule.version }}">v{{ rule.version }}</a>
             </li>
         {% endfor %}
     </ul>
