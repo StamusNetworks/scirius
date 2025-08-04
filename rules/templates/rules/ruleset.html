@@ -331,9 +331,7 @@ $( 'document' ).ready(function() {
     <ul class="nav nav-tabs" id="ruleset-info">
         {% for version, rules in all_rules.items %}
             <li class="{% if forloop.first %}active{% endif %}">
-                <a href="#version_{{ version }}">
-                    {% if version < 39 %}< v39 {% else %}v{{ version }}{% endif %}
-                </a>
+                <a href="#version_{{ version }}">v{{ version }}</a>
             </li>
         {% endfor %}
     </ul>

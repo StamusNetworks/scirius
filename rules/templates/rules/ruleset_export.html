@@ -17,11 +17,7 @@
                                     name="version"
                                     id="{{ version }}"
                                     value="{{ version }}">
-                                {% if version == 0 %}
-                                    < 39
-                                {% else %}
-                                    {{ version }}
-                                {% endif %}
+                                {{ version }}
                             </button>
                         </li>
                     {% endfor %}
@@ -31,4 +27,3 @@
     </div>
 </div>
 {% endblock%}
-
