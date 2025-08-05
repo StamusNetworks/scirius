@@ -123,8 +123,6 @@ def scirius_render(request, template, context):
     context['product_long_name'] = get_middleware_module('common').get_homepage_context()['product_long_name']
     context['use_stamuslogger'] = get_middleware_module('common').use_stamuslogger()
     gsettings = get_system_settings()
-    if settings.USE_INFLUXDB:
-        context['influxdb'] = 1
     if settings.USE_SURICATA_STATS:
         context['suricata_stats'] = 1
     if settings.USE_LOGSTASH_STATS:
