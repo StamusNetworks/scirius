@@ -34,7 +34,6 @@ greenlet
 gunicorn>=23.0.0
 httplib2
 idstools
-influxdb
 ipy
 kombu
 markdown
