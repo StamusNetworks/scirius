@@ -424,14 +424,6 @@ USE_LOGSTASH_STATS = False
 SURICATA_UNIX_SOCKET = None
 # SURICATA_UNIX_SOCKET = "/var/run/suricata/suricata-command.socket"
 
-# Influxdb
-USE_INFLUXDB = False
-INFLUXDB_HOST = "localhost"
-INFLUXDB_PORT = 8086
-INFLUXDB_USER = "grafana"
-INFLUXDB_PASSWORD = "grafana"
-INFLUXDB_DATABASE = "scirius"
-
 # Moloch
 USE_MOLOCH = False
 MOLOCH_URL = "https://localhost:8005"
