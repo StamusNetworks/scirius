@@ -1,4 +1,5 @@
 
+from drf_spectacular.utils import extend_schema
 from .suripyg import SuriHTMLFormat
 
 from django.conf import settings
@@ -121,6 +122,7 @@ class RulesetUpdateTaskSerializer(SciriusTaskSerializer):
     ruleset = serializers.PrimaryKeyRelatedField(queryset=Ruleset.objects.all())
 
 
+@extend_schema(tags=["Ruleset"])
 class RulesetViewSet(viewsets.ModelViewSet):
     """
     =============================================================================================================================================================
@@ -331,6 +333,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('pk', 'name', 'descr', 'created_date', 'source')
 
 
+@extend_schema(tags=["Source"])
 class CategoryViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
@@ -601,6 +604,7 @@ class RuleHitsOrderingFilter(OrderingFilter, ESManageMultipleESIndexesViewSet):
         return sids
 
 
+@extend_schema(tags=["Rule"])
 class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
@@ -1092,6 +1096,7 @@ class DeepLinkSerializer(serializers.ModelSerializer):
         return deeplink
 
 
+@extend_schema(tags=["Deep link"])
 class DeepLinkViewSet(SciriusModelViewSet):
     """
     =============================================================================================================================================================
@@ -1296,6 +1301,7 @@ class RulesetTransformationSerializer(serializers.ModelSerializer):
         }
 
 
+@extend_schema(tags=["Ruleset", "Transformation"])
 class RulesetTransformationViewSet(BaseTransformationViewSet):
     """
     =============================================================================================================================================================
@@ -1393,6 +1399,7 @@ class CategoryTransformationSerializer(serializers.ModelSerializer):
         }
 
 
+@extend_schema(tags=["Source", "Transformation"])
 class CategoryTransformationViewSet(BaseTransformationViewSet):
     """
     =============================================================================================================================================================
@@ -1494,6 +1501,7 @@ class RuleTransformationSerializer(serializers.ModelSerializer):
         }
 
 
+@extend_schema(tags=["Rule", "Transformation"])
 class RuleTransformationViewSet(BaseTransformationViewSet):
     """
     =============================================================================================================================================================
@@ -1646,6 +1654,7 @@ class BaseSourceSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+@extend_schema(tags=["Source"])
 class BaseSourceViewSet(viewsets.ModelViewSet):
     REQUIRED_GROUPS = {
         'READ': ('rules.source_view',),
@@ -2086,6 +2095,7 @@ class UserActionDateOrderingFilter(OrderingFilter):
         return queryset.order_by(*ordering)
 
 
+@extend_schema(tags=["User action"])
 class UserActionViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
@@ -2168,6 +2178,7 @@ class ChangelogSerializer(serializers.ModelSerializer):
         return data
 
 
+@extend_schema(tags=["Source"])
 class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
@@ -2204,6 +2215,7 @@ class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
     }
 
 
+@extend_schema(tags=["ES"])
 class ESBaseViewSet(APIView):
     """
     ES Abstract Base class
@@ -2219,6 +2231,7 @@ class ESBaseViewSet(APIView):
         raise NotImplementedError('This is an abstract class. ES sub classes must override this method')
 
 
+@extend_schema(tags=["ES", "Rule"])
 class ESRulesViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -2250,6 +2263,7 @@ class ESRulesViewSet(ESBaseViewSet):
         return Response({'rules': ESRulesStats(request).get(dict_format=True)})
 
 
+@extend_schema(tags=["ES", "Rule"])
 class ESRuleViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
@@ -2280,6 +2294,7 @@ class ESRuleViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
         return Response({'rule': ESSidByHosts(request, view=self).get(sid, dict_format=True)})
 
 
+@extend_schema(tags=["ES", "Rule"])
 class ESTopRulesViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     """
@@ -2644,6 +2659,7 @@ class ESShardStatsViewSet(ESBaseViewSet):
         return Response(ESShardStats(request).get())
 
 
+@extend_schema(tags=["ES"])
 class ESCheckVersionViewSet(APIView):
     """
     """
@@ -2665,6 +2681,7 @@ class ESCheckVersionViewSet(APIView):
         return Response(res)
 
 
+@extend_schema(tags=["ES", "Rule", "Source"])
 class ESRulesPerCategoryViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
@@ -2696,6 +2713,7 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet)
         return Response(ESRulesPerCategory(request, view=self).get())
 
 
+@extend_schema(tags=["ES", "Alert"])
 class ESAlertsCountViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
@@ -2727,6 +2745,7 @@ class ESAlertsCountViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
         return Response(data)
 
 
+@extend_schema(tags=["ES", "Alert"])
 class ESTimeRangeAllAlertsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
@@ -2791,6 +2810,7 @@ class ESLatestStatsViewSet(ESBaseViewSet):
         return Response(ESLatestStats(request).get())
 
 
+@extend_schema(tags=["ES", "Alert"])
 class ESIPPairAlertsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
@@ -2820,6 +2840,7 @@ class ESIPPairAlertsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
         return Response(ESIppairAlerts(request, view=self).get())
 
 
+@extend_schema(tags=["ES", "Alert"])
 class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -2844,6 +2865,7 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
         return Response(ESIppairNetworkAlerts(request).get())
 
 
+@extend_schema(tags=["ES", "Alert"])
 class ESAlertsTailViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
@@ -2877,6 +2899,7 @@ class ESAlertsTailViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
         return Response(res)
 
 
+@extend_schema(tags=["ES", "Event"])
 class ESEventsTailViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -3000,6 +3023,7 @@ class ESIPFlowTimelineViewSet(ESBaseViewSet):
         return Response(src_ip_res)
 
 
+@extend_schema(tags=["ES", "Event"])
 class ESEventsTimelineViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -3023,6 +3047,7 @@ class ESEventsTimelineViewSet(ESBaseViewSet):
         return Response(ESEventsTimeline(request).get())
 
 
+@extend_schema(tags=["ES", "Event"])
 class ESEventsFromFlowIDViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -3130,6 +3155,7 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
         read_only_fields = ('kibana', 'kibana_url', 'evebox', 'evebox_url', 'cyberchef', 'cyberchef_url')
 
 
+@extend_schema(tags=["ES", "Settings"])
 class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     """
     =============================================================================================================================================================
@@ -3251,6 +3277,7 @@ class FilterSetSerializer(serializers.ModelSerializer):
         return data
 
 
+@extend_schema(tags=["ES", "Filter"])
 class FilterSetViewSet(viewsets.ModelViewSet):
     """
     =============================================================================================================================================================
