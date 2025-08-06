@@ -1,5 +1,6 @@
 
 from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.routers import DefaultRouter, APIRootView as APIRootViewDJango
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'email')
 
 
+@extend_schema(tags=["User"])
 class UserViewSet(SciriusModelViewSet):
     queryset = User.objects.filter(sciriususer__sciriustokenuser__parent__isnull=True).order_by('-date_joined')
     serializer_class = UserSerializer
