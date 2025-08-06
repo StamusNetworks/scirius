@@ -40,7 +40,7 @@ from rules.es_query import build_es_url, ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats, ESShardStats
 from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts, ESFlowTimeline, \
-    ESIPFlowTimeline
+    ESIPFlowTimeline, ESMapping
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats, ESEventsTimeline
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
@@ -3502,6 +3502,33 @@ class ESGenericSearchViewSet(ESBaseViewSet):
         return Response(ESGenericSearch(request, index, qfilter, size, aggs, time_filter).get())
 
 
+class ESMappingViewSet(ESBaseViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Get available ES mapping. It aggregates all available indexes.
+
+    Show rules stats:\n
+        curl -k https://x.x.x.x/rest/rules/es/mapping/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {
+            "@timestamp": {"type": "date"},
+            // ...
+            "dnp3.application.objects.variation": {"type": "long"}
+        }
+
+    =============================================================================================================================================================
+    """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view', 'rules.events_view'),
+    }
+
+    def _get(self, request, format=None):
+        return Response(ESMapping(request).get())
+
+
 def get_custom_urls():
     urls = []
     url_ = re_path(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
@@ -3515,6 +3542,7 @@ def get_custom_urls():
     url_ = re_path(r'rules/hunt-filter/$', HuntFilterAPIView.as_view(), name='hunt_filter')
     urls.append(url_)
 
+    urls.append(re_path(r'rules/es/mapping/$', ESMappingViewSet.as_view(), name='es_rules'))
     urls.append(re_path(r'rules/es/rules/$', ESRulesViewSet.as_view(), name='es_rules'))
     urls.append(re_path(r'rules/es/rule/$', ESRuleViewSet.as_view(), name='es_rule'))
     urls.append(re_path(r'rules/es/filter_ip/$', ESFilterIPViewSet.as_view(), name='es_filter_ip'))

@@ -3,6 +3,7 @@ argparse
 arrow
 async
 billiard
+cachetools
 celery
 certifi
 cryptography>=44.0.1
