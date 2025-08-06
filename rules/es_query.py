@@ -10,6 +10,7 @@ import json
 import re
 import urllib.parse
 
+from cachetools import cached, TTLCache
 from elasticsearch.helpers import bulk
 
 from django.conf import settings
@@ -413,6 +414,43 @@ class ESQuery:
                 indexes.pop(indexes.index(idx))
 
         return indexes
+
+    def _extract_mapping_types(
+        self, data: dict[str, str | int | bool | None], current_path: str = ""
+    ) -> dict[str, dict[str, str]]:
+        """
+        Recursively extract mapping
+
+        Args:
+            data(dict): dict to analyze
+            current_path (str): current path
+
+        Returns:
+            dict: containing extracted data
+        """
+        result: dict[str, dict[str, str]] = {}
+        for key, value in data.items():
+            new_path = f"{current_path}.{key}" if current_path else key
+
+            # If the value has a 'type' key, we've found our type
+            if isinstance(value, dict) and "type" in value:
+                result[new_path] = {"type": value["type"]}
+
+            # If it's a nested object (has a 'properties' key), recurse
+            elif isinstance(value, dict) and "properties" in value:
+                result.update(self._extract_mapping_types(value["properties"], new_path))
+
+        return result
+
+    @cached(TTLCache(maxsize=1, ttl=3600))
+    def get_mappings(self):
+        result: dict[str, dict[str, str]] = {}
+        indexes = get_middleware_module("common").get_es_indexes()
+        for index in indexes:
+            full_mapping = self.es.indices.get_mapping(index)
+            for content in full_mapping.values():
+                result |= self._extract_mapping_types(content["mappings"]["properties"])
+        return result
 
     def _es_interval_kw(self):
         from rules.es_graphs import get_es_major_version

@@ -110,6 +110,10 @@ def check_tenant_in_es_query(user, params: dict, qfilter: Optional[str], indexes
     pass
 
 
+def get_es_indexes() -> list[str]:
+    return ["logstash-alert-*"]
+
+
 def get_tenants(empty_queryset=False):
     return []
 
