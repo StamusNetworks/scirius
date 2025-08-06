@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -21,6 +22,7 @@ from rules.rest_api import CommentSerializer
 from suricata.rest_tasks import SuricataRulesetCeleryTaskViewSet
 
 
+@extend_schema(tags=["Ruleset"])
 class SuricataViewSet(APIView):
     """
     =============================================================================================================================================================
@@ -65,6 +67,7 @@ class SuricataViewSet(APIView):
         return Response({'update_push_all': msg})
 
 
+@extend_schema(tags=["Filestore"])
 class PcapFilestoreViewSet(viewsets.ViewSet):
     '''
     '''
@@ -146,6 +149,7 @@ class PcapFilestoreViewSet(viewsets.ViewSet):
         return response
 
 
+@extend_schema(tags=["Filestore"])
 class FilestoreViewSet(viewsets.ViewSet):
     """
     =============================================================================================================================================================
