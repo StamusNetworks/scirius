@@ -171,14 +171,6 @@ USE_LOGSTASH_STATS = bool(strtobool(os.getenv('USE_LOGSTASH_STATS', '0')))
 USE_CYBERCHEF = bool(strtobool(os.getenv('USE_CYBERCHEF', '1')))
 CYBERCHEF_URL = os.getenv('CYBERCHEF_URL', '/static/cyberchef/')
 
-# InfluxDB
-USE_INFLUXDB = bool(strtobool(os.getenv('USE_INFLUXDB', '0')))
-INFLUXDB_HOST = os.getenv('INFLUXDB_HOST', 'influxdb')
-INFLUXDB_PORT = os.getenv('INFLUXDB_PORT', 8086)
-INFLUXDB_USER = os.getenv('INFLUXDB_USER', 'grafana')
-INFLUXDB_PASSWORD = os.getenv('INFLUXDB_PASSWORD', 'grafana')
-INFLUXDB_DATABASE = os.getenv('INFLUXDB_DATABASE', 'scirius')
-
 # Moloch
 USE_MOLOCH = bool(strtobool(os.getenv('USE_MOLOCH', '0')))
 MOLOCH_URL = os.getenv('MOLOCH_URL', 'http://moloch:8005')
