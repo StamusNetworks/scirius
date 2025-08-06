@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 import suricata.tasks
 
 from django.db.models import Case, When, BooleanField
@@ -39,6 +40,7 @@ class RecurrentTaskSerializer(serializers.ModelSerializer):
         return instance.display()
 
 
+@extend_schema(tags=["Task"])
 class RecurrentTaskViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     """
     =============================================================================================================================================================
@@ -124,6 +126,7 @@ class CeleryTaskSerializer(serializers.ModelSerializer):
         return data
 
 
+@extend_schema(tags=["Task"])
 class CeleryTaskViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """
     =============================================================================================================================================================
@@ -268,6 +271,7 @@ class SuricataUpdateGenerateRulesetSerializer(SciriusTaskSerializer):
     generate = serializers.BooleanField()
 
 
+@extend_schema(tags=["Task", "Ruleset"])
 class SuricataRulesetCeleryTaskViewSet(views.APIView):
     """
     =============================================================================================================================================================
