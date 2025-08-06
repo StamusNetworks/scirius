@@ -23,6 +23,7 @@ import json
 from IPy import IP
 
 from django.db import models
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -348,6 +349,7 @@ class RuleProcessingFilterIntersectSerializer(serializers.Serializer):
     index = serializers.IntegerField(default=None, allow_null=True)
 
 
+@extend_schema(tags=["Rule"])
 class RuleProcessingFilterViewSet(SciriusModelViewSet):
     '''
     =============================================================================================================================================================
