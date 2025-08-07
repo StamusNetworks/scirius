@@ -948,7 +948,7 @@ class Source(models.Model):
         if self.datatype in ("ioc", "other", "b64dataset"):
             without_dash = self.name.replace("-", "")
             if not without_dash.isalnum():
-                raise ValidationError("Source name can only contain alphanum characters and dashes")
+                raise ValidationError({"name": ["Source name can only contain alphanum characters and dashes"]})
 
     def build_ioc_metadata(self):
         items = []
