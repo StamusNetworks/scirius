@@ -940,6 +940,16 @@ class Source(models.Model):
         from scirius.utils import get_middleware_module
         self.custom_data_type = get_middleware_module('common').custom_source_datatype()
 
+    def clean(self):
+        """
+        We must check the name when the type is IoC or Other content or String dataset file. The name can only contain
+        characters and dash
+        """
+        if self.datatype in ("ioc", "other", "b64dataset"):
+            without_dash = self.name.replace("-", "")
+            if not without_dash.isalnum():
+                raise ValidationError("Source name can only contain alphanum characters and dashes")
+
     def build_ioc_metadata(self):
         items = []
         for item in self.ioc_meta.values('key', 'value'):
@@ -1126,6 +1136,8 @@ class Source(models.Model):
         ).order_by('name')
 
     def save(self, *args, **kwargs) -> None:
+        self.full_clean()
+
         # creation
         if self._state.adding:
             validate_source_datatype(self.datatype)
