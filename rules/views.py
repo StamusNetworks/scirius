@@ -1178,17 +1178,16 @@ def add_source(request):
 
             return redirect('status')
         else:
-            errors = [error for error in ioc_meta_formset.errors if error] + [form.errors.as_json()]
-            return scirius_render(
-                request,
-                'rules/add_source.html',
-                {
-                    'form': form,
-                    'ioc_meta_formset': ioc_meta_formset,
-                    'rules': Source.ioc_rules(highlight=True),
-                    'error': f'form is not valid: {errors}'
-                }
-            )
+            errors = [error for error in ioc_meta_formset.errors if error]
+            context = {
+                'form': form,
+                'ioc_meta_formset': ioc_meta_formset,
+                'rules': Source.ioc_rules(highlight=True),
+            }
+            # if we don't have IoC error, we have the error twice (below the field and on the top red bar)
+            if errors:
+                context['error'] = f'form is not valid: {errors}'
+            return scirius_render(request, 'rules/add_source.html', context)
     else:
         form = AddSourceForm()  # An unbound form
         ioc_meta_formset = IoCMetaFormset(queryset=IoCMeta.objects.none())
@@ -1378,17 +1377,15 @@ def edit_source(request, source_id):
                 )
 
         else:
-            errors = [error for error in ioc_meta_formset.errors if error] + [form.errors.as_json()]
-            return scirius_render(
-                request,
-                'rules/add_source.html',
-                {
-                    'form': form,
-                    'ioc_meta_formset': ioc_meta_formset,
-                    'rules': Source.ioc_rules(highlight=True, src_instance=source),
-                    'error': f'form is not valid: {errors}'
-                }
-            )
+            errors = [error for error in ioc_meta_formset.errors if error]
+            context = {
+                'form': form,
+                'ioc_meta_formset': ioc_meta_formset,
+                'rules': Source.ioc_rules(highlight=True),
+            }
+            # if we don't have IoC error, we have the error twice (below the field and on the top red bar)
+            if errors:
+                context['error'] = f'form is not valid: {errors}'
     else:
         form = SourceForm(instance=source)
         ioc_meta_formset = IoCMetaFormset(queryset=IoCMeta.objects.filter(ioc_source=source))
