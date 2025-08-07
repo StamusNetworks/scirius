@@ -25,6 +25,7 @@ import re
 import os
 import tarfile
 from django.contrib.auth.models import User, Group
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
@@ -287,6 +288,33 @@ class SourceCreationTestCase(TestCase):
         f.seek(0)
         source.handle_rules_file(f)
         self.assertEqual(Rule.objects.count(), 1)
+
+    def test_source_name_depending_on_datatype(self):
+        source = Source(
+            name="Unicode rule",
+            method="local",
+            datatype="sig",
+            created_date=timezone.now()
+        )
+        source.clean()
+
+        source.name = "some/source with sp&cial chars '"
+        source.clean()
+
+        source.datatype = "ioc"
+        self.assertRaises(ValidationError, source.clean)
+        source.datatype = "other"
+        self.assertRaises(ValidationError, source.clean)
+        source.datatype = "b64dataset"
+        self.assertRaises(ValidationError, source.clean)
+
+        source.name = "/tmp/oops-I-did-it-again"
+        self.assertRaises(ValidationError, source.clean)
+        source.name = "I'm-sorry"
+        self.assertRaises(ValidationError, source.clean)
+
+        source.name = "ok-source"
+        source.clean()
 
     def test_archive_dot_prefix(self):
         tar_path = '/tmp/source.tar.gz'
