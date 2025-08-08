@@ -19,11 +19,12 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+from typing import Any
 import pytz
 from importlib import import_module
 from pathlib import Path
 from time import time
-import requests
+import httpx
 import os
 
 from django.shortcuts import render
@@ -265,16 +266,21 @@ def read_in_chunks(file_, chunk_size=1024):
 
 
 class RequestsWrapper:
-    def __init__(self, method=None):
+    def __init__(
+        self, method: str | None = None, client: httpx.Client | None = None, verify: bool = True, use_proxy: bool = True
+    ):
         self.method = method
+        extra: dict[str, Any] = {'mounts': self._get_proxies()} if use_proxy else {}
+        self.verify = verify
+        self._client = client if client else httpx.Client(
+            timeout=30,
+            **extra
+        )
 
-    def __getattr__(self, attr):
-        return RequestsWrapper(getattr(requests, attr))
+    def __getattr__(self, attr: str):
+        return RequestsWrapper(getattr(self._client, attr), client=self._client)
 
     def __call__(self, *args, **kwargs):
-        if kwargs.pop('use_proxy', True):
-            kwargs.update({'proxies': self._get_proxies()})
-
         if 'headers' not in kwargs:
             agent = f'scirius/{settings.SCIRIUS_VERSION}'
             if os.getenv('STAMUSCTL_SEED'):
@@ -283,27 +289,34 @@ class RequestsWrapper:
 
             kwargs.update({'headers': {'User-Agent': agent}})
 
+            if not self.verify:
+                kwargs["verify"] = False
+
         try:
             resp = self.method(*args, **kwargs)
             resp.raise_for_status()
-        except requests.exceptions.ConnectionError as exc:
+        except httpx.ConnectError as exc:
             if "Name or service not known" in str(exc):
-                raise IOError("Connection error 'Name or service not known'")
-            elif "Connection timed out" in str(exc):
-                raise IOError("Connection error 'Connection timed out'")
-            raise IOError("Connection error '%s'" % (exc))
-        except requests.exceptions.HTTPError:
+                raise OSError("Connection error 'Name or service not known'")
+            if "Connection timed out" in str(exc):
+                raise OSError("Connection error 'Connection timed out'")
+            raise OSError(f"Connection error '{exc}'")
+        except httpx.TimeoutException:
+            raise OSError("Request timeout, server may be down")
+        except httpx.TooManyRedirects:
+            raise OSError("Too many redirects, server may be broken")
+        except httpx.HTTPError:
             if resp.status_code == 404:
-                raise IOError("URL not found on server (error 404), please check URL")
-            raise IOError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
-        except requests.exceptions.Timeout:
-            raise IOError("Request timeout, server may be down")
-        except requests.exceptions.TooManyRedirects:
-            raise IOError("Too many redirects, server may be broken")
+                raise OSError("URL not found on server (error 404), please check URL")
+            raise OSError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
         return resp
 
     def _get_proxies(self):
-        return get_system_settings().get_proxy_params()
+        proxy_params = get_system_settings().get_proxy_params()
+        return {
+            "http://": httpx.HTTPTransport(proxy=proxy_params["http"]),
+            "https://": httpx.HTTPTransport(proxy=proxy_params["https"]),
+        } if proxy_params else None
 
 
 def convert_to_utc(time, user):
