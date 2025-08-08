@@ -35,6 +35,7 @@ GitPython
 greenlet
 gunicorn>=23.0.0
 httplib2
+httpx
 idstools
 ipy
 kombu
@@ -52,7 +53,6 @@ python-dateutil>=2.8.1
 python-gnupg
 pytz
 PyYAML
-requests>=2.32.4
 six
 smmap
 subprocess32
