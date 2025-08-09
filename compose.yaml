@@ -56,7 +56,7 @@ services:
     elasticsearch:
         image: opensearchproject/opensearch:2.19.0
         container_name: elasticsearch
-        restart: ${RESTART_MODE:-unless-stopped}
+        restart: on-failure
         healthcheck:
             test: ['CMD-SHELL', 'curl -k --silent --fail http://localhost:9200/_cluster/health?waitforstatus=green&timeout=1s || exit 1']
             interval: 10s
@@ -96,7 +96,7 @@ services:
         build:
             context: docker/opensearch-dashboards
             dockerfile: Dockerfile
-        restart: ${RESTART_MODE:-unless-stopped}
+        restart: on-failure
         configs:
             - source: opensearch-dashboard-config
               target: /usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
@@ -142,7 +142,7 @@ services:
         build:
             context: '.'
             dockerfile: Dockerfile.local
-        restart: ${RESTART_MODE:-unless-stopped}
+        restart: on-failure
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:8000/']
             interval: 10s
@@ -193,7 +193,7 @@ services:
 
     db:
         image: postgres
-        restart: always
+        restart: on-failure
         shm_size: 128mb
         environment:
             POSTGRES_USER: selks
@@ -212,7 +212,7 @@ services:
         build:
             context: '.'
             dockerfile: Dockerfile.local
-        restart: always
+        restart: on-failure
         working_dir: /code
         entrypoint: celery
         command: -A suricata worker --loglevel=info
@@ -250,7 +250,7 @@ services:
         build:
             context: '.'
             dockerfile: Dockerfile.local
-        restart: always
+        restart: on-failure
         entrypoint: celery
         command: --broker=amqp://guest:guest@rabbitmq:5672// flower -A suricata
         environment:
