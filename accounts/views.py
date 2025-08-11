@@ -48,7 +48,10 @@ from .models import SciriusTokenUser, SciriusUser, Group
 from .tables import TokenListTable, UserTable, GroupTable
 
 from ipware.ip import get_client_ip
-import logging
+import structlog
+
+
+logger = structlog.get_logger("authentication")
 
 
 @never_cache
@@ -66,6 +69,7 @@ def loginview(request, target):
         username = form.cleaned_data['username']
         password = form.cleaned_data['password']
         user = authenticate(username=username, password=password)
+        ip, _routable = get_client_ip(request)
         if user is not None:
             if user.is_active:
                 login(request, user)
@@ -80,8 +84,7 @@ def loginview(request, target):
                 if not form.cleaned_data['persistent']:
                     request.session.set_expiry(0)
 
-                logger = logging.getLogger('authentication')
-                logger.info("Successful login for '%s' from '%s'", username, get_client_ip(request))
+                logger.info("Successful login", user=username, ip=ip)
                 UserAction.create(
                     action_type='login',
                     request=request,
@@ -94,14 +97,12 @@ def loginview(request, target):
             else:
                 form = LoginForm()
                 context.update({'form': form, 'error_login': 'Disabled account', 'banner': banner})
-                logger = logging.getLogger('authentication')
-                logger.error("Invalid login attempt for disabled account '%s' from '%s'", username, get_client_ip(request))
+                logger.error("Invalid login attempt for disabled account '%s' from '%s'", user=username, ip=ip)
                 return scirius_render(request, 'accounts/login.html', context)
         else:
             form = LoginForm()
             context.update({'form': form, 'error_login': 'Invalid login', 'banner': banner})
-            logger = logging.getLogger('authentication')
-            logger.error("Invalid login attempt for '%s' from '%s'", username, get_client_ip(request))
+            logger.error("Invalid login attempt for '%s' from '%s'", user=username, ip=ip)
             return scirius_render(request, 'accounts/login.html', context)
     else:
         form = LoginForm()
