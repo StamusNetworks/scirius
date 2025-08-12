@@ -1363,17 +1363,22 @@ class Source(models.Model):
         return self.handle_other_file(f, b64encode=True)
 
     def handle_ioc_file(self, f_dataset):
+        import io
         f_dataset.seek(0)
+        # remove all lines that start with #
+        filtered_lines = [line for line in f_dataset.readlines() if not line.strip().startswith(b'#')]
+        clean_content = b''.join(filtered_lines)
+        clean_f_dataset = io.BytesIO(clean_content)
 
         validator = Source.IOC_MAPPING[self.ioc_type]['validator']
         if validator:
-            for line in f_dataset:
+            for line in clean_f_dataset:
                 validator(line.decode().strip())
 
         if Source.IOC_MAPPING[self.ioc_type]['encoding'] == 'b64':
-            self.handle_b64dataset(f_dataset)
+            self.handle_b64dataset(clean_f_dataset)
         else:
-            self.handle_other_file(f_dataset)
+            self.handle_other_file(clean_f_dataset)
 
         self._update_ioc_rules()
 
@@ -1620,7 +1625,7 @@ class Source(models.Model):
             hdrs['Authorization'] = self.authkey
 
         version_uri = None
-        if self.is_etpro_url() or (self.datatype not in ('sigs', 'sig', 'other', 'b64dataset') and not self.is_ti_dev_url()):
+        if self.is_etpro_url() or (self.datatype not in ('sigs', 'sig', 'other', 'b64dataset', 'ioc') and not self.is_ti_dev_url()):
             version_uri = os.path.join(os.path.dirname(self.uri), 'version.txt')
 
         version_server = 1
