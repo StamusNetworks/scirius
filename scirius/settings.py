@@ -17,8 +17,8 @@ from django import get_version
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
-APP_LONG_NAME = os.getenv('APP_LONG_NAME', 'Scirius Community Edition')
-APP_MEDIUM_NAME = os.getenv('APP_MEDIUM_NAME', 'Scirius CE')
+APP_LONG_NAME = os.getenv('APP_LONG_NAME', 'Clear NDR Community')
+APP_MEDIUM_NAME = os.getenv('APP_MEDIUM_NAME', 'Clear NDR')
 APP_SHORT_NAME = os.getenv('APP_SHORT_NAME', APP_MEDIUM_NAME)
 APP_MNGT_NAME = os.getenv('APP_MNGT_NAME', 'Clear NDR CE Management')
 PRODUCT_LONG_NAME = os.getenv('PRODUCT_LONG_NAME', 'Clear NDR Community Edition')
