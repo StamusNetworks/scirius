@@ -187,7 +187,7 @@ CSP_EXCLUDE_URL_PREFIXES = tuple(os.getenv('CSP_EXCLUDE_URL_PREFIXES', '/evebox'
 
 GIT_SOURCES_BASE_DIRECTORY = '/data/git-sources/'
 
-SCIRIUS_VERSION = "0.9.0"
+SCIRIUS_VERSION = os.getenv('SCIRIUS_VERSION', '1.0.0')
 LOGO = 'rules/stamus.png'
 
 ENGINE = "django.db.backends.postgresql"
