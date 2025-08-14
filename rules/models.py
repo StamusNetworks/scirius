@@ -1615,7 +1615,11 @@ class Source(models.Model):
 
         get_middleware_module('common').update_custom_sources_url(self)
 
-        hdrs = {'User-Agent': 'scirius'}
+        agent = f'scirius/{settings.SCIRIUS_VERSION}'
+        if os.getenv('STAMUSCTL_SEED'):
+            seed = os.getenv('STAMUSCTL_SEED').strip('"')
+            agent = f'scirius/{settings.SCIRIUS_VERSION} ({seed})'
+        hdrs = {'User-Agent': agent}
         if self.authkey:
             hdrs['Authorization'] = self.authkey
 
