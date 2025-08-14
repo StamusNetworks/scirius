@@ -24,6 +24,7 @@ from importlib import import_module
 from pathlib import Path
 from time import time
 import requests
+import os
 
 from django.shortcuts import render
 from django.conf import settings
@@ -277,7 +278,12 @@ class RequestsWrapper:
             kwargs.update({'proxies': self._get_proxies()})
 
         if 'headers' not in kwargs:
-            kwargs.update({'headers': {'User-Agent': 'scirius'}})
+            agent = f'scirius/{settings.SCIRIUS_VERSION}'
+            if os.getenv('STAMUSCTL_SEED'):
+                seed = os.getenv('STAMUSCTL_SEED').strip('"')
+                agent = f'scirius/{settings.SCIRIUS_VERSION} ({seed})'
+
+            kwargs.update({'headers': {'User-Agent': agent}})
 
         try:
             resp = self.method(*args, **kwargs)
