@@ -350,6 +350,17 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
+    title: 'Queried Name',
+    id: 'dns.queries.rrname',
+    type: FilterType.HOSTNAME,
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Queried Type',
+    id: 'dns.queries.rrtype',
+    category: FilterCategory.EVENT,
+  },
+  {
     title: 'Flow start',
     id: 'flow.start',
     category: FilterCategory.EVENT,
