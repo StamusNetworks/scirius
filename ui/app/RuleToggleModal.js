@@ -296,6 +296,7 @@ class RuleToggleModal extends React.Component {
                       onKeyPress={e => this.onFieldKeyPress(e)}
                     />
                   </div>
+                  {this.state.errors?.filter_defs && <div style={{ color: 'red' }}>{this.state.errors.filter_defs[0]}</div>}
                 </Form.Item>
               ))}
             {this.props.action === 'threshold' && (
