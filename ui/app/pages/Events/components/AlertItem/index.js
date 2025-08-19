@@ -1012,7 +1012,18 @@ class AlertItem extends React.Component {
                     </Numbers>
                   }
                 >
-                  <AlertRelatedData type={key} data={events[key]} />
+                  {key !== 'Smb_Insights' ? (
+                    <AlertRelatedData type={key} data={events[key]} />
+                  ) : (
+                    <ReactJson
+                      name={false}
+                      src={events?.[key]?.[0]?.rawJson}
+                      displayDataTypes={false}
+                      displayObjectSize={false}
+                      collapseStringsAfterLength={150}
+                      collapsed={false}
+                    />
+                  )}
                 </Tabs.TabPane>
               ))}
           </React.Fragment>
