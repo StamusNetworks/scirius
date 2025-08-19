@@ -2305,7 +2305,8 @@ def delete_scheduledtask(request, task_id):
     stask = get_object_or_404(MIDDLEWARE.models.RecurrentTask, pk=task_id)
     if request.method == 'POST':
         stask.delete()
-        return redirect('view_stasks')
+        page = MIDDLEWARE.common.get_redirect_for_stask(stask.task)
+        return redirect(page)
     else:
         context = {
             'scheduledtask': stask,
