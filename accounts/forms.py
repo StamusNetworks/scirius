@@ -141,11 +141,14 @@ class TokenGroupForm(forms.ModelForm):
 
     def __init__(self, req_user, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        permissions = req_user.groups.first().permissions
         instance = kwargs.get('instance')
 
-        self.fields['permissions'].queryset = permissions.all()
-        self.fields['permissions'].choices = permissions.order_by('pk').values_list('pk', 'name')
+        if group := req_user.groups.first():
+            permissions = group.permissions
+            self.fields['permissions'].queryset = permissions.all()
+            self.fields['permissions'].choices = permissions.order_by('pk').values_list('pk', 'name')
+        else:
+            self.fields['permissions'].queryset = DjangoGroup.objects.none()
 
         if instance:
             self.initial['permissions'] = instance.permissions.values_list('pk', flat=True)
