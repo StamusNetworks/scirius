@@ -136,31 +136,37 @@ class SCBackup(SCOperation):
 
     def run(self):
         self.directory = tempfile.mkdtemp()
-        self.write_migration_level()
-        self.backup_db()
-        self.backup_git_sources()
-        self.backup_ruleset_middleware()
-        # create tar archive of dir
-        call_dir = os.getcwd()
-        os.chdir(self.directory)
-        filename = filename_generate(
-            'tar.bz2' if not self.no_compress else 'tar',
-            self.dbcommands.database,
-            self.dbcommands.servername
-        )
-        outputfile = tempfile.SpooledTemporaryFile()
-        ts = tarfile.open(
-            filename,
-            'w:bz2' if not self.no_compress else 'w',
-            fileobj=outputfile
-        )
+        try:
+            self.write_migration_level()
+            self.backup_db()
+            self.backup_git_sources()
+            self.backup_ruleset_middleware()
+            # create tar archive of dir
+            call_dir = os.getcwd()
+            os.chdir(self.directory)
+            filename = filename_generate(
+                'tar.bz2' if not self.no_compress else 'tar',
+                self.dbcommands.database,
+                self.dbcommands.servername
+            )
+            outputfile = tempfile.SpooledTemporaryFile()
+            ts = tarfile.open(
+                filename,
+                'w:bz2' if not self.no_compress else 'w',
+                fileobj=outputfile
+            )
 
-        for dfile in os.listdir('.'):
-            ts.add(dfile)
+            for dfile in os.listdir('.'):
+                ts.add(dfile)
 
-        ts.close()
-        self.dbcommands.storage.write_file(outputfile, filename)
-        shutil.rmtree(self.directory)
+            ts.close()
+            self.dbcommands.storage.write_file(outputfile, filename)
+        except Exception as e:
+            sys.stderr.write(f"Backup failure: {e}")
+            shutil.rmtree(self.directory)
+            return
+        finally:
+            shutil.rmtree(self.directory)
         os.chdir(call_dir)
         sys.stdout.write('Backup done: %s\n' % filename)
 
