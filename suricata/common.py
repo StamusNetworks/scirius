@@ -387,3 +387,7 @@ def stask_redirection(_):
 
 def update_custom_sources_url(_):
     pass
+
+
+def get_redirect_for_stask(task_name: str) -> str:
+    return "view_stasks"
