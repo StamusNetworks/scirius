@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from typing import Any
+import datetime
 import pytz
 from importlib import import_module
 from pathlib import Path
@@ -232,6 +233,26 @@ def help_links(djlink):
     Probe = __import__(settings.RULESET_MIDDLEWARE)
     help_link = Probe.common.help_links(djlink)
     return help_link if help_link else HELP_LINKS_TABLE.get(djlink)
+
+
+def convert_datetime_to_timestamp(dt: datetime.datetime, in_ms: bool = False) -> int:
+    """
+    Convert a datetime object to timestamps (second or milliseconds)
+    Convertit un objet datetime en un timestamp (secondes ou millisecondes).
+
+    Args:
+        dt (datetime.datetime): datetime object to convert
+
+        in_ms (bool): true if you want the output in ms
+
+    Returns:
+        int: timestamp
+    """
+    timestamp_seconds = int(dt.timestamp())
+
+    if in_ms:
+        return timestamp_seconds * 1000
+    return timestamp_seconds
 
 
 # Based on https://github.com/jieter/django-tables2/blob/master/CHANGELOG.md#breaking-changes-200
