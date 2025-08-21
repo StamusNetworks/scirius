@@ -52,6 +52,11 @@ from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, E
 from scirius.utils import get_middleware_module
 from suricata.rest_tasks import SciriusTaskSerializer
 
+try:
+    from appliances.mcp import McpController
+except ImportError:
+    from rules.mcp import McpController  # noqa: F401
+
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
 
