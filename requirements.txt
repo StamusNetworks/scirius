@@ -20,6 +20,7 @@ django-dbbackup>4
 django-filter
 django-ipware
 django-mass-edit
+django-mcp-server
 djangorestframework
 django-revproxy>=0.11.0
 djangosaml2
