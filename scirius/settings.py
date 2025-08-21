@@ -63,6 +63,7 @@ INSTALLED_APPS = (
     'django_ace',
     'drf_spectacular',
     'drf_spectacular_sidecar',
+    'mcp_server',
 )
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
@@ -330,7 +331,7 @@ CSP_FORM_ACTION = ("'self'",)
 CSP_REPORT_URI = ("'none'",)
 CSP_REPORT_TO = ("'none'",)
 CSP_INCLUDE_NONCE_IN = ['script-src']
-CSP_EXCLUDE_URL_PREFIXES = ('/evebox', '/schema', '/redoc', '/swagger')
+CSP_EXCLUDE_URL_PREFIXES = ('/evebox', '/schema', '/redoc', '/swagger', '/mcp')
 CSP_BASE_URI = ("'self'",)
 
 REST_FRAMEWORK = {
@@ -474,6 +475,18 @@ FILESTORE_SRC = '/var/log/suricata/filestore'
 HAVE_NETINFO_AGG = False
 
 SURICATA_VERSION = 7
+
+DJANGO_MCP_AUTHENTICATION_CLASSES = ["rest_framework.authentication.TokenAuthentication"]
+
+DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
+    "name": "clear-ndr",
+    "instructions": "Access to network threat detection and network visibility",
+    "stateless": False
+}
+
+DJANGO_MCP_OUTPUT_RENDERER_CLASSES = [
+    "rest_framework.renderers.JSONRenderer"
+]
 
 try:
     from .local_settings import *  # noqa: F403, F401
