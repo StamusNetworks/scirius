@@ -187,7 +187,7 @@ CSP_DEFAULT_SRC = tuple(os.getenv('CSP_DEFAULT_SRC', "'self'").split(' '))
 CSP_SCRIPT_SRC = tuple(os.getenv('CSP_SCRIPT_SRC', "'self' 'unsafe-inline'").split(' '))
 CSP_STYLE_SRC = tuple(os.getenv('CSP_STYLE_SRC', "'self' 'unsafe-inline'").split(' '))
 CSP_INCLUDE_NONCE_IN = os.getenv('CSP_INCLUDE_NONCE_IN', 'script-src').split(' ')
-CSP_EXCLUDE_URL_PREFIXES = tuple(os.getenv('CSP_EXCLUDE_URL_PREFIXES', '/evebox').split(' '))
+CSP_EXCLUDE_URL_PREFIXES = tuple(os.getenv('CSP_EXCLUDE_URL_PREFIXES', '/evebox /mcp').split(' '))
 
 GIT_SOURCES_BASE_DIRECTORY = '/data/git-sources/'
 
@@ -297,7 +297,8 @@ INSTALLED_APPS = (
     'webpack_loader',
     'chunked_upload',
     'django_ace',
-    'djangosaml2'
+    'djangosaml2',
+    'mcp_server',
 )
 
 MIDDLEWARE = [
