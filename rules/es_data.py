@@ -1829,7 +1829,7 @@ class ESData(ESQuery):
     def _kibana_inject(self, _type, _file):
         with open(_file) as file_:
             content = file_.read()
-            content = content.replace("logstash-", settings.ELASTICSEARCH_LOGSTASH_INDEX)
+            content = content.replace("logstash-", settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED)
         name = _file.rsplit('/', 1)[1]
         name = name.rsplit('.', 1)[0]
 
@@ -1854,9 +1854,9 @@ class ESData(ESQuery):
             self.es.update(index='.kibana', id=hit['_id'], body={'doc': content}, refresh=True, **self.es_extra_params)
 
         if get_system_settings(static=True).use_opensearch_2():
-            self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX}-*'}, method='POST')
+            self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}-*'}, method='POST')
         else:
-            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX}-*'}, method='POST')
+            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}-*'}, method='POST')
 
     @staticmethod
     def _get_dashboard_dir():
@@ -1964,7 +1964,7 @@ class ESData(ESQuery):
             else:
                 raise
 
-        self._kibana_set_default_index(f'{settings.ELASTICSEARCH_LOGSTASH_INDEX}-*')
+        self._kibana_set_default_index(f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}-*')
 
     def es_clear(self):
         indexes = self.get_indexes()
