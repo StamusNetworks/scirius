@@ -384,6 +384,7 @@ USE_DATA_LIKE = DATA_LIKE.ES_7
 ELASTICSEARCH_ADDRESS = "localhost:9200"
 # You can use a star to avoid timestamping expansion for example 'logstash-*'
 ELASTICSEARCH_LOGSTASH_INDEX = "logstash-"
+ELASTICSEARCH_LOGSTASH_INDEX_INJECTED = "logstash-"
 # You can change following value if you have different indexes for stats and alerts
 ELASTICSEARCH_LOGSTASH_ALERT_INDEX = ELASTICSEARCH_LOGSTASH_INDEX
 # use hourly, daily to indicate the logstash index building recurrence
