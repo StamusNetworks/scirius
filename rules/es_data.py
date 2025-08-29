@@ -1854,9 +1854,9 @@ class ESData(ESQuery):
             self.es.update(index='.kibana', id=hit['_id'], body={'doc': content}, refresh=True, **self.es_extra_params)
 
         if get_system_settings(static=True).use_opensearch_2():
-            self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}-*'}, method='POST')
+            self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}'}, method='POST')
         else:
-            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}-*'}, method='POST')
+            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}'}, method='POST')
 
     @staticmethod
     def _get_dashboard_dir():
@@ -1964,7 +1964,7 @@ class ESData(ESQuery):
             else:
                 raise
 
-        self._kibana_set_default_index(f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}-*')
+        self._kibana_set_default_index(f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}')
 
     def es_clear(self):
         indexes = self.get_indexes()
