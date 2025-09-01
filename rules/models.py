@@ -2796,6 +2796,13 @@ class RangeCheckIntegerFields(models.Model):
                     raise ValidationError({f'{field.name}': f'"{value}" is out of range'})
 
 
+class Reference:
+    def __init__(self, key, value):
+        self.value = value
+        self.key = key
+        self.url = None
+
+
 class Rule(RangeCheckIntegerFields, Transformable, Cache):
     GROUP_BY_CHOICES = (('by_src', 'by_src'), ('by_dst', 'by_dst'))
     sid = models.BigIntegerField(primary_key=True)
@@ -3189,6 +3196,23 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
                     allowed_choices.remove((trans.value, trans.name.title()))
 
         return tuple(allowed_choices)
+
+    def extract_rule_references(self):
+        references = []
+        for ref in re.findall(r"reference: *(\w+), *(\S+);", self.ruleatversion_set.first().content):
+            refer = Reference(ref[0], ref[1])
+            if refer.key == 'url':
+                if not refer.value.startswith("http"):
+                    refer.url = "http://" + refer.value
+                else:
+                    refer.url = refer.value
+            elif refer.key == 'cve':
+                refer.url = "http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-" + refer.value
+                refer.key = refer.key.upper()
+            elif refer.key == 'bugtraq':
+                refer.url = "http://www.securityfocus.com/bid/" + refer.value
+            references.append(refer)
+        return references
 
 
 def build_iprep_name(msg):
