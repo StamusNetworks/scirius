@@ -2099,3 +2099,5 @@ class McpTestCase(RestAPITestBase, APITestCase):
     def test_mcp_service(self):
         srv = McpService()
         srv.alert_list(1756209410, 1756209998000)
+        srv.rules(1122864267)
+        srv.rules([1, 1122864267])
