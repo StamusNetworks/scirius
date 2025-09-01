@@ -33,7 +33,7 @@ from elasticsearch.exceptions import ConnectionError
 
 from rules.models import DeepLink, DeepLinkEntity, Rule, Category, RuleAtVersion, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, FilterSet
 from rules.models import Source, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
-from rules.views import get_public_sources, fetch_public_sources, extract_rule_references
+from rules.views import get_public_sources, fetch_public_sources
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
 from rules.es_query import build_es_url, ESPaginator
@@ -740,7 +740,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
     @action(detail=True, methods=['get'])
     def references(self, request, pk):
         rule = self.get_object()
-        references = extract_rule_references(rule)
+        references = rule.extract_rule_references()
 
         res = []
         for reference in references:
