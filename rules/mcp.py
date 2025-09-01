@@ -66,7 +66,10 @@ class McpController(MCPToolset):
         limit: PositiveInt = 50,
     ) -> list[AlertMessage]:
         """
-        Get list of IDS alerts in the specified time interval. If outliers is set to true then only the alerts never seen on an IP are going to be returned. The outliers params at true allows to detect anomalies.
+        Get list of IDS alerts in the specified time interval. If outliers is set to true
+        then only the alerts never seen on an IP are going to be returned. The outliers params at
+        true allows to detect anomalies.
+        The signature_id field in the result corresponds to the SID field in the rule.
 
         Args:
             start (datetime): start date of the interval in UTC format (ISO 8601), by default it is 24h before the current time or the end time
@@ -91,10 +94,11 @@ class McpController(MCPToolset):
     @has_group_permission(required_groups=['rules.ruleset_policy_view'])
     def rules(self, sid: PositiveInt | list[PositiveInt]) -> list[RuleMessage]:
         """
-        Get rule information from the SID (signature ID)
+        Get rule information from the SID (signature_id field in the alert). Content of the rule is also provided
+        in the Suricata format.
 
         Args:
-            ip (int | list[int]): one or multiple SID to find
+            sids (int | list[int]): one or multiple signature id to find
         """
         return self.service.rules([sid] if isinstance(sid, int) else sid)
 
