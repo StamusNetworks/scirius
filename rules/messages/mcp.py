@@ -17,3 +17,27 @@ class AlertMessage(BaseModel):
     protocol: str
     category: str
     community_id: str
+
+
+class HitTimelineEntryMessage(BaseModel):
+    when: datetime
+    hits: int
+
+
+class RuleReferenceMessage(BaseModel):
+    key: str
+    value: str
+    url: str
+
+
+class RuleMessage(BaseModel):
+    sid: int
+    # category: str
+    # category_description: str
+    # category_source: str
+    message: str
+    hits: int = 0
+    timeline_data: list[HitTimelineEntryMessage] = []  # TODO:
+    probes: list[str] = []
+    content: str
+    references: list[RuleReferenceMessage] = []
