@@ -12,6 +12,7 @@ class ProductInfoMessage(BaseModel):
 class AlertMessage(BaseModel):
     when: datetime
     method: str | None
+    signature_id: int
     source_ip: IPvAnyAddress
     destination_ip: IPvAnyAddress
     protocol: str

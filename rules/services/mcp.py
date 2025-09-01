@@ -49,6 +49,7 @@ class McpService:
             AlertMessage(
                 when=line["_source"]["@timestamp"],
                 method=line["_source"]["alert"]["signature"],
+                signature_id=line["_source"]["alert"]["signature_id"],
                 source_ip=line["_source"]["flow"]["src_ip"],
                 destination_ip=line["_source"]["flow"]["dest_ip"],
                 protocol=line["_source"]["app_proto"],
@@ -68,8 +69,8 @@ class McpService:
         limit: PositiveInt = 20,
     ) -> list[AlertMessage]:
         """
-        Get the alert list
-
+        Get the alert list in the specified time interval. If outliers is set to true then only
+        the alerts never seen on an IP are going to be returned. 
         Args:
             start (end): timestamp in ms
             end (end): timestamp in ms
@@ -79,6 +80,12 @@ class McpService:
         return self._get_alert_list_results(request)
 
     def rules(self, sids: list[int]) -> list[RuleMessage]:
+        """
+        Get rule information from the SID.
+
+        Args:
+            sids (list[int]): one or multiple SID to find
+        """
         repo = RuleRepository()
         return [
             RuleMessage(
