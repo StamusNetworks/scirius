@@ -252,13 +252,6 @@ def category(request, cat_id):
     return scirius_render(request, 'rules/category.html', context)
 
 
-class Reference:
-    def __init__(self, key, value):
-        self.value = value
-        self.key = key
-        self.url = None
-
-
 def elasticsearch(request):
     RULE_FIELDS_MAPPING = {
         'rule_src': 'src_ip',
@@ -341,24 +334,6 @@ def elasticsearch(request):
         return scirius_render(request, template, context)
 
 
-def extract_rule_references(rule):
-    references = []
-    for ref in re.findall(r"reference: *(\w+), *(\S+);", rule.ruleatversion_set.first().content):
-        refer = Reference(ref[0], ref[1])
-        if refer.key == 'url':
-            if not refer.value.startswith("http"):
-                refer.url = "http://" + refer.value
-            else:
-                refer.url = refer.value
-        elif refer.key == 'cve':
-            refer.url = "http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-" + refer.value
-            refer.key = refer.key.upper()
-        elif refer.key == 'bugtraq':
-            refer.url = "http://www.securityfocus.com/bid/" + refer.value
-        references.append(refer)
-    return references
-
-
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def rule(request, rule_id):
     rule = get_object_or_404(Rule, pk=rule_id)
@@ -384,7 +359,7 @@ def rule(request, rule_id):
 def build_rule_context(request, rule):
     same_real_version = set()
     context = {
-        'reference': extract_rule_references(rule),
+        'reference': rule.extract_rule_references(),
         'comment_form': RuleCommentForm(),
         'rule': rule,
         'show_rule_toggle': rule.are_ravs_synched() and rule.are_ravs_all_commented(),
