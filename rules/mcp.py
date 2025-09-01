@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rules.messages.mcp import (
     AlertMessage,
     ProductInfoMessage,
+    RuleMessage,
 )
 from rules.rest_permissions import HasGroupPermission
 from rules.services.mcp import McpService
@@ -86,6 +87,16 @@ class McpController(MCPToolset):
             page,
             limit,
         )
+
+    @has_group_permission(required_groups=['rules.ruleset_policy_view'])
+    def rules(self, sid: PositiveInt | list[PositiveInt]) -> list[RuleMessage]:
+        """
+        Get rule information from the SID (signature ID)
+
+        Args:
+            ip (int | list[int]): one or multiple SID to find
+        """
+        return self.service.rules([sid] if isinstance(sid, int) else sid)
 
     def version(self) -> ProductInfoMessage:
         """
