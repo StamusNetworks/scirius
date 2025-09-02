@@ -1,4 +1,4 @@
-
+from django.conf import settings
 
 FILTER_SETS = [
     {
@@ -469,9 +469,9 @@ FILTER_SETS = [
             {
                 'negated': False,
                 'fullString': False,
-                'id': 'dns.query.rrname',
+                'id': f'{"dns.queries" if settings.SURICATA_VERSION == 8 else "dns.query"}.rrname',
                 'value': '*',
-                'label': 'dns.query.rrname: *'
+                'label': f'{"dns.queries" if settings.SURICATA_VERSION == 8 else "dns.query"}.rrname: *'
             }
         ],
         'name': 'Hunt: DNS related events',
