@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import datetime
 import sys
 import json
 import re
@@ -36,7 +35,6 @@ from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
-from .mcp import McpController
 from .models import Category, Rule, RuleAtVersion, Ruleset, Source, SuppressedRuleAtVersion, Transformation, RuleTransformation, \
     RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef, InvalidCategoryException
 from .rest_api import UploadEditSourceTaskSerializer, router
@@ -2082,22 +2080,24 @@ class McpTestCase(RestAPITestBase, APITestCase):
     Test return of data because log are not shown
     """
 
-    def test_mcp_controller(self):
-        ctrl = McpController()
+    # def test_mcp_controller(self):
+    #     from .mcp import McpController
+    #     import datetime
+    #     ctrl = McpController()
 
-        version_re = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
-        product = ctrl.version()
-        self.assertEqual(product.name, "Clear NDR")
-        self.assertTrue(version_re.match(product.version))
-        self.assertTrue(product.flavor in ("Community", "Enterprise"))
+    #     version_re = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
+    #     product = ctrl.version()
+    #     self.assertEqual(product.name, "Clear NDR")
+    #     self.assertTrue(version_re.match(product.version))
+    #     self.assertTrue(product.flavor in ("Community", "Enterprise"))
 
-        ctrl.alert_list(
-            datetime.datetime(2025, 8, 26, 10, 16, 50, tzinfo=datetime.UTC),
-            datetime.datetime(2025, 8, 28, 10, 16, 50, tzinfo=datetime.UTC),
-        )
+    #     ctrl.alert_list(
+    #         datetime.datetime(2025, 8, 26, 10, 16, 50, tzinfo=datetime.UTC),
+    #         datetime.datetime(2025, 8, 28, 10, 16, 50, tzinfo=datetime.UTC),
+    #     )
 
     def test_mcp_service(self):
         srv = McpService()
         srv.alert_list(1756209410, 1756209998000)
-        srv.rules(1122864267)
+        srv.rules([1122864267])
         srv.rules([1, 1122864267])

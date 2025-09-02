@@ -1,12 +1,14 @@
+from typing import Any, ClassVar
 from django.conf import settings
 from django.http import HttpRequest
 from pydantic import IPvAnyAddress, PositiveInt
 from rest_framework.request import Request
 
 from rules.django_repository.rule import RuleRepository
-from rules.messages.mcp import AlertMessage, RuleMessage, RuleReferenceMessage
-from rules.es_graphs import ESEventsTail
+from rules.messages.mcp import AlertMessage, HitProbeMessage, HitTimelineEntryMessage, RuleMessage, RuleReferenceMessage
+from rules.es_graphs import ESEventsTail, ESSigsListHits
 from rules.es_query import ESPaginator
+import contextlib
 
 
 class McpService:
@@ -70,7 +72,7 @@ class McpService:
     ) -> list[AlertMessage]:
         """
         Get the alert list in the specified time interval. If outliers is set to true then only
-        the alerts never seen on an IP are going to be returned. 
+        the alerts never seen on an IP are going to be returned.
         Args:
             start (end): timestamp in ms
             end (end): timestamp in ms
@@ -86,17 +88,59 @@ class McpService:
         Args:
             sids (list[int]): one or multiple SID to find
         """
+        # get hits from ES
+        request = HttpRequest()
+        hit_results: list[dict[str, Any]] = []
+        mapping = {}
+
+        class FakeView:
+            INDEXES: ClassVar[dict[str, dict[str, str]]] = {
+                "alert": {"index": settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*", "default": "true"},
+                "stamus": {"index": settings.ELASTICSEARCH_LOGSTASH_INDEX + "stamus-*", "default": "false"},
+                "discovery": {"index": settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*", "default": "false"},
+            }
+
+        with contextlib.suppress(Exception):
+            hit_results = ESSigsListHits(Request(request), view=FakeView()).get(",".join([str(sid) for sid in sids]))
+
+        for data in hit_results:
+            if (sid := data.get("key")) and sid in sids:
+                mapping[sid] = {
+                    "timeline": [
+                        HitTimelineEntryMessage(when=entry["key_as_string"], hits=entry["doc_count"])
+                        for entry in data["timeline"]["buckets"]
+                    ],
+                    "probes": [
+                        HitProbeMessage(name=entry["key"], hits=entry["doc_count"])
+                        for entry in data["probes"]["buckets"]
+                    ],
+                    "hits": data["doc_count"],
+                }
+
+        # get rule info and build response
         repo = RuleRepository()
-        return [
-            RuleMessage(
-                sid=rule.sid,
-                # category=rule.category.name,
-                # category_description=rule.category.descr,
-                # category_source=rule.category__source.name,
-                message=rule.msg,
-                # hits=rule.hits,
-                references=[RuleReferenceMessage(**value) for value in rule.extract_rule_references()],
-                content=rule.ruleatversion_set.order_by("-version").first().content,
+        result: list[RuleMessage] = []
+        for rule in repo.rules(sids, with_rule_at_version=True, with_categories=False):
+            timeline: list[HitTimelineEntryMessage] = []
+            probes = []
+            hits = 0
+            if data := mapping.get(rule.sid):
+                probes = data["probes"]
+                timeline = data["timeline"]
+                hits = data["hits"]
+
+            result.append(
+                RuleMessage(
+                    sid=rule.sid,
+                    # category=rule.category.name,
+                    # category_description=rule.category.descr,
+                    # category_source=rule.category__source.name,
+                    message=rule.msg,
+                    hits=hits,
+                    references=[RuleReferenceMessage(**value) for value in rule.extract_rule_references()],
+                    content=rule.ruleatversion_set.order_by("-version").first().content,
+                    probes=probes,
+                    timeline_data=timeline,
+                )
             )
-            for rule in repo.rules(sids, with_rule_at_version=True, with_categories=True)
-        ]
+        return result

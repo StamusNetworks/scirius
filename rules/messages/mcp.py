@@ -25,6 +25,11 @@ class HitTimelineEntryMessage(BaseModel):
     hits: int
 
 
+class HitProbeMessage(BaseModel):
+    name: str
+    hits: int = 0
+
+
 class RuleReferenceMessage(BaseModel):
     key: str
     value: str
@@ -39,6 +44,6 @@ class RuleMessage(BaseModel):
     message: str
     hits: int = 0
     timeline_data: list[HitTimelineEntryMessage] = []  # TODO:
-    probes: list[str] = []
+    probes: list[HitProbeMessage] = []
     content: str
     references: list[RuleReferenceMessage] = []
