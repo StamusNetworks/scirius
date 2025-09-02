@@ -1,0 +1,264 @@
+[project]
+name = "scirius"
+version = "42.1.0"
+authors = [{ name = "Stamus Networks", email = "contact@stamus-networks.com" }]
+description = "A web interface to manage Suricata rulesets."
+readme = "README.rst"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+classifiers = [
+    'Environment :: Web Environment',
+    'Framework :: Django',
+    'Intended Audience :: Developers',
+    'License :: Stamus Networks Proprietary License',   # TODO: how to handle this?
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.11',
+    'Topic :: Internet :: WWW/HTTP',
+    'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+]
+
+dependencies = [
+    "amqp==5.2.0",
+    "annotated-types==0.7.0",
+    "anyio==4.10.0",
+    "arrow==1.3.0",
+    "attrs==25.3.0",
+    "billiard==4.2.0",
+    "cachetools==6.1.0",
+    "celery==5.4.0",
+    "certifi==2024.8.30",
+    "cryptography>=44.0.1",
+    "daemon",
+    "django_ace==1.32.4",
+    "django-auth-ldap==4.8.0",
+    "django-bootstrap3==24.2",
+    "django-celery-results==2.5.1",
+    "django-cprofile-middleware==1.0.5",
+    "django-csp==3.8",
+    "django-dbbackup==4.1.0",
+    "django-filter==24.2",
+    "django-ipware==7.0.1",
+    "django-mass-edit==3.5.0",
+    "django-revproxy>=0.11.0",
+    "django-structlog[celery]==9.1.1",
+    "django-tables2==2.7.0",
+    "django-webpack-loader==3.1.0",
+    "Django==5.2.5",                                # <6
+    "django4-chunked-upload==2.0.2",
+    "djangorestframework==3.15.2",
+    "djangosaml2==1.9.3",
+    "drf-spectacular-sidecar==2025.9.1",
+    "drf-spectacular[sidecar]==0.28.0",
+    "drf-spectacular==0.28.0",
+    "ecdsa==0.19.0",
+    "elasticsearch==6.8.2",                         # <7
+    "flup==1.0.3",
+    "gevent==24.2.1",
+    "gitdb==4.0.11",
+    "GitPython==3.1.43",
+    "greenlet==3.0.3",
+    "gunicorn>=23.0.0",
+    "h11==0.16.0",
+    "httpcore==1.0.9",
+    "httplib2==0.22.0",
+    "httpx-sse==0.4.1",
+    "httpx==0.28.1",
+    "idna==3.10",
+    "idstools==0.6.5",
+    "inflection==0.5.1",
+    "influxdb==5.3.2",
+    "IPy==1.01",
+    "jsonschema-specifications==2025.4.1",
+    "jsonschema==4.25.1",
+    "kombu==5.3.7",
+    "markdown==3.6",
+    "MarkupSafe==2.1.5",
+    "mcp==1.13.1",
+    "medusa==0.5.4",
+    "opensearch-py>=2.8.0,<3.0.0",
+    "opentelemetry-api==1.36.0",
+    "opentelemetry-instrumentation-django==0.57b0",
+    "opentelemetry-sdk==1.36.0",
+    "paramiko==3.4.0",
+    "psutil==6.0.0",
+    "psycopg2-binary==2.9.9",
+    "pydantic_core==2.33.2",
+    "pydantic-settings==2.10.1",
+    "pydantic==2.11.7",
+    "Pygments==2.18.0",
+    "pyOpenSSL>=24.2.1",
+    "python-dateutil>=2.9.0.post0",
+    "python-dotenv==1.1.1",
+    "python-gnupg==0.5.2",
+    "python-multipart==0.0.20",
+    "pytz==2024.1",
+    "pyyaml==6.0.2",
+    "referencing==0.36.2",
+    "requests>=2.32.4",
+    "rpds-py==0.27.1",
+    "six==1.16.0",
+    "smmap==5.0.1",
+    "sniffio==1.3.1",
+    "sqlparse==0.5.3",
+    "sse-starlette==3.0.2",
+    "starlette==0.47.3",
+    "suricata-language-server>=1.0.0",
+    "typing-extensions==4.15.0",
+    "typing-inspection==0.4.1",
+    "uritemplate==4.2.0",
+    "urllib3==2.2.2",
+    "uvicorn==0.35.0",
+    "vine==5.1.0",
+    "web.py==0.62",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",       # Code linter/formatter
+    "mypy",       # Type checker
+    "pre-commit",
+]
+# You need those packages when you have a Stamus license
+appliances = [
+    "ansible==2.9.27",
+    "argparse",
+    "asgiref==3.8.1",
+    "asttokens==2.4.1",
+    "async==0.6.2",
+    "bcrypt==4.1.3",
+    "botocore==1.34.144",
+    "cffi==1.16.0",
+    "charset-normalizer==3.3.2",
+    "cheroot==10.0.1",
+    "click==8.1.7",
+    "click-didyoumean==0.3.1",
+    "click-plugins==1.1.1",
+    "click-repl==0.3.0",
+    "cx_Freeze==8.1.0",
+    "decorator==5.1.1",
+    "defusedxml==0.7.1",
+    "elementpath==4.4.0",
+    "Events==0.5",
+    "executing==2.0.1",
+    "filelock==3.15.4",
+    "ipython==8.27.0",
+    "jaraco.functools==4.0.1",
+    "jedi==0.19.1",
+    "Jinja2==3.1.6",
+    "jmespath==1.0.1",
+    "packaging==24.1",
+    "pandas==2.2.2",
+    "parso==0.8.4",
+    "patchelf==0.17.2.2",
+    "pexpect==4.9.0",
+    "prompt_toolkit==3.0.47",
+    "psycopg2==2.9.9",
+    "ptyprocess==0.7.0",
+    "pure-eval==0.2.2",
+    "pyasn1==0.6.0",
+    "pyasn1_modules==0.4.0",
+    "pycparser==2.22",
+    "PyNaCl==1.5.0",
+    "pyOpenSSL==25.0.0",
+    "pyparsing==3.1.2",
+    "pysaml2==7.5.0",
+    "python-ipware==3.0.0",
+    "python-ldap==3.4.4",
+    "stack-data==0.6.3,",
+    "subprocess32==3.5.4",
+    "traitlets==5.14.3",
+    "types-python-dateutil==2.9.0.20240316",
+    "tzdata==2024.1",
+    "wcwidth==0.2.13",
+    "xmlschema==2.5.1",
+    "zope.event==5.0",
+    "zope.interface==6.4.post2",
+]
+
+[project.urls]
+Homepage = "https://www.stamus-networks.com/"
+Issues = "https://github.com/StamusNetworks/scirius/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+# UV specific configurations can go here if needed
+# For example:
+# python = "3.11"
+# resolver = "default"
+
+[tool.mypy]
+# MyPy configurations
+# For example:
+# disallow_untyped_defs = true
+# no_implicit_optional = true
+# warn_return_any = true
+# warn_unused_ignores = true
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py311"
+# select = [
+#     "E",  # Error
+#     "W",  # Warning
+#     "F",  # Pyflakes
+#     "I",  # Isort
+#     "C",  # Complexity
+#     "B",  # Bugbear
+#     "UP", # Pyupgrade
+#     "A",  # Builtin names
+#     "D",  # Pydocstyle (optional, adjust to your preference)
+# ]
+# ignore = [
+#     "E501", # Line too long (let ruff format handle this)
+#     "D100", # Missing docstring in public module
+#     "D104", # Missing docstring in public package
+#     "D105", # Missing docstring in public function
+#     "D107", # Missing docstring in __init__
+# ]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Like Black, automatically detect the appropriate line ending. default: auto
+line-ending = "lf"
+
+# [project.scripts]
+# start = "uvicorn app.main:app --host 0.0.0.0 --port 8000" # A convenient way to start for development
