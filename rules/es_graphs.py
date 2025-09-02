@@ -1635,3 +1635,62 @@ class ESSigsListHits(ESManageMultipleESIndexes):
 class ESMapping(ESQuery):
     def get(self):
         return super().get_mappings()
+
+
+class ESTalkersList(ESQuery):
+    INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
+
+    def _get_query(self, str_filter):
+        if str_filter:
+            str_filter = f"AND {str_filter}"
+        return {
+            "aggs": {
+                "event_type": {
+                    "terms": {"field": "event_type.keyword", "order": {"_count": "desc"}, "size": 25},
+                    "aggs": {
+                        "src_ip": {
+                            "terms": {"field": "src_ip", "order": {"_count": "desc"}, "size": 100},
+                            "aggs": {
+                                "dest_ip": {
+                                    "terms": {"field": "dest_ip", "order": {"_count": "desc"}, "size": 100},
+                                    "aggs": {
+                                        "app_proto": {
+                                            "terms": {
+                                                "field": "app_proto.raw",
+                                                "order": {"_count": "desc"},
+                                                "size": 100,
+                                            },
+                                            "aggs": {
+                                                "host": {
+                                                    "terms": {
+                                                        "field": "hostname_info.host.keyword",  # Enterprise only
+                                                        "order": {"_count": "desc"},
+                                                        "missing": "__missing__",
+                                                        "size": 100,
+                                                    },
+                                                    "aggs": {
+                                                        "first_seen": {"min": {"field": "@timestamp"}},
+                                                        "last_seen": {"max": {"field": "@timestamp"}},
+                                                    },
+                                                }
+                                            },
+                                        }
+                                    },
+                                }
+                            },
+                        }
+                    },
+                }
+            },
+            "size": 0,
+            "query": {
+                "bool": {
+                    "must": [{"query_string": {"query": f"event_type:* {str_filter}", "analyze_wildcard": True}}],
+                    "filter": [{"range": {"@timestamp": {"gte": self._from_date(), "lte": self._to_date()}}}],
+                }
+            },
+        }
+
+    def get(self, str_filter):
+        data = super().get(str_filter)
+        return {"res": data.get("aggregations", {})}

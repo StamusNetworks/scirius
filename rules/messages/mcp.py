@@ -3,6 +3,11 @@ from typing import Literal
 from pydantic import BaseModel, IPvAnyAddress
 
 
+class BaseInfo(BaseModel):
+    first_seen: datetime
+    last_seen: datetime
+
+
 class ProductInfoMessage(BaseModel):
     name: str
     version: str
@@ -38,12 +43,18 @@ class RuleReferenceMessage(BaseModel):
 
 class RuleMessage(BaseModel):
     sid: int
-    # category: str
-    # category_description: str
-    # category_source: str
     message: str
     hits: int = 0
     timeline_data: list[HitTimelineEntryMessage] = []  # TODO:
     probes: list[HitProbeMessage] = []
     content: str
     references: list[RuleReferenceMessage] = []
+
+
+class TalkersInfoMessage(BaseInfo):
+    event_type: str
+    src_ip: IPvAnyAddress
+    dest_ip: IPvAnyAddress
+    app_proto: str
+    host: str | None
+    count: int
