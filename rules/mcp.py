@@ -12,6 +12,7 @@ from rules.messages.mcp import (
     AlertMessage,
     ProductInfoMessage,
     RuleMessage,
+    TalkersInfoMessage,
 )
 from rules.rest_permissions import HasGroupPermission
 from rules.services.mcp import McpService
@@ -55,7 +56,7 @@ class McpController(MCPToolset):
         self.service = service if service is not None else McpService()
         super().__init__(context=context, request=request)
 
-    @has_group_permission(required_groups=['rules.events_view'])
+    @has_group_permission(required_groups=["rules.events_view"])
     def alert_list(
         self,
         start: datetime | None = None,
@@ -91,7 +92,7 @@ class McpController(MCPToolset):
             limit,
         )
 
-    @has_group_permission(required_groups=['rules.ruleset_policy_view'])
+    @has_group_permission(required_groups=["rules.ruleset_policy_view"])
     def rules(self, sid: PositiveInt | list[PositiveInt]) -> list[RuleMessage]:
         """
         Get rule information from the SID (signature_id field in the alert). Content of the rule is also provided
@@ -101,6 +102,36 @@ class McpController(MCPToolset):
             sids (int | list[int]): one or multiple signature id to find
         """
         return self.service.rules([sid] if isinstance(sid, int) else sid)
+
+    @has_group_permission(required_groups=["rules.events_view"])
+    def talkers(
+        self,
+        filter: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ) -> list[TalkersInfoMessage]:
+        """
+        Get the talkers in the specified time interval. The filter field allows to filter the events that are going to be used to compute the talkers.
+        It is using the Lucene syntax. It can also be a simple string to search in all fields. This last usage is useful to search for an IOC.
+
+        Args:
+            filter (str | None): filter to apply to events in the Lucene syntax. It can also be a simple string (like an IOC) to search in all fields.
+            tenant (str | None): tenant number
+            start (datetime): start date of the interval in UTC format (ISO 8601), by default it is 24h before the current time or the end time
+
+        Returns:
+            list[TalkersInfoMessage]: A list containing information about each talker, including its IP address,
+                        total bytes sent and received, and number of connections.
+        """
+        if end is None:
+            end = datetime.now(timezone.utc)
+        if start is None:
+            start = end - timedelta(hours=24)
+        return self.service.talkers(
+            filter if filter else "",
+            convert_datetime_to_timestamp(start, True),
+            convert_datetime_to_timestamp(end, True),
+        )
 
     def version(self) -> ProductInfoMessage:
         """
