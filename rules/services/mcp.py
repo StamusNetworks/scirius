@@ -5,8 +5,15 @@ from pydantic import IPvAnyAddress, PositiveInt
 from rest_framework.request import Request
 
 from rules.django_repository.rule import RuleRepository
-from rules.messages.mcp import AlertMessage, HitProbeMessage, HitTimelineEntryMessage, RuleMessage, RuleReferenceMessage
-from rules.es_graphs import ESEventsTail, ESSigsListHits
+from rules.messages.mcp import (
+    AlertMessage,
+    HitProbeMessage,
+    HitTimelineEntryMessage,
+    RuleMessage,
+    RuleReferenceMessage,
+    TalkersInfoMessage,
+)
+from rules.es_graphs import ESEventsTail, ESSigsListHits, ESTalkersList
 from rules.es_query import ESPaginator
 import contextlib
 
@@ -132,9 +139,6 @@ class McpService:
             result.append(
                 RuleMessage(
                     sid=rule.sid,
-                    # category=rule.category.name,
-                    # category_description=rule.category.descr,
-                    # category_source=rule.category__source.name,
                     message=rule.msg,
                     hits=hits,
                     references=[RuleReferenceMessage(**value) for value in rule.extract_rule_references()],
@@ -144,3 +148,45 @@ class McpService:
                 )
             )
         return result
+
+    def _get_talkers_results(self, request: HttpRequest, filter: str) -> list[TalkersInfoMessage]:
+        raw = ESTalkersList(request).get(filter)
+        result: list[TalkersInfoMessage] = []
+        for line in raw["res"]["event_type"]["buckets"]:
+            event_type = line["key"]
+            for line2 in line["src_ip"]["buckets"]:
+                src_ip = line2["key"]
+                for line3 in line2["dest_ip"]["buckets"]:
+                    dest_ip = line3["key"]
+                    for line4 in line3["app_proto"]["buckets"]:
+                        app_proto = line4["key"]
+                        for line5 in line4["host"]["buckets"]:
+                            host = line5["key"]
+                            count = line5["doc_count"]
+                            first_seen = line5["first_seen"]["value_as_string"]
+                            last_seen = line5["last_seen"]["value_as_string"]
+                            result.append(TalkersInfoMessage(
+                                app_proto=app_proto,
+                                first_seen=first_seen,
+                                last_seen=last_seen,
+                                event_type=event_type,
+                                host=host if host != "N/A" else None,
+                                dest_ip=dest_ip,
+                                src_ip=src_ip,
+                                count=count,
+                            ))
+        return result
+
+    def talkers(
+        self,
+        filter: str,
+        start: int,
+        end: int,
+    ) -> list[TalkersInfoMessage]:
+        """
+        Get the top talkers
+        """
+        request = HttpRequest()
+        request.GET["from_date"] = str(start)
+        request.GET["to_date"] = str(end)
+        return self._get_talkers_results(request, filter)
