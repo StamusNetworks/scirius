@@ -13,6 +13,8 @@ import { AlgorithmicDetection } from 'ui/components/AlgorithmicDetection';
 import EventValue from 'ui/components/EventValue';
 import { MethodTitle } from 'ui/components/Flow/MethodTitle';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
+import DnsName from 'ui/components/RuleExternalInfos/DnsName';
+import DnsType from 'ui/components/RuleExternalInfos/DnsType';
 import { Signature } from 'ui/components/Signature';
 import SignatureFlow from 'ui/components/SignatureFlow';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
@@ -261,20 +263,8 @@ class RulePage extends React.Component {
                 )}
                 {this.state.extinfo.dns && (
                   <Row>
-                    <HuntStat
-                      title="Name"
-                      filters={this.props.filters}
-                      item="dns.query.rrname"
-                      filterParams={this.props.filterParams}
-                      loadMore={this.loadMore}
-                    />
-                    <HuntStat
-                      title="Type"
-                      filters={this.props.filters}
-                      item="dns.query.rrtype"
-                      filterParams={this.props.filterParams}
-                      loadMore={this.loadMore}
-                    />
+                    <DnsName filters={this.props.filters} filterParams={this.props.filterParams} loadMore={this.loadMore} />
+                    <DnsType filters={this.props.filters} filterParams={this.props.filterParams} loadMore={this.loadMore} />
                   </Row>
                 )}
                 {this.state.extinfo.tls && (
