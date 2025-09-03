@@ -15,7 +15,7 @@ class ProductInfoMessage(BaseModel):
 
 
 class AlertMessage(BaseModel):
-    when: datetime
+    timestamp: datetime
     method: str | None
     signature_id: int
     source_ip: IPvAnyAddress
@@ -26,7 +26,7 @@ class AlertMessage(BaseModel):
 
 
 class HitTimelineEntryMessage(BaseModel):
-    when: datetime
+    timestamp: datetime
     hits: int
 
 
