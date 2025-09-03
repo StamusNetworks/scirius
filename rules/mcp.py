@@ -69,19 +69,37 @@ class McpController(MCPToolset):
         limit: PositiveInt = 50,
     ) -> list[AlertMessage]:
         """
-        Get list of IDS alerts in the specified time interval. If outliers is set to true
-        then only the alerts never seen on an IP are going to be returned. The outliers params at
-        true allows to detect anomalies.
-        The signature_id field in the result corresponds to the SID field in the rule.
+        ### IDS Alerts Endpoint 🚨
 
-        Args:
-            start (datetime): start date of the interval in UTC format (ISO 8601), by default it is 24h before the current time or the end time.
-            end (datetime | None): end date of the interval in UTC (ISO 8601), by default it is the current time.
-            ip (str | None): IPv4 or IPv6 if you want to filter on specific hosts.
-            filter (str | None): Optional search filter on the Suricata events using Lucene syntax.
-            raw (bool): true to return raw Suricata events that include protocol information and metadata instead of a concise representation (concise representation is returned by default). Set it to true for in depth analysis.
-            page (PositiveInt): The page number for pagination. Defaults to 1.
-            limit (PositiveInt): The maximum number of alerts to return per page. Defaults to 50.
+        This endpoint retrieves a paginated list of **IDS alerts** detected within a specified time interval. It offers powerful filtering options to help you pinpoint specific events or identify unusual network activity.
+
+        ---
+
+        ### Functionality
+
+        * **Time-based Filtering**: The query filters alerts based on a specified `start` and `end` datetime.
+        * **Anomaly Detection**:
+            * Set `outliers=True` to retrieve alerts that have never been seen on a given IP address before. This is an effective way to detect anomalies and infrequent events.
+            * Omitting this parameter or setting it to `False` returns all alerts that occurred during the interval.
+        * **Filtering and Pagination**:
+            * You can filter alerts by a specific `ip` address or apply a more complex filter using **Lucene syntax** on the Suricata events.
+            * Pagination is available via the `page` and `limit` parameters to manage large result sets.
+
+        ---
+
+        ### Parameters & Returns
+
+        * **Args**:
+            * `start` (datetime): The start of the time interval in **UTC (ISO 8601)** format. By default, it's 24 hours before the current time or the `end` time.
+            * `end` (datetime, optional): The end of the time interval in **UTC (ISO 8601)** format. By default, it's the current time.
+            * `ip` (str, optional): The IPv4 or IPv6 address to filter alerts for.
+            * `filter` (str, optional): A search filter for Suricata events using **Lucene syntax**.
+            * `raw` (bool): If `True`, returns the **raw Suricata events** including detailed protocol information and metadata for in-depth analysis. The default is a more concise representation.
+            * `page` (PositiveInt): The page number for the results (default: `1`).
+            * `limit` (PositiveInt): The maximum number of alerts per page (default: `50`).
+
+        * **Returns**:
+            * `list[dict]`: A list of dictionaries, with each dictionary representing an IDS alert. The `signature_id` field in the result corresponds to the `SID` field in the Suricata rule.
         """
         if end is None:
             end = datetime.now(timezone.utc)
@@ -117,17 +135,23 @@ class McpController(MCPToolset):
         end: datetime | None = None,
     ) -> list[TalkersInfoMessage]:
         """
-        Get the talkers in the specified time interval. The filter field allows to filter the events that are going to be used to compute the talkers.
-        It is using the Lucene syntax. It can also be a simple string to search in all fields. This last usage is useful to search for an IOC.
+        ### Network Talkers Endpoint 🗣️
 
-        Args:
-            filter (str | None): filter to apply to events in the Lucene syntax. It can also be a simple string (like an IOC) to search in all fields.
-            tenant (str | None): tenant number
-            start (datetime): start date of the interval in UTC format (ISO 8601), by default it is 24h before the current time or the end time
+        This endpoint retrieves a list of the most active "talkers" (hosts) on the network within a specified time interval. It calculates these talkers based on network events, which can be filtered to focus on specific traffic or indicators of compromise (IOCs).
 
-        Returns:
-            list[TalkersInfoMessage]: A list containing information about each talker, including its IP address,
-                        total bytes sent and received, and number of connections.
+        ---
+
+        ### Parameters & Returns
+
+        * **Args**:
+            * `filter` (str, optional): A filter to apply to network events. This can be a simple string (e.g., an IOC) to search across all fields or a more complex query using **Lucene syntax**.
+            * `start` (datetime): The start of the time interval in **UTC (ISO 8601)** format. By default, it's 24 hours before the current time or the `end` time.
+            * `end` (datetime): The end of the time interval in **UTC (ISO 8601)** format. By default, it's the current time.
+            * `limit` (PositiveInt): The maximum number of talkers to return (default: `100`).
+
+        * **Returns**:
+            * `list[TalkersInfoMessage]`: A list of objects, each providing information about a talker. This includes the hosts' **IP address**, the **number of connections**, **first time stamp** and **latest time stamp**.
+
         """
         if end is None:
             end = datetime.now(timezone.utc)
@@ -141,12 +165,18 @@ class McpController(MCPToolset):
 
     def version(self) -> ProductInfoMessage:
         """
-        Get the version of Clear NDR.
+        ### Version Information Endpoint
 
-        This endpoint can be useful to check if the MCP server is OK.
+        This endpoint retrieves the current version information for **Clear NDR**. It is primarily used to check the operational status and confirm the installed version of the MCP server.
 
-        Returns:
-            Product name, flavor (Enterprise or Community) and the version.
+        ---
+
+        ### Returns
+
+        The response provides a dictionary with the following keys:
+        * `product_name`: The name of the product.
+        * `flavor`: The product flavor (e.g., "Enterprise" or "Community").
+        * `version`: The specific version number of the software.
         """
         return ProductInfoMessage(
             name=settings.APP_SHORT_NAME,
@@ -156,12 +186,15 @@ class McpController(MCPToolset):
 
     def mapping_info(self) -> list[dict[str, str]]:
         """
-        When building Lucene queries, it is important to know the field to use.
-        This endpoint provides information about common fields like ip addresses,
-        timestamps, etc. use the
+        ### Lucene Query Fields Endpoint
 
-        Returns:
-            A list dictionary containing field information.
+        This endpoint provides essential information about **common fields** to help you construct accurate Lucene queries. Use this to understand the available fields, such as IP addresses, timestamps, and other data points, to build your queries effectively.
+
+        ---
+
+        ### Returns
+
+        * `list[dict]`: A list of dictionaries, with each dictionary containing information about a specific field available for Lucene queries.
         """
         return [
             {"field": "timestamp", "type": "date", "description": "The timestamp of the alert in ISO 8601 format"},
