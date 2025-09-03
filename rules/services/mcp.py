@@ -24,6 +24,7 @@ class McpService:
         start: PositiveInt,
         end: PositiveInt,
         ip: IPvAnyAddress | None = None,
+        filter: str = "",
         # pagination parameters
         page: PositiveInt = 1,
         limit: PositiveInt = 20,
@@ -37,6 +38,8 @@ class McpService:
         qfilter = '((NOT alert.tag:*) OR alert.tag:"relevant")'
         if ip:
             qfilter += f" AND (flow.src_ip:{ip} OR flow.dest_ip:{ip})"
+        if filter:
+            qfilter += f" AND ({filter})"
         request.GET["qfilter"] = qfilter
 
         request.GET["alert"] = "true"
@@ -48,12 +51,15 @@ class McpService:
 
         return request
 
-    def _get_alert_list_results(self, request: HttpRequest) -> list[AlertMessage]:
+    def _get_alert_list_results(self, request: HttpRequest, verbose: bool) -> list[AlertMessage] | list[dict[str, Any]]:
         drf_request = Request(request)
 
         pagination = ESPaginator(drf_request)
         es_params = pagination.get_es_params(None)
         raw = ESEventsTail(request, f"{settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX}*").get(es_params=es_params)
+
+        if verbose:
+            return [line["_source"] for line in raw["hits"]["hits"]]
         return [
             AlertMessage(
                 when=line["_source"]["@timestamp"],
@@ -73,6 +79,8 @@ class McpService:
         start: PositiveInt,
         end: PositiveInt,
         ip: IPvAnyAddress | None = None,
+        filter: str = "",
+        raw: bool = False,
         # pagination parameters
         page: PositiveInt = 1,
         limit: PositiveInt = 20,
@@ -85,8 +93,8 @@ class McpService:
             end (end): timestamp in ms
             outlier (bool): if we set the stamus_novel filter to true
         """
-        request = self._prepare_alert_list_request_object(start, end, ip, page, limit)
-        return self._get_alert_list_results(request)
+        request = self._prepare_alert_list_request_object(start, end, ip, filter, page, limit)
+        return self._get_alert_list_results(request, raw)
 
     def rules(self, sids: list[int]) -> list[RuleMessage]:
         """
