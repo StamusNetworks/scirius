@@ -480,7 +480,7 @@ DJANGO_MCP_AUTHENTICATION_CLASSES = ["rest_framework.authentication.TokenAuthent
 
 DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
     "name": "clear-ndr",
-    "instructions": "Access to network threat detection and network visibility",
+    "instructions": "Clear NDR provides access to network threat detection and network visibility. It is using the Suricata technology and data format.",
     "stateless": False
 }
 
