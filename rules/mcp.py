@@ -62,6 +62,8 @@ class McpController(MCPToolset):
         start: datetime | None = None,
         end: datetime | None = None,
         ip: IPvAnyAddress | None = None,
+        filter: str | None = None,
+        raw: bool = False,
         # pagination parameters
         page: PositiveInt = 1,
         limit: PositiveInt = 50,
@@ -73,9 +75,11 @@ class McpController(MCPToolset):
         The signature_id field in the result corresponds to the SID field in the rule.
 
         Args:
-            start (datetime): start date of the interval in UTC format (ISO 8601), by default it is 24h before the current time or the end time
-            end (datetime | None): end date of the interval in UTC (ISO 8601), by default it is the current time
-            ip (str | None): IPv4 or IPv6 if you want to filter on specific hosts
+            start (datetime): start date of the interval in UTC format (ISO 8601), by default it is 24h before the current time or the end time.
+            end (datetime | None): end date of the interval in UTC (ISO 8601), by default it is the current time.
+            ip (str | None): IPv4 or IPv6 if you want to filter on specific hosts.
+            filter (str | None): Optional search filter on the Suricata events using Lucene syntax.
+            raw (bool): true to return raw Suricata events that include protocol information and metadata instead of a concise representation (concise representation is returned by default). Set it to true for in depth analysis.
             page (PositiveInt): The page number for pagination. Defaults to 1.
             limit (PositiveInt): The maximum number of alerts to return per page. Defaults to 50.
         """
@@ -85,11 +89,13 @@ class McpController(MCPToolset):
             start = end - timedelta(hours=24)
 
         return self.service.alert_list(
-            convert_datetime_to_timestamp(start, True),
-            convert_datetime_to_timestamp(end, True),
-            ip,
-            page,
-            limit,
+            start=convert_datetime_to_timestamp(start, True),
+            end=convert_datetime_to_timestamp(end, True),
+            ip=ip,
+            filter=filter if filter else "",
+            raw=raw,
+            page=page,
+            limit=limit,
         )
 
     @has_group_permission(required_groups=["rules.ruleset_policy_view"])
@@ -147,3 +153,30 @@ class McpController(MCPToolset):
             version=settings.SCIRIUS_VERSION,
             flavor="Community" if settings.RULESET_MIDDLEWARE == "suricata" else "Enterprise",
         )
+
+    def mapping_info(self) -> list[dict[str, str]]:
+        """
+        When building Lucene queries, it is important to know the field to use.
+        This endpoint provides information about common fields like ip addresses,
+        timestamps, etc. use the
+
+        Returns:
+            A list dictionary containing field information.
+        """
+        return [
+            {"field": "timestamp", "type": "date", "description": "The timestamp of the alert in ISO 8601 format"},
+            {"field": "src_ip", "type": "ip", "description": "The source IP address of the event"},
+            {"field": "dest_ip", "type": "ip", "description": "The destination IP address of the event"},
+            {"field": "src_port", "type": "integer", "description": "The source port of the event"},
+            {"field": "dest_port", "type": "integer", "description": "The destination port of the event"},
+            {"field": "app_proto", "type": "string", "description": "The application layer of the event (HTTP, DNS, TLS, etc.)"},
+            {"field": "alert.signature_id", "type": "integer", "description": "The signature ID (SID) of the rule that triggered the alert"},
+            {"field": "alert.signature", "type": "string", "description": "The name of the rule that triggered the alert"},
+            {"field": "flow_id", "type": "long", "description": "The unique identifier for the flow associated with the alert"},
+            {"field": "event_type", "type": "string", "description": "The type of event (alert, anomaly, DNS, HTTP, etc.)"},
+            {"field": "proto", "type": "string", "description": "The protocol used in the event (TCP, UDP, ICMP, etc.)"},
+            {"field": "http.hostname", "type": "string", "description": "The hostname from HTTP traffic"},
+            {"field": "http.url", "type": "string", "description": "The URL from HTTP traffic"},
+            {"field": "dns.query.rrname", "type": "string", "description": "The DNS resource record name"},
+            {"field": "tls.sni", "type": "string", "description": "The Server Name Indication from TLS traffic"},
+        ]
