@@ -62,7 +62,7 @@ class McpService:
             return [line["_source"] for line in raw["hits"]["hits"]]
         return [
             AlertMessage(
-                when=line["_source"]["@timestamp"],
+                timestamp=line["_source"]["@timestamp"],
                 method=line["_source"]["alert"]["signature"],
                 signature_id=line["_source"]["alert"]["signature_id"],
                 source_ip=line["_source"]["flow"]["src_ip"],
@@ -122,7 +122,7 @@ class McpService:
             if (sid := data.get("key")) and sid in sids:
                 mapping[sid] = {
                     "timeline": [
-                        HitTimelineEntryMessage(when=entry["key_as_string"], hits=entry["doc_count"])
+                        HitTimelineEntryMessage(timestamp=entry["key_as_string"], hits=entry["doc_count"])
                         for entry in data["timeline"]["buckets"]
                     ],
                     "probes": [
