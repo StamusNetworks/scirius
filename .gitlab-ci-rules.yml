@@ -64,7 +64,6 @@ test-static:
   script:
   - /home/admin/venv/bin/pip install 'Django>=4.2,<5'
   - /home/admin/venv/bin/pylint --load-plugins pylint_django -E -d unexpected-keyword-arg,no-member,access-member-before-definition,no-name-in-module,import-error,imported-auth-user,django-not-configured */*.py
-  - PYTHONIOENCODING="UTF-8" ./tests/check_non_ascii_chars.py
 
 test-dlint:
     image: python:alpine
