@@ -237,9 +237,9 @@ LOGGING = {
     },
     'loggers': {
         'django.db.backends': {
-            'handlers': ['null_log'],
-            'level': 'DEBUG',
-            'propagate': True,
+            'handlers': ['sql_log'],
+            'level': 'ERROR',
+            'propagate': False,
         },
         'django.request': {
             'handlers': ['error_log'],
