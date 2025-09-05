@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from functools import wraps
-from typing import Iterable
+from typing import Any, Iterable
 from django.conf import settings
 from django.http import HttpRequest
 from mcp_server import MCPToolset
@@ -67,7 +67,7 @@ class McpController(MCPToolset):
         # pagination parameters
         page: PositiveInt = 1,
         limit: PositiveInt = 50,
-    ) -> list[AlertMessage]:
+    ) -> list[AlertMessage] | list[dict[str, Any]]:
         """
         ### IDS Alerts Endpoint 🚨
 
