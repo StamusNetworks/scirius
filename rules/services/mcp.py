@@ -43,8 +43,8 @@ class McpService:
         request.GET["qfilter"] = qfilter
 
         request.GET["alert"] = "true"
-        request.GET["discovery"] = "false"
-        request.GET["stamus"] = "false"
+        request.GET["discovery"] = "true"
+        request.GET["stamus"] = "true"
 
         request.GET["page_size"] = str(limit)
         request.GET["page"] = str(page)
