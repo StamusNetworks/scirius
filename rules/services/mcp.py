@@ -60,19 +60,24 @@ class McpService:
 
         if verbose:
             return [line["_source"] for line in raw["hits"]["hits"]]
-        return [
-            AlertMessage(
+        ret_array = []
+        for line in raw["hits"]["hits"]:
+            src_ip = line["_source"]["src_ip"]
+            dest_ip = line["_source"]["dest_ip"]
+            if "flow" in line["_source"]:
+                src_ip = line["_source"]["flow"]["src_ip"]
+                dest_ip = line["_source"]["flow"]["dest_ip"]
+            ret_array.append(AlertMessage(
                 timestamp=line["_source"]["@timestamp"],
                 method=line["_source"]["alert"]["signature"],
                 signature_id=line["_source"]["alert"]["signature_id"],
-                source_ip=line["_source"]["flow"]["src_ip"],
-                destination_ip=line["_source"]["flow"]["dest_ip"],
-                protocol=line["_source"]["app_proto"],
-                category=line["_source"]["alert"]["category"],
+                source_ip=src_ip,
+                destination_ip=dest_ip,
+                protocol=line["_source"].get("app_proto", "unknown"),
+                category=line["_source"]["alert"].get("category", "unknown"),
                 community_id=line["_source"]["community_id"],
-            )
-            for line in raw["hits"]["hits"]
-        ]
+            ))
+        return ret_array
 
     def alert_list(
         self,
