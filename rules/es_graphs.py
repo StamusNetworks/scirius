@@ -1658,6 +1658,7 @@ class ESTalkersList(ESQuery):
                                             "terms": {
                                                 "field": "app_proto.raw",
                                                 "order": {"_count": "desc"},
+                                                "missing": "__missing__",
                                                 "size": 100,
                                             },
                                             "aggs": {
