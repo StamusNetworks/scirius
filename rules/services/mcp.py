@@ -62,6 +62,8 @@ class McpService:
             return [line["_source"] for line in raw["hits"]["hits"]]
         ret_array = []
         for line in raw["hits"]["hits"]:
+            if "src_ip" not in line["_source"] or "dest_ip" not in line["_source"]:
+                continue
             src_ip = line["_source"]["src_ip"]
             dest_ip = line["_source"]["dest_ip"]
             if "flow" in line["_source"]:
