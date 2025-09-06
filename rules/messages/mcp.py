@@ -18,8 +18,8 @@ class AlertMessage(BaseModel):
     timestamp: datetime
     method: str | None
     signature_id: int
-    source_ip: IPvAnyAddress
-    destination_ip: IPvAnyAddress
+    src_ip: IPvAnyAddress
+    dest_ip: IPvAnyAddress
     protocol: str
     category: str
     community_id: str
