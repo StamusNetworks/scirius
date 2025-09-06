@@ -23,6 +23,7 @@ class AlertMessage(BaseModel):
     protocol: str
     category: str
     community_id: str
+    hostname: str | None = None
 
 
 class HitTimelineEntryMessage(BaseModel):
