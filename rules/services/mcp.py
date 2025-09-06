@@ -69,7 +69,7 @@ class McpService:
             if "flow" in line["_source"]:
                 src_ip = line["_source"]["flow"]["src_ip"]
                 dest_ip = line["_source"]["flow"]["dest_ip"]
-            ret_array.append(AlertMessage(
+            alert = AlertMessage(
                 timestamp=line["_source"]["@timestamp"],
                 method=line["_source"]["alert"]["signature"],
                 signature_id=line["_source"]["alert"]["signature_id"],
@@ -78,7 +78,11 @@ class McpService:
                 protocol=line["_source"].get("app_proto", "unknown"),
                 category=line["_source"]["alert"].get("category", "unknown"),
                 community_id=line["_source"]["community_id"],
-            ))
+            )
+            hostname = line["_source"].get("hostname_info", {}).get("host")
+            if hostname:
+                alert.hostname = hostname
+            ret_array.append(alert)
         return ret_array
 
     def alert_list(
