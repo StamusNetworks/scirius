@@ -19,6 +19,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.conf import settings
+from rest_framework.request import Request
+from typing import Any
 
 from rules.es_query import ESQuery
 from rules.es_graphs import ES_TIMESTAMP, ES_KEYWORD
@@ -180,17 +182,18 @@ class ESGenericSearch(ESQuery):
     '''
     =============================================================================================================================================================
     ==== POST ====\n
-    Post ES query:\n
+    Post ES query. If custom_filter in the body with your custom ES filter it will replace the default time range filter.\n
         curl -k https://myssp2/rest/rules/es/search/ -H "Authorization: Token d16206ca40ce0cbbf3080eb1e662b17c5452d96f" -H 'Content-Type: application/json' -X  POST -d '{"index":"logstash-tls-*", "size":0, "qfilter":"(event_type: tls AND (proto: UDP OR proto: TCP))", "aggs":"{'aggs': {'1': {'terms': {'field': 'tls.cipher_suite.keyword', 'order': {'_count': 'desc'}, 'size': 5}}}}"}'
 
     =============================================================================================================================================================
     '''
-    def __init__(self, request, index, qfilter, size, aggs=None, time_filter='@timestamp', *args, **kwargs):
+    def __init__(self, request: Request, index: str, qfilter: str, size: int, filter: dict[str, Any], aggs=None, time_filter: str = '@timestamp', *args, **kwargs):
         self.index = index
         self.qfilter_ = qfilter
         self.aggs = aggs
         self.size = size
         self.time_filter = time_filter
+        self.filter = filter
 
         get_middleware_module('common').check_tenant_in_es_query(
             user=request.user,
@@ -205,7 +208,7 @@ class ESGenericSearch(ESQuery):
         return self.index
 
     def _get_query(self) -> dict:
-        q = {
+        q: dict[str, Any] = {
             'query': {
                 'bool': {
                     'must': [{
@@ -213,18 +216,13 @@ class ESGenericSearch(ESQuery):
                             'analyze_wildcard': True,
                             'query': self.qfilter_
                         }
-                    }, {
-                        'range': {
-                            self.time_filter: {
-                                'from': self._from_date(),
-                                'to': self._to_date()
-                            }
-                        }
                     }]
                 }
             },
             'size': self.size
         }
+
+        q["query"]["bool"]["must"].append(self.filter)
 
         if self.aggs:
             q.update({'aggs': self.aggs.get('aggs', {})})
