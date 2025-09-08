@@ -7,8 +7,10 @@ from django.urls import re_path
 from django.utils import timezone
 from django.db import models
 from collections import OrderedDict
+from typing import Any
 import json
 import tempfile
+import time
 
 from django.core.exceptions import ValidationError
 
@@ -3494,13 +3496,26 @@ class ESGenericSearchViewSet(ESBaseViewSet):
         size = self.request.data.get('size')
         time_filter = self.request.data.get('time_filter', '@timestamp')
 
+        if custom_filter := self.request.data.get("custom_filter"):
+            filter = custom_filter
+        else:
+            now = round(time.time() * 1000)
+            filter: dict[str, Any] = {
+                'range': {
+                    time_filter: {
+                        'from': request.query_params.get("from_date", now - 86400000),  # default 24h before
+                        'to': request.query_params.get("to_date", now),
+                    }
+                }
+            }
+
         if not index:
             raise serializers.ValidationError({'index': ['is mandatory']})
 
         if not qfilter:
             raise serializers.ValidationError({'qfilter': ['is mandatory']})
 
-        return Response(ESGenericSearch(request, index, qfilter, size, aggs, time_filter).get())
+        return Response(ESGenericSearch(request, index, qfilter, size, filter, aggs, time_filter).get())
 
 
 class ESMappingViewSet(ESBaseViewSet):
