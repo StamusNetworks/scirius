@@ -131,6 +131,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             serializer = serializer(data=options, context=self.context)
             try:
                 serializer.is_valid(raise_exception=True)
+                get_middleware_module('common').validate_doc_dopv_policy(serializer.validated_data.get("options"))
             except serializers.ValidationError as e:
                 raise serializers.ValidationError({'options': [e.detail]})
             options = serializer.validated_data
