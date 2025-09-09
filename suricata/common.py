@@ -391,3 +391,7 @@ def update_custom_sources_url(_):
 
 def get_redirect_for_stask(task_name: str) -> str:
     return "view_stasks"
+
+
+def validate_doc_dopv_policy(_):
+    pass
