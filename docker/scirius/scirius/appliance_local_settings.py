@@ -98,27 +98,27 @@ LOGGING = {
         'elasticsearch': {
             'handlers': ['elasticsearch'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
         'task_logger': {
             'handlers': ['task_error'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
         'django.request': {
             'handlers': ['error_log'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'authentication': {
             'handlers': ['auth_log'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'celery_tasks': {
             'handlers': ['celery_tasks'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
 
     }
