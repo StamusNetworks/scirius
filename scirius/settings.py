@@ -244,42 +244,42 @@ LOGGING = {
         'django.request': {
             'handlers': ['error_log'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'django_auth_ldap': {
             'handlers': ['auth_log'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'djangosaml2': {
             'handlers': ['auth_log'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'authentication': {
             'handlers': ['auth_log'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'ansible': {
             'handlers': ['ansible_log'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'celery_tasks': {
             'handlers': ['celery_tasks'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'user_actions': {
             'handlers': ['user_actions'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
         'elasticsearch': {
             'handlers': ['elasticsearch'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
     }
 }
