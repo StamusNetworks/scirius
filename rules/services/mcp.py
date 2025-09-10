@@ -160,7 +160,9 @@ class McpService:
                     sid=rule.sid,
                     message=rule.msg,
                     hits=hits,
-                    references=[RuleReferenceMessage(key=ref.key, value=ref.value, url=ref.url) for ref in rule.extract_rule_references()],
+                    references=[
+                        RuleReferenceMessage(key=ref.key, value=ref.value, url=ref.url) for ref in rule.extract_rule_references()
+                    ],
                     content=rule.ruleatversion_set.order_by("-version").first().content,
                     probes=probes,
                     timeline_data=timeline,
