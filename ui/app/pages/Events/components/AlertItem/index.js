@@ -429,6 +429,11 @@ class AlertItem extends React.Component {
                 <ErrorHandler>
                   <EventField filter={new Filter('dest_port', data.dest_port)} />
                 </ErrorHandler>
+                {data.alert?.xff && (
+                  <ErrorHandler>
+                    <EventField filter={new Filter('alert.xff', data.alert.xff)} />
+                  </ErrorHandler>
+                )}
                 <ErrorHandler>
                   <EventField filter={new Filter('proto', data.proto)} />
                 </ErrorHandler>
