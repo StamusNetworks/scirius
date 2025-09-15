@@ -121,6 +121,10 @@ export const dashboard = [
         title: 'IP Protocols',
       },
       {
+        i: 'alert.xff',
+        title: 'X-Forwarded-For',
+      },
+      {
         i: 'vlan',
         title: 'Vlans',
       },

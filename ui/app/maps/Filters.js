@@ -188,6 +188,11 @@ export const FiltersList = [
     force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
   },
   {
+    title: 'X-Forwarded-For',
+    id: 'alert.xff',
+    category: FilterCategory.EVENT,
+  },
+  {
     title: 'Source Net',
     id: 'net_info.src_agg',
     category: FilterCategory.EVENT,
