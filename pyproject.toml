@@ -80,7 +80,7 @@ dependencies = [
     "opentelemetry-sdk==1.36.0",
     "paramiko==3.4.0",
     "psutil==6.0.0",
-    "psycopg2-binary==2.9.9",
+    "psycopg[binary,pool]==3.2.9",
     "pydantic_core==2.33.2",
     "pydantic-settings==2.10.1",
     "pydantic==2.11.7",
@@ -113,8 +113,13 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "ruff",       # Code linter/formatter
-    "mypy",       # Type checker
+    "pytest",
+    "pytest-asyncio",
+    "pytest-django",
+    "pytest-timeout",
+    "pytest-freezegun",
+    "ruff",           # Code linter/formatter
+    "mypy",           # Type checker
     "pre-commit",
 ]
 # You need those packages when you have a Stamus license
@@ -152,7 +157,6 @@ appliances = [
     "patchelf==0.17.2.2",
     "pexpect==4.9.0",
     "prompt_toolkit==3.0.47",
-    "psycopg2==2.9.9",
     "ptyprocess==0.7.0",
     "pure-eval==0.2.2",
     "pyasn1==0.6.0",
@@ -261,3 +265,103 @@ line-ending = "lf"
 
 # [project.scripts]
 # start = "uvicorn app.main:app --host 0.0.0.0 --port 8000" # A convenient way to start for development
+
+[tool.pytest.ini_options]
+# required_plugins = pytest-django>=3.0.0,<4.0.0 pytest-html pytest-xdist>=1.0.0
+# exclude = ["appliances/func_tests.py"]
+testpaths = ["accounts", "appliances", "rules", "scirius", "suricata", "volumetry"]
+# it should have been "tests.py test_*.py tests_*.py *_tests.py" but not all test can run with pytest so we are
+# identifying them
+python_files = "pytest.py pytests.py pytest_*.py"
+usefixtures = ["django_db_setup"]  # to create the DB automatically without using fixture
+
+# asyncio_mode = "auto" # Or "strict" for explicit markers
+asyncio_default_fixture_loop_scope = "class"  # function | session | class
+addopts = [
+    "--create-db",
+    # "--no-migrations",           # avoid migration run
+    # "--nomigrations",            # alternative to --no-migrations
+    # "--reuse-db",                # reuse DB between runs
+    "--cov=scirius",             # Coverage of scirius package
+    "--cov=suricata",
+    "--cov=rules",
+    "--cov=appliances",
+    "--cov=volumetry",
+    "--cov-report=html",         # HTML report
+    "--cov-report=term-missing", # display missing lines in the terminal
+    "--strict-markers",          # error if unknown marker
+    "--tb=short",                # shorter Traceback
+    "-v",                        # verbose mode
+]
+cache_dir = "/tmp/.pytest-scirius"
+
+DJANGO_SETTINGS_MODULE = "tests.settings"
+
+django_find_project = true
+
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "db: marks tests that require database access",
+    "no_db: marks tests that don't need database",
+]
+
+filterwarnings = [
+    # "ignore::django.utils.deprecation.RemovedInDjango50Warning",
+    # "ignore::django.utils.deprecation.RemovedInDjango51Warning",
+    "ignore::DeprecationWarning:django.*",
+    "ignore::PendingDeprecationWarning",
+]
+
+[tool.coverage.run]
+# Whether to measure branch coverage in addition to statement coverage.
+branch = true
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/tests.py",
+    "*/pytest_*.py",
+    "*/pytests.py",
+    "*/conftest.py",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/env/*",
+    "manage.py",
+    "*/settings/*",
+    "*/wsgi.py",
+    "*/asgi.py",
+]
+# concurrency = "multiprocessing"
+# concurrency = "gevent"
+parallel = true
+sigterm = true
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc\\.)?abstractmethod",
+]
+
+ignore_errors = true
+show_missing = true
+skip_covered = false
+
+[tool.coverage.html]
+directory = "coverage_html_report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
