@@ -356,7 +356,7 @@ def convert_to_local(time, user):
     return pytz.utc.normalize(pytz.utc.localize(time.replace(tzinfo=None))).astimezone(tz)
 
 
-def sizeof_fmt(num):
+def sizeof_fmt(num: int | float) -> str:
     """
     Utility function to convert bytes to a more readable format.
     """

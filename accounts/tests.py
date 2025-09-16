@@ -27,7 +27,7 @@ from rest_framework.authtoken.models import Token
 
 from accounts.rest_api import router
 from .models import SciriusTokenUser, SciriusUser
-from rules.tests import RestAPITestBase, RestAPIListTestCase
+from rules.tests.test_misc import RestAPITestBase, RestAPIListTestCase
 
 
 class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
