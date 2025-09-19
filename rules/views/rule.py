@@ -18,50 +18,46 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import builtins
+import contextlib
 import json
 import tarfile
 from datetime import date
 
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpRequest, HttpResponse, JsonResponse
+import django_tables2 as tables
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
-import django_tables2 as tables
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 
-from scirius.utils import (
-    get_middleware_module,
-    scirius_render,
-    is_ajax,
-)
-
-from rules.models import (
-    RuleAtVersion,
-    Ruleset,
-    Rule,
-    SuppressedRuleAtVersion,
-)
-from rules.models import Threshold, Transformation, UserAction
-from rules.tables import ThresholdTable
-
-from rules.es_graphs import ESDeleteAlertsBySid
-from rules.es_graphs import get_es_major_version
-
-from rules.tables import RuleThresholdTable, RuleSuppressTable
-from rules.forms import (
-    RuleCommentForm,
-    RuleTransformForm,
-    RulesetSuppressForm,
-    CommentForm,
-)
-from rules.forms import AddRuleThresholdForm, AddRuleSuppressForm
-from rules.forms import (
+from rules.es_graphs import ESDeleteAlertsBySid, get_es_major_version
+from rules.forms.common import CommentForm
+from rules.forms.rule import (
+    AddRuleSuppressForm,
+    AddRuleThresholdForm,
     EditThresholdForm,
     PoliciesForm,
+    RuleCommentForm,
+    RuleTransformForm,
+)
+from rules.forms.ruleset import RulesetSuppressForm
+from rules.models import (
+    Rule,
+    RuleAtVersion,
+    Ruleset,
+    SuppressedRuleAtVersion,
+    Threshold,
+    Transformation,
+    UserAction,
 )
 from rules.suripyg import SuriHTMLFormat
-import contextlib
-import builtins
+from rules.tables import RuleSuppressTable, RuleThresholdTable, ThresholdTable
+from scirius.utils import (
+    get_middleware_module,
+    is_ajax,
+    scirius_render,
+)
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
 

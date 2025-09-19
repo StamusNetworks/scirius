@@ -27,7 +27,7 @@ import pytz
 from .models import Group, SciriusTokenUser, SciriusUser
 
 from scirius.utils import get_middleware_module
-from rules.forms import CommentForm
+from rules.forms.common import CommentForm
 
 
 class PasswordChangeForm(DjangoPasswordChangeForm):

@@ -18,40 +18,45 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ipware.ip import HttpRequest
 from datetime import date
 
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponse, JsonResponse
-from django.db import IntegrityError
+import django_tables2 as tables
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
-import django_tables2 as tables
+from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from ipware.ip import HttpRequest
 
-from scirius.utils import (
-    get_middleware_module,
-    scirius_render,
-    is_ajax,
-)
-
+from rules.forms.common import CommentForm
+from rules.forms.ruleset import RulesetCopyForm, RulesetEditForm, RulesetForm
 from rules.models import (
-    Ruleset,
-    Source,
     Category,
     Rule,
+    Ruleset,
+    RulesetTransformation,
+    Source,
     SuppressedRuleAtVersion,
+    Threshold,
+    Transformation,
+    UserAction,
     dependencies_check,
 )
-from rules.models import Threshold, Transformation, RulesetTransformation, UserAction
-from rules.tables import RuleTable, CategoryTable, RulesetThresholdTable, RulesetSuppressTable
-from rules.tables import EditCategoryTable, EditRuleTable, EditSourceTable
-from rules.forms import (
-    CommentForm,
-    RulesetForm,
-    RulesetEditForm,
-    RulesetCopyForm,
+from rules.tables import (
+    CategoryTable,
+    EditCategoryTable,
+    EditRuleTable,
+    EditSourceTable,
+    RulesetSuppressTable,
+    RulesetThresholdTable,
+    RuleTable,
+)
+from scirius.utils import (
+    get_middleware_module,
+    is_ajax,
+    scirius_render,
 )
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
