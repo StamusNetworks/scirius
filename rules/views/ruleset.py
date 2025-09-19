@@ -168,8 +168,7 @@ def ruleset_export(request: HttpRequest, ruleset_id: int):
         return response
 
     if (
-        rule_versions == [0]
-        and ruleset.sources.filter(datatype__in=MIDDLEWARE.common.custom_source_datatype()).count() == 0
+        rule_versions == [0] and ruleset.sources.filter(datatype__in=MIDDLEWARE.common.custom_source_datatype()).count() == 0
     ):
         file_tar_io = MIDDLEWARE.common.ruleset_export(ruleset, 0)
         response = HttpResponse(file_tar_io.getvalue(), content_type="application/gzip")
@@ -326,8 +325,7 @@ def edit_ruleset(request: HttpRequest, ruleset_id: int):
                 if (
                     SuppressedRuleAtVersion.objects.filter(
                         ruleset=ruleset, rule_at_version__in=rule_object.ruleatversion_set.all()
-                    ).count()
-                    > 0
+                    ).count() > 0
                 ):
                     rule_object.enable(ruleset, request=request, comment=form.cleaned_data["comment"])
 
