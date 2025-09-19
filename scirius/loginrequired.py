@@ -8,6 +8,7 @@ from re import compile
 EXEMPT_URLS = [
     compile(settings.LOGIN_URL.lstrip("/")),
     compile("rest/.*"),
+    compile("api/.*"),
     compile("static/(?!doc).*"),
     compile("saml2/.*"),
     compile("^mcp.*"),
