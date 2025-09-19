@@ -29,7 +29,7 @@ from rules.models import (
     Transformation,
     UserAction,
 )
-from rules.rest_permissions import NoPermission, edit_rule_permission
+from rules.api.permissions import NoPermission, edit_rule_permission
 from rules.suripyg import SuriHTMLFormat
 from scirius.rest_utils import (
     ESManageMultipleESIndexesViewSet,
