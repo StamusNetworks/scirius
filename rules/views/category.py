@@ -18,28 +18,25 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpRequest
+import django_tables2 as tables
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
-import django_tables2 as tables
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404, redirect
 
-from scirius.utils import (
-    scirius_render,
-    scirius_listing,
-)
-
+from rules.forms.category import CategoryTransformForm
+from rules.forms.ruleset import RulesetSuppressForm
 from rules.models import (
-    Ruleset,
     Category,
     Rule,
+    Ruleset,
+    Transformation,
+    UserAction,
 )
-from rules.models import Transformation, UserAction
-
-from rules.tables import RuleTable, CategoryTable, CategoryRulesetTable
-from rules.forms import (
-    CategoryTransformForm,
-    RulesetSuppressForm,
+from rules.tables import CategoryRulesetTable, CategoryTable, RuleTable
+from scirius.utils import (
+    scirius_listing,
+    scirius_render,
 )
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
