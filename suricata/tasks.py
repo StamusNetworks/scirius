@@ -28,7 +28,7 @@ from celery.utils.log import get_task_logger
 from celery import shared_task, chord, group, chain
 
 from suricata import celery_app
-from rules.rest_permissions import HasGroupPermission
+from rules.api.permissions import HasGroupPermission
 from rules.models import Ruleset, Source
 from accounts.models import SciriusTokenUser
 
