@@ -19,23 +19,21 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpRequest, JsonResponse
-from django.db.models import Case, When, BooleanField
-from django.db.models.functions import Greatest
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import PermissionDenied
+from django.db.models import BooleanField, Case, When
+from django.db.models.functions import Greatest
+from django.http import HttpRequest, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 
 from scirius.utils import (
-    scirius_render,
-    scirius_listing,
     convert_to_local,
     is_ajax,
+    scirius_listing,
+    scirius_render,
 )
-
-from suricata.tasks import tasks_permission_required, check_task_perms
-
+from suricata.tasks import check_task_perms, tasks_permission_required
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
 
