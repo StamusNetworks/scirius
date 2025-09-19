@@ -4,7 +4,7 @@ from django.conf import settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from .views import homepage, KibanaProxyView, EveboxProxyView, MolochProxyView, static_redirect, ui_view
-from .rest_api import router
+from .rest_api import router, router_v2
 from .utils import get_middleware_module
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     path('viz/', include('viz.urls')),
     re_path(r'^' + settings.RULESET_MIDDLEWARE + '/', include('' + settings.RULESET_MIDDLEWARE + '.urls')),
     path('rest/', include(router.urls)),
+    path('api/v2/', include(router_v2.urls)),
     re_path(r'^stamus(/.*)?$', ui_view),
     path('', homepage),
     # Forward "app/kibana.*" to kibana (work around to https://github.com/elastic/kibana/issues/5230)
