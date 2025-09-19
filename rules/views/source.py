@@ -18,35 +18,45 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re
 import os
-import yaml
+import re
 
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpRequest, JsonResponse
-from django.db import IntegrityError
+import django_tables2 as tables
+import yaml
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
-import django_tables2 as tables
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+from django.http import HttpRequest, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 
-from scirius.utils import (
-    scirius_render,
-    RequestsWrapper,
-    is_ajax,
+from rules.forms.common import CommentForm
+from rules.forms.source import (
+    AddPublicSourceForm,
+    AddSourceForm,
+    SourceForm,
+    get_ioc_meta_formset,
 )
-
 from rules.models import (
+    Category,
     IoCMeta,
     Ruleset,
     Source,
     SourceUpdate,
-    Category,
+    UserAction,
 )
-from rules.models import UserAction
-from rules.tables import UpdateRuleTable, DeletedRuleTable, SourceUpdateTable, CategoryTable
-from rules.forms import CommentForm, get_ioc_meta_formset, AddSourceForm, AddPublicSourceForm, SourceForm
+from rules.tables import (
+    CategoryTable,
+    DeletedRuleTable,
+    SourceUpdateTable,
+    UpdateRuleTable,
+)
+from scirius.utils import (
+    RequestsWrapper,
+    is_ajax,
+    scirius_render,
+)
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
 

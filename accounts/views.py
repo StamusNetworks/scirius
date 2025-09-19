@@ -36,7 +36,7 @@ import django_tables2 as tables
 from django.db import transaction
 
 from rules.models import UserAction, get_system_settings
-from rules.forms import CommentForm
+from rules.forms.common import CommentForm
 
 from scirius.utils import scirius_render, scirius_listing, get_middleware_module, is_ajax
 from .forms import (
