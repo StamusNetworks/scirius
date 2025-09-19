@@ -18,7 +18,7 @@ from django.http import HttpResponse
 
 
 from rules.models import UserAction
-from rules.rest_api import CommentSerializer
+from rules.api.common import CommentSerializer
 from suricata.rest_tasks import SuricataRulesetCeleryTaskViewSet
 
 
