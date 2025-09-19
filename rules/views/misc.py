@@ -18,44 +18,50 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import builtins
+import contextlib
 import os
 from typing import Any
 
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
-from django.http import HttpRequest, HttpResponse, HttpResponseServerError, JsonResponse
-from django.conf import settings
-from django.core.exceptions import PermissionDenied
-from django.contrib.auth.decorators import permission_required
-from elasticsearch.exceptions import ConnectionError as ESConnectionError
 import django_tables2 as tables
-
-from scirius.utils import (
-    get_middleware_module,
-    scirius_render,
-    is_ajax,
-)
+from dateutil.relativedelta import relativedelta
+from django.conf import settings
+from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import PermissionDenied
+from django.http import HttpRequest, HttpResponse, HttpResponseServerError, JsonResponse
+from django.utils import timezone
+from elasticsearch.exceptions import ConnectionError as ESConnectionError
 
 from rules.es_data import ESData
+from rules.es_graphs import (
+    ESError,
+    ESFieldStatsAsTable,
+    ESIndices,
+    ESRulesStats,
+    ESSidByHosts,
+)
+from rules.forms.common import CommentForm
+from rules.forms.misc import KibanaDataForm, SystemSettingsForm
 from rules.models import (
-    Ruleset,
-    Source,
     Category,
     Rule,
+    Ruleset,
+    Source,
+    UserAction,
     get_system_settings,
 )
-from rules.models import UserAction
-
-from rules.es_graphs import ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices
-
-from rules.tables import RuleTable, CategoryTable, RulesetTable, RuleHostTable, ESIndexessTable
-from rules.forms import (
-    CommentForm,
-    SystemSettingsForm,
-    KibanaDataForm,
+from rules.tables import (
+    CategoryTable,
+    ESIndexessTable,
+    RuleHostTable,
+    RulesetTable,
+    RuleTable,
 )
-import contextlib
-import builtins
+from scirius.utils import (
+    get_middleware_module,
+    is_ajax,
+    scirius_render,
+)
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -140,7 +146,8 @@ def history(request: HttpRequest):
             "date": item.date,
             "icons": item.get_icons(),
             "client_ip": item.client_ip,
-        } for item in history[:50]
+        }
+        for item in history[:50]
     ]
 
     context = {"history": res}

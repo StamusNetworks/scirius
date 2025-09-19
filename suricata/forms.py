@@ -23,7 +23,8 @@ from django import forms
 from django.conf import settings
 from scirius.utils import convert_to_utc
 from suricata.models import CeleryTask, Suricata, RecurrentTask
-from rules.forms import CommentForm, ConfigurationEditPermForm, BaseEditForm
+from rules.forms.common import CommentForm, BaseEditForm
+from rules.forms.misc import ConfigurationEditPermForm
 
 
 class SuricataForm(forms.ModelForm, CommentForm):
