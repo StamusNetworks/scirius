@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 
 from accounts.models import SciriusUser, SciriusTokenUser
-from rules.rest_api import CommentSerializer
+from rules.api.common import CommentSerializer
 from rules.models import UserAction, get_system_settings
 from rules.rest_permissions import has_group_permission
 from scirius.utils import get_middleware_module
