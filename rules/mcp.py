@@ -14,7 +14,7 @@ from rules.messages.mcp import (
     RuleMessage,
     TalkersInfoMessage,
 )
-from rules.rest_permissions import HasGroupPermission
+from rules.api.permissions import HasGroupPermission
 from rules.services.mcp import McpService
 from scirius.utils import convert_datetime_to_timestamp
 
