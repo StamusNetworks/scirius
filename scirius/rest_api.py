@@ -10,6 +10,7 @@ from accounts.rest_api import router as accounts_router
 
 from .rest_utils import SciriusModelViewSet
 from rules.rest_api import router as rules_router, get_custom_urls
+import contextlib
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -55,4 +56,15 @@ class SciriusRouter(DefaultRouter):
         return urls
 
 
+class SciriusRouterV2(DefaultRouter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
+        self.APIRootView = APIRootView
+        self.APIRootView.permission_classes = [IsAuthenticated]
+
+        with contextlib.suppress(AttributeError):
+            self.registry.extend(get_middleware_module('rest_api').router_v2.registry)
+
+
 router = SciriusRouter()
+router_v2 = SciriusRouterV2()
