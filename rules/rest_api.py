@@ -35,7 +35,7 @@ from elasticsearch.exceptions import ConnectionError
 
 from rules.models import DeepLink, DeepLinkEntity, Rule, Category, RuleAtVersion, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, FilterSet
 from rules.models import Source, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
-from rules.views import get_public_sources, fetch_public_sources
+from rules.views.source import get_public_sources, fetch_public_sources
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
 from rules.es_query import build_es_url, ESPaginator
