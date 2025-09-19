@@ -3,8 +3,8 @@ from functools import wraps
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
-from scirius.utils import get_middleware_module
 from rules.models import Rule
+from scirius.utils import get_middleware_module
 
 
 def has_group_permission(perms, owner_allowed=False):
