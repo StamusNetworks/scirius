@@ -18,919 +18,112 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import base64
 import fcntl
-from django.db import models
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+import json
+import logging
+import os
+import re
+import shutil
+import tarfile
+import tempfile
+from datetime import date as datetime_date
+from enum import Enum, unique
+from io import BytesIO
+from typing import ClassVar, Iterable
+
+import IPy
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError, SuspiciousOperation, ValidationError
-from django.core.validators import validate_ipv4_address
-from django.db import transaction
-from django.db.utils import IntegrityError
+from django.db import models, transaction
 from django.db.models import QuerySet
+from django.db.models.functions import Coalesce
+from django.db.utils import IntegrityError
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import format_html, format_html_join
-from scirius.settings import DATA_LIKE
-from django.db.models.functions import Coalesce
 from idstools import rule as rule_idstools
-from enum import Enum, unique
-from copy import deepcopy
-from collections import OrderedDict
-import tempfile
-import tarfile
-import re
-import os
-import shutil
-import json
-import IPy
-import base64
-from io import BytesIO
-from datetime import date as datetime_date
-import logging
-from ipware.ip import get_client_ip
 
+from rules.ioc_mapping import IOC_MAPPING as IOC_MAP
+from rules.models.common import DuplicateSidException
+from rules.models.user_action import UserAction
 from rules.suripyg import SuriHTMLFormat
 from rules.tests_rules import TestRules
 from rules.validators import validate_addresses_or_networks
-from rules.filter_sets import FILTER_SETS
-from rules.ioc_mapping import IOC_MAPPING as IOC_MAP
 
-from django.contrib.auth.models import User
-
-
-request_logger = logging.getLogger('django.request')
-
-
-_HUNT_FILTERS = [
-    {
-        'id': 'hits_min',
-        'title': 'Alerts min',
-        'placeholder': 'Minimum Hits Count',
-        'filterType': 'number',
-        'valueType': 'positiveint',
-        'queryType': 'rest'
-    },
-    {
-        'id': 'hits_max',
-        'title': 'Alerts max',
-        'placeholder': 'Maximum Hits Count',
-        'filterType': 'number',
-        'valueType': 'positiveint',
-        'queryType': 'rest'
-    },
-    {
-        'id': 'ip',
-        'title': 'IP',
-        'placeholder': 'Filter by IP',
-        'filterType': 'text',
-        'valueType': 'ip',
-        'queryType': 'filter'
-    },
-    {
-        'id': 'host',
-        'title': 'Probe',
-        'placeholder': 'Filter by Probes',
-        'filterType': 'text',
-        'valueType': 'text',
-        'queryType': 'filter'
-    },
-    {
-        'id': 'msg',
-        'title': 'Message',
-        'placeholder': 'Filter by Message',
-        'filterType': 'text',
-        'valueType': 'text',
-        'queryType': 'filter'
-    },
-    {
-        'id': 'not_in_msg',
-        'title': 'Not in Message',
-        'placeholder': 'Filter by not in Message',
-        'filterType': 'text',
-        'valueType': 'text',
-        'queryType': 'filter'
-    },
-    {
-        'id': 'content',
-        'title': 'Content',
-        'placeholder': 'Filter by Content',
-        'filterType': 'text',
-        'valueType': 'text',
-        'queryType': 'rest'
-    },
-    {
-        'id': 'not_in_content',
-        'title': 'Not in Content',
-        'placeholder': 'Filter by not in Content',
-        'filterType': 'text',
-        'valueType': 'text',
-        'queryType': 'rest'
-    },
-    {
-        'id': 'port',
-        'title': 'Port',
-        'placeholder': 'Filter by Port (src/dest)',
-        'filterType': 'number',
-        'valueType': 'positiveint',
-        'queryType': 'filter'
-    },
-    {
-        'id': 'alert.signature_id',
-        'title': 'Signature ID',
-        'placeholder': 'Filter by Signature ID',
-        'filterType': 'number',
-        'valueType': 'positiveint',
-        'queryType': 'filter'
-    },
-    {
-        'id': 'es_filter',
-        'title': 'ES Filter',
-        'placeholder': 'Free ES Filter',
-        'filterType': 'text',
-        'valueType': 'text',
-        'queryType': 'filter'
-    },
-    {
-        'id': 'protocol',
-        'title': 'Protocol',
-        'placeholder': 'Filter by Protocol',
-        'filterType': 'complex-select-text',
-        'filterCategoriesPlaceholder': 'Filter by type',
-        'queryType': 'filter',
-        'filterCategories': [
-            {
-                'id': 'dns',
-                'title': 'DNS',
-                'filterValues': [
-                    {'id': 'query.rrname', 'title': 'Query Name'},
-                    {'id': 'query.rrtype', 'title': 'Query Type'},
-                ]
-            },
-            {
-                'id': 'http',
-                'title': 'HTTP',
-                'filterValues': [
-                    {'id': 'http_user_agent', 'title': 'User-Agent', 'placeholder': 'Filter by User Agent'},
-                    {'id': 'hostname', 'title': 'Host', 'placeholder': 'Filter by Host'},
-                    {'id': 'url', 'title': 'URL', 'placeholder': 'Filter by URL'},
-                    {'id': 'status', 'title': 'Status', 'placeholder': 'Filter by Status'},
-                    {'id': 'http_method', 'title': 'Method', 'placeholder': 'Filter by Method'},
-                    {'id': 'http_content_type', 'title': 'Content Type', 'placeholder': 'Filter by Content Type'},
-                    {'id': 'length', 'title': 'Length', 'placeholder': 'Filter by Content Length'},
-                ]
-            },
-            {
-                'id': 'smtp',
-                'title': 'SMTP',
-                'filterValues': [
-                    {'id': 'mail_from', 'title': 'From', 'placeholder': 'Filter by From'},
-                    {'id': 'rcpt_to', 'title': 'To', 'placeholder': 'Filter by To'},
-                    {'id': 'helo', 'title': 'Helo', 'placeholder': 'Filter by Helo'}
-                ]
-            },
-            {
-                'id': 'smb',
-                'title': 'SMB',
-                'filterValues': [
-                    {'id': 'command', 'title': 'Command', 'placeholder': 'Filter by Command'},
-                    {'id': 'status', 'title': 'Status', 'placeholder': 'Filter by Status'},
-                    {'id': 'filename', 'title': 'Filename', 'placeholder': 'Filter by Filename'},
-                    {'id': 'share', 'title': 'Share', 'placeholder': 'Filter by Share'}
-                ]
-            },
-            {
-                'id': 'ssh',
-                'title': 'SSH',
-                'filterValues': [
-                    {'id': 'client.software_version', 'title': 'Client Software', 'placeholder': 'Filter by Client Software'},
-                    {'id': 'client.proto_version', 'title': 'Client Version', 'placeholder': 'Filter by Client Version'},
-                    {'id': 'server.software_version', 'title': 'Server Software', 'placeholder': 'Filter by Server Software'},
-                    {'id': 'server.proto_version', 'title': 'Server Version', 'placeholder': 'Filter by Server Version'},
-                ]
-            },
-            {
-                'id': 'tls',
-                'title': 'TLS',
-                'filterValues': [
-                    {'id': 'subject', 'title': 'Subject DN', 'placeholder': 'Filter by Subject DN'},
-                    {'id': 'issuerdn', 'title': 'Issuer DN', 'placeholder': 'Filter by Issuer DN'},
-                    {'id': 'sni', 'title': 'Server Name Indication', 'placeholder': 'Filter by Server Name Indication'},
-                    {'id': 'version', 'title': 'Version', 'placeholder': 'Filter by Version'},
-                    {'id': 'fingerprint', 'title': 'Fingerprint', 'placeholder': 'Filter by Fingerprint'},
-                    {'id': 'serial', 'title': 'Serial', 'placeholder': 'Filter by Serial'},
-                    {'id': 'ja3.hash', 'title': 'JA3 Hash', 'placeholder': 'Filter by JA3 Hash'},
-                    {'id': 'ja3s.hash', 'title': 'JA3S Hash', 'placeholder': 'Filter by JA3S Hash'},
-                ]
-            },
-        ]
-    }
-]
-
-
-def get_hunt_filters():
-    return deepcopy(_HUNT_FILTERS)
+request_logger = logging.getLogger("django.request")
 
 
 def validate_source_datatype(datatype):
     from scirius.utils import get_middleware_module
-    extra_types = get_middleware_module('common').update_source_content_type()
+
+    extra_types = get_middleware_module("common").update_source_content_type()
     datatypes = [ct[0] for ct in Source.CONTENT_TYPE + extra_types]
     if datatype not in datatypes:
-        if datatype in get_middleware_module('common').custom_source_datatype():
-            if Source.objects.filter(datatype='threat').count() > 0:
+        if datatype in get_middleware_module("common").custom_source_datatype():
+            if Source.objects.filter(datatype="threat").count() > 0:
                 raise ValidationError('You cannot add more than 1 "%s" source' % datatype)
         else:
-            raise ValidationError('Invalid data type "%s", must be one of %s' % (datatype, ', '.join(sorted(datatypes))))
-
-
-def validate_hostname(val):
-    try:
-        validate_ipv4_address(val)
-    except ValidationError:
-        # ip may in fact be a hostname
-        # http://www.regextester.com/23
-        HOSTNAME_RX = r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
-        if not re.match(HOSTNAME_RX, val):
-            raise ValidationError('Invalid hostname or IP')
-
-
-def validate_port(val):
-    try:
-        val = int(val)
-    except ValueError:
-        raise ValidationError('Invalid port')
-
-
-def validate_proxy(val):
-    if val.startswith('http://') or val.startswith('https://'):
-        val = val.rstrip('/')
-        if val.startswith('http://'):
-            val = val[len('http://'):]
-        else:
-            val = val[len('https://'):]
-
-        if '@' in val:
-            login, val = val.rsplit('@', 1)
-            if login.count(':') < 1:
-                raise ValidationError('Invalid login, no password found')
-
-    if val.count(':') != 1:
-        raise ValidationError('Invalid address')
-
-    host, port = val.split(':')
-    validate_hostname(host)
-    validate_port(port)
-
-
-def validate_url(val):
-    # URL validator that does not require a FQDN
-    if not (val.startswith('http://') or val.startswith('https://')):
-        raise ValidationError('Invalid scheme')
-
-    netloc = val.split('://', 1)[1]
-    if '/' in netloc:
-        netloc = netloc.split('/', 1)[0]
-
-    if '@' in netloc:
-        netloc = netloc.split('@', 1)[1]
-
-    if ':' in netloc:
-        netloc, port = netloc.split(':', 1)
-        validate_port(port)
-
-    validate_hostname(netloc)
-
-
-def validate_url_list(value):
-    for url in value.split(','):
-        validate_url(url)
-
-
-class FakePermissionModel(models.Model):
-    '''
-    This fake model with no database table will generate a contenttype id
-    that will be used with all permissions.
-    This way, permissions are not linked with models.
-    Ref: https://stackoverflow.com/questions/13932774/how-can-i-use-django-permissions-without-defining-a-content-type-or-model
-    '''
-
-    class Meta:
-        managed = False
-        default_permissions = ()
-
-
-class FilterSet(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    content = models.TextField()
-    name = models.CharField(max_length=150)
-    page = models.CharField(max_length=25)
-    description = models.TextField(blank=True, null=True)
-    imported = models.BooleanField(default=False)
-
-    @staticmethod
-    def get_default_filter_sets():
-        return FILTER_SETS
-
-
-class UserAction(models.Model):
-    ACTIONS = OrderedDict([
-        # Login/Logout
-        ('create_user', {
-            'description': '{user} has created new user {new_user}',
-            'title': 'Create User',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('edit_user', {
-            'description': '{user} has edited user {other_user}',
-            'title': 'Edit User',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('edit_user_token', {
-            'description': '{user} has edited {other_user} token',
-            'title': 'Edit User Token',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('edit_user_password', {
-            'description': '{user} has edited {other_user} password',
-            'title': 'Edit User Password',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('delete_user', {
-            'description': '{user} has deleted user {old_user}',
-            'title': 'Delete User',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('create_group', {
-            'description': '{user} has created new role {new_group}',
-            'title': 'Create Role',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('edit_group', {
-            'description': '{user} has edited role {group}',
-            'title': 'Edit Role',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('delete_group', {
-            'description': '{user} has deleted role {group}',
-            'title': 'Delete Role',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('login', {
-            'description': 'Logged in as {user}',
-            'title': 'Login',
-            'perm': 'rules.configuration_auth'
-        }),
-        ('logout', {
-            'description': '{user} has logged out',
-            'title': 'Logout',
-            'perm': 'rules.configuration_auth'
-        }),
-
-        # Sources:
-        ('create_source', {
-            'description': '{user} has created source {source}',
-            'title': 'Create Source',
-            'perm': 'rules.source_view'
-        }),
-        ('update_source', {
-            'description': '{user} has updated source {source}',
-            'title': 'Update Source',
-            'perm': 'rules.source_view'
-        }),
-        ('edit_source', {
-            'description': '{user} has edited source {source}',
-            'title': 'Edit Source',
-            'perm': 'rules.source_view'
-        }),
-        ('upload_source', {
-            'description': '{user} has uploaded source {source}',
-            'title': 'Upload Source',
-            'perm': 'rules.source_view'
-        }),
-        ('enable_source', {
-            'description': '{user} has enabled source {source} in ruleset {ruleset}',
-            'title': 'Enable Source',
-            'perm': 'rules.source_view'
-        }),
-        ('disable_source', {
-            'description': '{user} has disabled source {source} in ruleset {ruleset}',
-            'title': 'Disable Source',
-            'perm': 'rules.source_view'
-        }),
-        ('delete_source', {
-            'description': '{user} has deleted source {source}',
-            'title': 'Delete Source',
-            'perm': 'rules.source_view'
-        }),
-
-        # Rulesets:
-        ('create_ruleset', {
-            'description': '{user} has created ruleset {ruleset}',
-            'title': 'Create Ruleset',
-            'perm': 'rules.source_view'
-        }),
-        ('transform_ruleset', {
-            'description': '{user} has transformed ruleset {ruleset} to {transformation}',
-            'title': 'Transform Ruleset',
-            'perm': 'rules.source_view'
-        }),
-        ('edit_ruleset', {
-            'description': '{user} has edited ruleset {ruleset}',
-            'title': 'Edit Ruleset',
-            'perm': 'rules.source_view'
-        }),
-        ('copy_ruleset', {
-            'description': '{user} has copied ruleset {ruleset}',
-            'title': 'Copy Ruleset',
-            'perm': 'rules.source_view'
-        }),
-        ('delete_ruleset', {
-            'description': '{user} has deleted ruleset {ruleset}',
-            'title': 'Delete Ruleset',
-            'perm': 'rules.source_view'
-        }),
-
-        # Categories:
-        ('enable_category', {
-            'description': '{user} has enabled category {category} in ruleset {ruleset}',
-            'title': 'Enable Category',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('transform_category', {
-            'description': '{user} has transformed category {category} to {transformation} in ruleset {ruleset}',
-            'title': 'Transform Category',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('disable_category', {
-            'description': '{user} has disabled category {category} in ruleset {ruleset}',
-            'title': 'Disable Category',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-
-        # Rules:
-        ('enable_rule', {
-            'description': '{user} has enabled rule {rule} in ruleset {ruleset}',
-            'title': 'Enable Rule',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('comment_rule', {
-            'description': '{user} has commented rule {rule}',
-            'title': 'Comment Rule',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('transform_rule', {
-            'description': '{user} has transformed rule {rule} to {transformation} in ruleset {ruleset}',
-            'title': 'Transform Rule',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('suppress_rule', {
-            'description': '{user} has suppressed rule {rule} in ruleset {ruleset}',
-            'title': 'Suppress Rule',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('disable_rule', {
-            'description': '{user} has disabled rule {rule} in ruleset {ruleset}',
-            'title': 'Disable Rule',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('delete_suppress_rule', {
-            'description': '{user} has deleted suppressed rule {rule} in ruleset {ruleset}',
-            'title': 'Delete Suppress Rule',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-
-        # Toggle availability
-        ('toggle_availability', {
-            'description': '{user} has modified rule availability {rule}',
-            'title': 'Toggle Availability',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-
-        # Thresholds:
-        ('create_threshold', {
-            'description': '{user} has created threshold on rule {rule} in ruleset {ruleset}',
-            'title': 'Create Threshold',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('edit_threshold', {
-            'description': '{user} has edited threshold {threshold} on rule {rule} in ruleset {ruleset}',
-            'title': 'Edit Threshold',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('delete_threshold', {
-            'description': '{user} has deleted threshold {threshold} on rule {rule} in ruleset {ruleset}',
-            'title': 'Delete Threshold',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-
-        # Used only in REST API
-        ('delete_transform_ruleset', {
-            'description': '{user} has deleted transformation {transformation} on ruleset {ruleset}',
-            'title': 'Deleted Ruleset Transformation',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('delete_transform_rule', {
-            'description': '{user} has deleted transformation {transformation} on rule {rule} in ruleset {ruleset}',
-            'title': 'Delete Rule Transformation',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        ('delete_transform_category', {
-            'description': '{user} has deleted transformation {transformation} on category {category} in ruleset {ruleset}',
-            'title': 'Delete Category Transformation',
-            'perm': 'rules.ruleset_policy_view'
-        }),
-        # End REST API
-
-        # Suricata
-        ('edit_suricata', {
-            'description': '{user} has edited suricata',
-            'title': 'Edit Suricata',
-            'perm': 'rules.configuration_view'
-        }),
-        ('create_suricata', {
-            'description': '{user} has created suricata',
-            'title': 'Create Suricata',
-            'perm': 'rules.configuration_view'
-        }),
-        ('update_push_all', {
-            'description': '{user} has pushed ruleset {ruleset}',
-            'title': 'Update/Push ruleset',
-            'perm': 'rules.ruleset_update_push'
-        }),
-
-        # Settings
-        ('system_settings', {
-            'description': '{user} has edited system settings',
-            'title': 'Edit System Settings',
-            'perm': 'rules.configuration_view'
-        }),
-        ('delete_alerts', {
-            'description': '{user} has deleted alerts from rule {rule}',
-            'title': 'Delete Alerts',
-            'perm': 'rules.events_view'
-        }),
-
-        # Rule processing filter
-        ('create_rule_filter', {
-            'description': '{user} has created rule filter {rule_filter} in ruleset {ruleset}',
-            'title': 'Create rule filter',
-            'perm': 'rules.events_view'
-        }),
-        ('edit_rule_filter', {
-            'description': '{user} has edited rule filter {rule_filter} in ruleset {ruleset}',
-            'title': 'Edit rule filter',
-            'perm': 'rules.events_view'
-        }),
-        ('delete_rule_filter', {
-            'description': '{user} has deleted rule filter {rule_filter} in ruleset {ruleset}',
-            'title': 'Delete rule filter',
-            'perm': 'rules.events_view'
-        })
-    ])
-
-    action_type = models.CharField(max_length=1000, null=True)
-    date = models.DateTimeField('event date', default=timezone.now)
-    comment = models.TextField(null=True, blank=True)
-    user = models.ForeignKey(User, default=None, on_delete=models.SET_NULL, null=True, blank=True)
-    username = models.CharField(max_length=150)
-    ua_objects = GenericRelation('UserActionObject', related_query_name='ua_objects')
-    # Compatibilty
-    description = models.CharField(max_length=1512, null=True)
-    client_ip = models.CharField(max_length=64, blank=True, null=True)
-
-    def __init__(self, *args, **kwargs):
-        super(UserAction, self).__init__(*args, **kwargs)
-        if not self.username and self.user:
-            self.username = self.user.username
-
-    def __str__(self):
-        return self.generate_description()
-
-    @staticmethod
-    def get_allowed_actions_type(request):
-        from scirius.utils import get_middleware_module
-        actions_dict = get_middleware_module('common').get_user_actions_dict()
-
-        actions = []
-        for action_type, val in actions_dict.items():
-            perm = val.get('perm', 'no_perm')
-            if request.user.has_perm(perm):
-                actions.append(action_type)
-        return actions
-
-    @staticmethod
-    def _get_request_info(request):
-        user = request.user
-        if user.__class__.__name__ == 'FakeUser' and settings.DEBUG:
-            user = User.objects.first()
-        return user, get_client_ip(request)[0]
-
-    @classmethod
-    def create(cls, **kwargs):
-        if 'action_type' not in kwargs:
-            raise Exception('Cannot create UserAction without "action_type"')
-
-        if 'request' in kwargs:
-            user, ip = cls._get_request_info(kwargs['request'])
-            kwargs.pop('request')
-            kwargs.update({
-                'user': user,
-                'client_ip': ip
-            })
-
-        force_insert = True if 'force_insert' in kwargs and kwargs.pop('force_insert') else False
-
-        # UserAction
-        ua_params = {}
-        for param in ('action_type', 'comment', 'user', 'date', 'client_ip'):
-            if param in kwargs:
-                ua_params[param] = kwargs.pop(param)
-
-        ua = cls(**ua_params)
-        ua.save(force_insert)
-
-        # UserActionObject
-        for action_key, action_value in kwargs.items():
-
-            ua_obj_params = {
-                'action_key': action_key,
-                'action_value': str(action_value)[:100],
-                'user_action': ua,
-            }
-
-            if not isinstance(action_value, str):
-                ua_obj_params['content'] = action_value
-
-            ua_obj = UserActionObject(**ua_obj_params)
-            ua_obj.save()
-
-        # Used as test
-        ua.generate_description(ua_params['user'])
-
-        # Warning; do not remove.
-        # hack callback is called after UserAction.save is called. So the
-        # 2nd save will trigger the callback, once UserActionObject
-        # have been created
-        ua.save()
-
-    @staticmethod
-    def _is_action_authorized(action_key, user):
-        if user:
-            if action_key == 'ruleset' or action_key == 'source':
-                if user.has_perm('rules.ruleset_policy_view'):
-                    return True
-                return False
-
-        return True
-
-    def generate_description(self, user=None):
-        if self.description:
-            return self.description
-
-        from scirius.utils import get_middleware_module
-        actions_dict = get_middleware_module('common').get_user_actions_dict()
-        if self.action_type not in list(actions_dict.keys()):
-            raise Exception('Unknown action type "%s"' % self.action_type)
-
-        format_ = {'user': format_html('<strong>{}</strong>', self.username), 'datetime': self.date}
-        actions = UserActionObject.objects.filter(user_action=self).all()
-
-        for action in actions:
-            if action.content and hasattr(action.content, 'get_absolute_url') and self._is_action_authorized(action.action_key, user):
-                format_[action.action_key] = format_html('<a href="{}"><strong>{}</strong></a>',
-                                                         action.content.get_absolute_url(),
-                                                         action.action_value)
-            else:
-                format_[action.action_key] = format_html('<strong>{}</strong>', action.action_value)
-
-        try:
-            html = format_html(actions_dict[self.action_type]['description'], **format_)
-        except KeyError:
-            # bug compatibility: workaround for action_value > 100
-            # UserActionObjects related to UserAction (self) were
-            # not inserted on creation
-            html = ''
-        return html
-
-    def get_title(self):
-        from scirius.utils import get_middleware_module
-        actions_dict = get_middleware_module('common').get_user_actions_dict()
-        if self.action_type not in list(actions_dict.keys()):
-            raise Exception('Unknown action type "%s"' % self.action_type)
-
-        return actions_dict[self.action_type]['title']
-
-    @staticmethod
-    def get_icon():
-        return 'pficon-user'
-
-    def get_icons(self):
-        actions = UserActionObject.objects.filter(user_action=self).all()
-        icons = [(self.get_icon(), self.username)]
-
-        for action in actions:
-
-            # ==== Coner cases
-            # transformation is str type
-            # or workaround for UserAction which can contains no instance but str (ex: create a source without a ruleset)
-            if action.action_key in ('transformation', 'threat_status', 'notebooks') or \
-                    (action.action_key == 'ruleset' and action.action_value == 'No Ruleset'):
-                continue
-
-            ct = action.content_type
-            klass = ct.model_class()
-
-            if hasattr(klass, 'get_icon'):
-                lb = action.action_value
-
-                icon = klass.get_icon()
-                instance = klass.objects.filter(pk=action.object_id).first()
-
-                if instance:
-                    if isinstance(instance, Source):
-                        icon = Source.get_icon(instance)
-
-                    if isinstance(instance, Rule):
-                        lb = instance.pk
-
-                    if isinstance(instance, RuleProcessingFilter) and instance.action == 'threat':
-                        lb = instance.threatmethod.threat.name
-
-                icons.append((icon, lb))
-
-        html = format_html_join(
-            '\n', '<div class="list-view-pf-additional-info-item"><span class="fa {}"></span>{}</div>',
-            ((icon, klass_name) for icon, klass_name in icons)
-        )
-
-        return html
-
-    @staticmethod
-    def get_user_actions_dict():
-        return deepcopy(UserAction.ACTIONS)
-
-
-class SystemSettings(models.Model):
-    use_http_proxy = models.BooleanField(default=False)
-    http_proxy = models.CharField(
-        max_length=200,
-        validators=[validate_proxy],
-        default="",
-        blank=True,
-        help_text='Proxy address of the form "host:port".'
-    )
-    https_proxy = models.CharField(max_length=200, validators=[validate_proxy], default="", blank=True)
-    custom_elasticsearch = models.BooleanField(default=False)
-    elasticsearch_url = models.CharField(
-        max_length=4096,
-        validators=[validate_url_list],
-        blank=False,
-        null=False,
-        default='http://elasticsearch:9200/',
-        help_text='Comma separated list of elasticsearch url'
-    )
-    use_proxy_for_es = models.BooleanField(default=False)
-    custom_cookie_age = models.FloatField('Age of session cookies', default=360)
-    elasticsearch_user = models.CharField('Elasticsearch username', max_length=4096, blank=True, default='')
-    elasticsearch_pass = models.CharField('Elasticsearch password', max_length=4096, blank=True, default='')
-    custom_login_banner = models.TextField('Add your own banner on login page', blank=True, default='')
-    session_cookie_age = models.IntegerField(default=0)
-
-    @property
-    def use_arkime(self):
-        return settings.USE_MOLOCH
-
-    @staticmethod
-    def has_es7_behavior():
-        ES_7 = DATA_LIKE.ES_7
-        OS_1 = DATA_LIKE.OS_1
-        return settings.USE_DATA_LIKE in (ES_7, OS_1)
-
-    @staticmethod
-    def use_opensearch_2():
-        return settings.USE_DATA_LIKE == DATA_LIKE.OS_2
-
-    @staticmethod
-    def use_elasticsearch_6():
-        return settings.USE_DATA_LIKE == DATA_LIKE.ES_6
-
-    @staticmethod
-    def use_elasticsearch_8():
-        return settings.USE_DATA_LIKE == DATA_LIKE.ES_8
-
-    @staticmethod
-    def use_elasticsearch():
-        return settings.USE_DATA_LIKE in (DATA_LIKE.ES_6, DATA_LIKE.ES_7, DATA_LIKE.ES_8)
-
-    @staticmethod
-    def use_opensearch():
-        return settings.USE_DATA_LIKE in (DATA_LIKE.OS_1, DATA_LIKE.OS_2)
-
-    @property
-    def arkime_url(self):
-        return '/arkime'
-
-    def get_proxy_params(self):
-        if self.use_http_proxy:
-            return {'http': self.http_proxy, 'https': self.https_proxy}
-        else:
-            return None
-
-    def save(self, *args, **kwargs) -> None:
-        from scirius.utils import get_middleware_module
-        from rules.es_query import build_es_url
-
-        if self.custom_elasticsearch:
-            es_url = build_es_url(self.elasticsearch_url, self.elasticsearch_user, self.elasticsearch_pass)
-            get_middleware_module('common').check_es_template_needed(es_url)
-
-        super().save(*args, **kwargs)
-
-
-def get_system_settings(static=False):
-    if static:
-        return SystemSettings
-
-    gsettings = SystemSettings.objects.first()
-    if gsettings is None:
-        gsettings = SystemSettings.objects.create()
-        if settings.USE_PROXY:
-            gsettings.use_http_proxy = True
-            gsettings.http_proxy = settings.PROXY_PARAMS['http']
-            gsettings.https_proxy = settings.PROXY_PARAMS['https']
-        else:
-            gsettings.use_http_proxy = False
-        gsettings.save()
-    return gsettings
-
-
-def get_es_address():
-    from rules.es_query import ESQuery
-    return ESQuery.get_es_address()
+            raise ValidationError(
+                'Invalid data type "%s", must be one of %s' % (datatype, ", ".join(sorted(datatypes)))
+            )
 
 
 class InvalidCategoryException(Exception):
     pass
 
 
-class DuplicateSidException(Exception):
-    def __init__(self, msg, same_source=False) -> None:
-        super().__init__(msg)
-        self.same_source = same_source
-
-
 class Source(models.Model):
     FETCH_METHOD = (
-        ('http', 'HTTP URL'),
+        ("http", "HTTP URL"),
         # ('https', 'HTTPS URL'),
-        ('local', 'Upload'),
+        ("local", "Upload"),
     )
-    CONTENT_TYPE = [
-        ('sigs', 'Signatures files in tar archive'),
-        ('sig', 'Individual Signatures file'),
-        ('ioc', 'IoC'),
+    CONTENT_TYPE: ClassVar[list[tuple[str, str]]] = [
+        ("sigs", "Signatures files in tar archive"),
+        ("sig", "Individual Signatures file"),
+        ("ioc", "IoC"),
         # ('iprep', 'IP reputation files'),
-        ('other', 'Other content'),
-        ('b64dataset', 'String dataset file'),
+        ("other", "Other content"),
+        ("b64dataset", "String dataset file"),
     ]
-    IOC_TYPE = [
-        ('hostname', 'Hostname'),
-        ('domain_name', 'Domain Name'),
-        ('ip', 'IP'),
-        ('filename', 'Filename'),
-        ('url', 'URL'),
-        ('http-user-agent', 'HTTP User Agent'),
-        ('http-cookie', 'HTTP Cookie'),
+    IOC_TYPE: ClassVar[list[tuple[str, str]]] = [
+        ("hostname", "Hostname"),
+        ("domain_name", "Domain Name"),
+        ("ip", "IP"),
+        ("filename", "Filename"),
+        ("url", "URL"),
+        ("http-user-agent", "HTTP User Agent"),
+        ("http-cookie", "HTTP Cookie"),
     ]
     IOC_MAPPING = IOC_MAP
 
     TMP_DIR = "/tmp/"
-    REFRESH_LOCK_ID = 'source-lock'
+    REFRESH_LOCK_ID = "source-lock"
     REFRESH_LOCK_EXPIRE = 60 * 10
-    DATASET_PATH = '/var/log/suricata/dataset/'
+    DATASET_PATH = "/var/log/suricata/dataset/"
 
     name = models.CharField(max_length=100, unique=True)
-    created_date = models.DateTimeField('date created', auto_now_add=True)
-    updated_date = models.DateTimeField('date updated', blank=True, null=True)
+    created_date = models.DateTimeField("date created", auto_now_add=True)
+    updated_date = models.DateTimeField("date updated", blank=True, null=True)
     method = models.CharField(max_length=10, choices=FETCH_METHOD)
     datatype = models.CharField(max_length=10)
     # ioc fields
     ioc_type = models.CharField(max_length=20, blank=True, null=True, choices=IOC_TYPE)
     uri = models.CharField(max_length=400, blank=True, null=True)
-    cert_verif = models.BooleanField('Check certificates', default=True)
+    cert_verif = models.BooleanField("Check certificates", default=True)
     authkey = models.CharField(max_length=400, blank=True, null=True)
     public_source = models.CharField(max_length=100, blank=True, null=True)
-    use_iprep = models.BooleanField('Use IP reputation for group signatures', default=True)
+    use_iprep = models.BooleanField("Use IP reputation for group signatures", default=True)
     version = models.IntegerField(default=1)
-    use_sys_proxy = models.BooleanField(default=True, verbose_name='Use system proxy')
-    untrusted = models.BooleanField(default=True, verbose_name='Source sanitization')
+    use_sys_proxy = models.BooleanField(default=True, verbose_name="Use system proxy")
+    untrusted = models.BooleanField(default=True, verbose_name="Source sanitization")
     is_stamus = models.BooleanField(default=False)
     remove_original_sids = models.BooleanField(default=True)
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
-        if (self.method == 'http'):
+        if self.method == "http":
             self.update_ruleset = self.update_ruleset_http
         else:
             self.update_ruleset = None
@@ -938,7 +131,27 @@ class Source(models.Model):
         self.updated_rules = {"added": [], "deleted": [], "updated": []}
 
         from scirius.utils import get_middleware_module
-        self.custom_data_type = get_middleware_module('common').custom_source_datatype()
+
+        self.custom_data_type = get_middleware_module("common").custom_source_datatype()
+
+    def save(self, *args, **kwargs) -> None:
+        self.full_clean()
+
+        # creation
+        if self._state.adding:
+            validate_source_datatype(self.datatype)
+        if self.datatype in self.custom_data_type:
+            if self.use_iprep:
+                self.use_iprep = False
+            if self.untrusted:
+                self.untrusted = False
+
+        elif self.datatype == "ioc":
+            self.untrusted = False
+            self.use_iprep = False
+            self.remove_original_sids = False
+            self.is_stamus = True
+        return super().save(*args, **kwargs)
 
     def clean(self):
         """
@@ -952,7 +165,7 @@ class Source(models.Model):
 
     def build_ioc_metadata(self):
         items = []
-        for item in self.ioc_meta.values('key', 'value'):
+        for item in self.ioc_meta.values("key", "value"):
             items.append(f"{item['key']} {item['value']}")
         return items
 
@@ -960,7 +173,7 @@ class Source(models.Model):
     def ioc_rules(highlight=False, src_instance=None):
         rules = {}
 
-        if src_instance and src_instance.datatype != 'ioc':
+        if src_instance and src_instance.datatype != "ioc":
             # we cannot edit datatype on source edition page
             return rules
 
@@ -968,44 +181,43 @@ class Source(models.Model):
 
         rules_info = RuleAtVersion.objects.none()
         if src_instance:
-            rules_info = RuleAtVersion.objects.select_related('rule').filter(
-                rule__category__source=src_instance,
-            ).order_by('rule__sid', 'rev')
+            rules_info = (
+                RuleAtVersion.objects.select_related("rule")
+                .filter(
+                    rule__category__source=src_instance,
+                )
+                .order_by("rule__sid", "rev")
+            )
 
         for ioc_type, value in Source.IOC_MAPPING.items():
-            for idx, rule in enumerate(value['signatures']):
+            for idx, rule in enumerate(value["signatures"]):
                 if ioc_type not in rules:
                     rules[ioc_type] = []
 
                 found = True
-                updated = timezone.now().strftime('%Y_%m_%d')
+                updated = timezone.now().strftime("%Y_%m_%d")
 
                 rule_data = {
-                    'metadata': '{metadata}',
-                    'updated_at': updated,
+                    "metadata": "{metadata}",
+                    "updated_at": updated,
                 }
 
                 if src_instance:
                     if ioc_type == src_instance.ioc_type:
-                        rule_data.update({
-                            'sid': rules_info[idx].rule.sid,
-                            'rev': rules_info[idx].rev + 1,
-                            'created_at': rules_info[idx].created.strftime('%Y_%m_%d')
-                        })
+                        rule_data.update(
+                            {
+                                "sid": rules_info[idx].rule.sid,
+                                "rev": rules_info[idx].rev + 1,
+                                "created_at": rules_info[idx].created.strftime("%Y_%m_%d"),
+                            }
+                        )
                     else:
                         found = False
                 else:
-                    rule_data.update({
-                        'sid': Rule.get_ioc_next_sid() + idx,
-                        'rev': 1,
-                        'created_at': updated
-                    })
+                    rule_data.update({"sid": Rule.get_ioc_next_sid() + idx, "rev": 1, "created_at": updated})
 
                 if found:
-                    rules[ioc_type].append(func(rule.format(
-                        name='{name}',
-                        **rule_data
-                    )))
+                    rules[ioc_type].append(func(rule.format(name="{name}", **rule_data)))
         return rules
 
     def add_self_in_rulesets(self, rulesets, request):
@@ -1013,16 +225,16 @@ class Source(models.Model):
             ruleset.sources.add(self)
 
     def set_is_stamus(self):
-        copyright_ = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules', 'COPYRIGHT')
+        copyright_ = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules", "COPYRIGHT")
         if os.path.exists(copyright_):
-            with open(copyright_, 'r') as f:
+            with open(copyright_, "r") as f:
                 content = f.read()
-            if re.match(r'Copyright \d+ Stamus Networks', content):
+            if re.match(r"Copyright \d+ Stamus Networks", content):
                 # used in Rule.clean to know if checking sid ranges
                 self.is_stamus = True
 
     def remove_rules_dir(self):
-        dir_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+        dir_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
         if os.path.exists(dir_path):
             shutil.rmtree(dir_path)
 
@@ -1036,11 +248,7 @@ class Source(models.Model):
         ruleset.save()
         if request:
             UserAction.create(
-                action_type='enable_source',
-                comment=comment,
-                request=request,
-                source=self,
-                ruleset=ruleset
+                action_type="enable_source", comment=comment, request=request, source=self, ruleset=ruleset
             )
 
     def disable(self, ruleset, request=None, comment=None):
@@ -1053,17 +261,13 @@ class Source(models.Model):
         ruleset.save()
         if request:
             UserAction.create(
-                action_type='disable_source',
-                comment=comment,
-                request=request,
-                source=self,
-                ruleset=ruleset
+                action_type="disable_source", comment=comment, request=request, source=self, ruleset=ruleset
             )
 
     def to_buffer(self):
         categories = Category.objects.filter(source=self)
-        ravs = RuleAtVersion.objects.select_related('rule').filter(rule__category__in=categories, version=0)
-        file_content = "# Rules file for %s generated by Scirius at %s\n" % (self.name, str(timezone.now()))
+        ravs = RuleAtVersion.objects.select_related("rule").filter(rule__category__in=categories, version=0)
+        file_content = f"# Rules file for {self.name} generated by Scirius at {timezone.now()!s}\n"
         rules_content = [rav.content for rav in ravs]
         file_content += "\n".join(rules_content)
         return file_content
@@ -1077,7 +281,7 @@ class Source(models.Model):
             related_files=related_files,
             cats_content=cats_content,
             iprep_content=iprep_content,
-            engine_analysis=engine_analysis
+            engine_analysis=engine_analysis,
         )
 
     def prepare_tests_files(self):
@@ -1089,11 +293,11 @@ class Source(models.Model):
             for f in files:
                 fullpath = os.path.join(root, f)
                 if os.path.getsize(fullpath) < 50 * 1024:
-                    with open(fullpath, 'r') as cf:
+                    with open(fullpath) as cf:
                         related_files[f] = cf.read()
                 else:
-                    related_files[f] = ''
-                    with open(fullpath, 'r') as cf:
+                    related_files[f] = ""
+                    with open(fullpath) as cf:
                         for idx, line in enumerate(cf.readlines()):
                             if idx >= 1000:
                                 break
@@ -1108,19 +312,20 @@ class Source(models.Model):
 
         all_versions = RuleAtVersion.get_versions_to_analyse()
         for version in all_versions:
-            contents = RuleAtVersion.objects. \
-                filter(
-                    rule__category__source=self,
-                    updated_date__gte=self.updated_date,
-                    version=version
-                ).distinct().values_list('content', flat=True)
+            contents = (
+                RuleAtVersion.objects.filter(
+                    rule__category__source=self, updated_date__gte=self.updated_date, version=version
+                )
+                .distinct()
+                .values_list("content", flat=True)
+            )
 
             if contents:
                 content = testor.rules_infos(
-                    '\n'.join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH}\n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000',
+                    "\n".join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH}\n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000',
                     related_files=related_files,
                     cats_content=cats_content,
-                    iprep_content=iprep_content
+                    iprep_content=iprep_content,
                 )
                 RuleAtVersion.write_analyse(content, version)
 
@@ -1131,35 +336,14 @@ class Source(models.Model):
     @classmethod
     def get_sources(cls):
         return cls.objects.annotate(
-            cats_count=models.Count('category', distinct=True),
-            rules_count=models.Count('category__rule')
-        ).order_by('name')
-
-    def save(self, *args, **kwargs) -> None:
-        self.full_clean()
-
-        # creation
-        if self._state.adding:
-            validate_source_datatype(self.datatype)
-        if self.datatype in self.custom_data_type:
-            if self.use_iprep:
-                self.use_iprep = False
-            if self.untrusted:
-                self.untrusted = False
-
-        elif self.datatype == 'ioc':
-            self.untrusted = False
-            self.use_iprep = False
-            self.remove_original_sids = False
-            self.is_stamus = True
-        return super().save(*args, **kwargs)
+            cats_count=models.Count("category", distinct=True), rules_count=models.Count("category__rule")
+        ).order_by("name")
 
     @staticmethod
     def get_icon(instance=None):
-        if instance:
-            if instance.method == 'http':
-                return 'fa fa-external-link list-view-pf-icon-sm'
-        return 'pficon pficon-volume list-view-pf-icon-sm'
+        if instance and instance.method == "http":
+            return "fa fa-external-link list-view-pf-icon-sm"
+        return "pficon pficon-volume list-view-pf-icon-sm"
 
     def delete(self):
         # delete git tree
@@ -1183,14 +367,15 @@ class Source(models.Model):
     def get_categories(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         catname = re.compile(r"(.+)\.rules$")
-        re_version = re.compile(r'(\w+)-u(\d+)\.rules$')
+        re_version = re.compile(r"(\w+)-u(\d+)\.rules$")
 
-        existing_rules_hash = {'groups': {}}
-        for rav in RuleAtVersion.objects.filter(rule__category__source=self). \
-                prefetch_related('rule'). \
-                prefetch_related('rule__category'). \
-                prefetch_related('rule__category__source'):
-
+        existing_rules_hash = {"groups": {}}
+        for rav in (
+            RuleAtVersion.objects.filter(rule__category__source=self)
+            .prefetch_related("rule")
+            .prefetch_related("rule__category")
+            .prefetch_related("rule__category__source")
+        ):
             rule = rav.rule
             if rule.sid not in existing_rules_hash:
                 existing_rules_hash[rule.sid] = {}
@@ -1198,13 +383,13 @@ class Source(models.Model):
             existing_rules_hash[rule.sid][rav.version] = rav
 
             if self.use_iprep and rule.group:
-                if rule.category.name not in existing_rules_hash['groups']:
-                    existing_rules_hash['groups'][rule.category.name] = []
-                existing_rules_hash['groups'][rule.category.name].append(rav)
+                if rule.category.name not in existing_rules_hash["groups"]:
+                    existing_rules_hash["groups"][rule.category.name] = []
+                existing_rules_hash["groups"][rule.category.name].append(rav)
 
         versions = []
-        for f in os.listdir(os.path.join(source_git_dir, 'rules')):
-            if f.endswith('.rules'):
+        for f in os.listdir(os.path.join(source_git_dir, "rules")):
+            if f.endswith(".rules"):
                 match = catname.search(f)
                 version_match = re_version.search(f)
                 name = match.groups()[0] if not version_match else version_match.group(1)
@@ -1218,33 +403,23 @@ class Source(models.Model):
                         source=self,
                         name=name,
                         created_date=timezone.now(),
-                        filename=os.path.join('rules', '%s.rules' % name)
+                        filename=os.path.join("rules", f"{name}.rules"),
                     )
                     for ruleset in self.ruleset_set.all():
                         if ruleset.activate_categories:
                             ruleset.categories.add(category)
-                            if name == 'stamus':
+                            if name == "stamus":
                                 # disable transformation for custom sources (stamus)
-                                category.toggle_transformation(
-                                    ruleset,
-                                    Transformation.TARGET,
-                                    Transformation.T_NONE
-                                )
-                                category.toggle_transformation(
-                                    ruleset,
-                                    Transformation.LATERAL,
-                                    Transformation.L_NO
-                                )
+                                category.toggle_transformation(ruleset, Transformation.TARGET, Transformation.T_NONE)
+                                category.toggle_transformation(ruleset, Transformation.LATERAL, Transformation.L_NO)
                 category.get_rules(
-                    self,
-                    version=version,
-                    filename=os.path.join('rules', f),
-                    existing_rules_hash=existing_rules_hash)
+                    self, version=version, filename=os.path.join("rules", f), existing_rules_hash=existing_rules_hash
+                )
                 # get rules in this category
         for category in Category.objects.filter(source=self):
             filenames = [category.filename]
             for version in versions:
-                filenames.append(category.filename.replace('.rules', '-u%i.rules' % version))
+                filenames.append(category.filename.replace(".rules", "-u%i.rules" % version))
 
             delete = True
             for filename in filenames:
@@ -1262,15 +437,18 @@ class Source(models.Model):
             try:
                 line = line.strip()
 
-                if not line or line.startswith(b'#'):
+                if not line or line.startswith(b"#"):
                     continue
-                fields = line.split(b',')
+                fields = line.split(b",")
 
                 cat_no = int(fields[field_no])
                 if cat_no < 20:
-                    raise InvalidCategoryException('Invalid category %i in %s (line %i): category < 20 are reserved to Scirius' % (cat_no, filename, line_no + 1))
+                    raise InvalidCategoryException(
+                        "Invalid category %i in %s (line %i): category < 20 are reserved to Scirius"
+                        % (cat_no, filename, line_no + 1)
+                    )
             except (IndexError, ValueError):
-                raise Exception('Invalid syntax in file %s (line %i)' % (filename, line_no + 1))
+                raise Exception("Invalid syntax in file %s (line %i)" % (filename, line_no + 1))
 
     # Rewrite of https://github.com/python/cpython/blob/master/Lib/tarfile.py
     # Extract tar file but force setting permissions
@@ -1290,7 +468,7 @@ class Source(models.Model):
 
     def handle_rules_in_tar(self, f):
         f.seek(0)
-        if (not tarfile.is_tarfile(f.name)):
+        if not tarfile.is_tarfile(f.name):
             raise OSError("Invalid tar file")
 
         self.updated_date = timezone.now()
@@ -1307,10 +485,10 @@ class Source(models.Model):
             if not (member.isfile() or member.isdir()):
                 raise SuspiciousOperation("Suspect tar file contains non regular file '%s'" % (member.name))
 
-            if member.name.startswith('/') or '..' in member.name:
+            if member.name.startswith("/") or ".." in member.name:
                 raise SuspiciousOperation("Suspect tar file contains invalid path '%s'" % (member.name))
 
-            if member.isdir() and ('/' + member.name).endswith('/rules'):
+            if member.isdir() and ("/" + member.name).endswith("/rules"):
                 if rules_dir:
                     raise SuspiciousOperation("Tar file contains two 'rules' directory instead of one")
                 dir_list.append(member)
@@ -1318,14 +496,14 @@ class Source(models.Model):
 
             if member.isfile():
                 # we now allow "rules" files even if they are at root directory
-                member.name = os.path.join('rules', os.path.basename(member.name))
+                member.name = os.path.join("rules", os.path.basename(member.name))
                 dir_list.append(member)
 
-                if member.name.endswith('categories.txt'):
+                if member.name.endswith("categories.txt"):
                     f = tfile.extractfile(member.name)
                     self._check_category_ids(f, member.name, 0)
 
-                if member.name.endswith('.list'):
+                if member.name.endswith(".list"):
                     f = tfile.extractfile(member.name)
                     self._check_category_ids(f, member.name, 1)
 
@@ -1340,7 +518,7 @@ class Source(models.Model):
     def handle_other_file(self, f, b64encode=False):
         self.updated_date = timezone.now()
         self.first_run = False
-        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
 
         # create rules dir if needed
         if not os.path.isdir(rules_dir):
@@ -1353,9 +531,8 @@ class Source(models.Model):
             shutil.copy(f.name, os.path.join(rules_dir, self.name))
         else:
             target_file = os.path.join(rules_dir, self.name)
-            with open(target_file, 'wb') as tf:
-                for stringelt in f:
-                    tf.write(base64.b64encode(stringelt.rstrip(b'\r\n')) + b"\n")
+            with open(target_file, "wb") as tf:
+                tf.writelines(base64.b64encode(stringelt.rstrip(b"\r\n")) + b"\n" for stringelt in f)
 
         self.save()
 
@@ -1365,12 +542,12 @@ class Source(models.Model):
     def handle_ioc_file(self, f_dataset):
         f_dataset.seek(0)
 
-        validator = Source.IOC_MAPPING[self.ioc_type]['validator']
+        validator = Source.IOC_MAPPING[self.ioc_type]["validator"]
         if validator:
             for line in f_dataset:
                 validator(line.decode().strip())
 
-        if Source.IOC_MAPPING[self.ioc_type]['encoding'] == 'b64':
+        if Source.IOC_MAPPING[self.ioc_type]["encoding"] == "b64":
             self.handle_b64dataset(f_dataset)
         else:
             self.handle_other_file(f_dataset)
@@ -1378,50 +555,48 @@ class Source(models.Model):
         self._update_ioc_rules()
 
     def _update_ioc_rules(self):
-
         # to know if source is edited or added
         added_source = not self.category_set.exists()
         rules_info = RuleAtVersion.objects.none()
         if not added_source:
             # there is only 1 rav for 1 rule
-            rules_info = RuleAtVersion.objects.select_related('rule').filter(
-                rule__category__source=self
-            ).order_by('rule__sid', 'rev', 'rule__created')
+            rules_info = (
+                RuleAtVersion.objects.select_related("rule")
+                .filter(rule__category__source=self)
+                .order_by("rule__sid", "rev", "rule__created")
+            )
 
-        with tempfile.NamedTemporaryFile(dir=self.TMP_DIR, mode='w') as f_rules:
-            for idx, rule in enumerate(self.IOC_MAPPING[self.ioc_type]['signatures']):
-                updated = timezone.now().strftime('%Y_%m_%d')
-                metadata = '' if not self.ioc_meta.exists() else f", {', '.join(self.build_ioc_metadata())}"
+        with tempfile.NamedTemporaryFile(dir=self.TMP_DIR, mode="w") as f_rules:
+            for idx, rule in enumerate(self.IOC_MAPPING[self.ioc_type]["signatures"]):
+                updated = timezone.now().strftime("%Y_%m_%d")
+                metadata = "" if not self.ioc_meta.exists() else f", {', '.join(self.build_ioc_metadata())}"
 
                 if added_source:
                     sid = Rule.get_ioc_next_sid() + idx
                     rev = 1
-                    created = timezone.now().strftime('%Y_%m_%d')
+                    created = timezone.now().strftime("%Y_%m_%d")
                 else:
                     sid = rules_info[idx].rule.sid
                     rev = rules_info[idx].rev + 1
-                    created = rules_info[idx].rule.created.strftime('%Y_%m_%d')
+                    created = rules_info[idx].rule.created.strftime("%Y_%m_%d")
 
-                f_rules.write(rule.format(
-                    name=self.name,
-                    metadata=metadata,
-                    sid=sid,
-                    rev=rev,
-                    created_at=created,
-                    updated_at=updated
-                ))
-                f_rules.write('\n')
+                f_rules.write(
+                    rule.format(
+                        name=self.name, metadata=metadata, sid=sid, rev=rev, created_at=created, updated_at=updated
+                    )
+                )
+                f_rules.write("\n")
             self.handle_rules_file(f_rules)
 
     def handle_rules_file(self, f):
         f.seek(0)
-        if (tarfile.is_tarfile(f.name)):
+        if tarfile.is_tarfile(f.name):
             raise OSError("This is a tar file and not a individual signature file, please select another category")
         f.seek(0)
 
         self.updated_date = timezone.now()
         self.first_run = False
-        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
 
         # create rules dir if needed
         if not os.path.isdir(rules_dir):
@@ -1430,18 +605,18 @@ class Source(models.Model):
         # copy file content to target
         f.seek(0)
         os.fsync(f)
-        shutil.copy(f.name, os.path.join(rules_dir, 'sigs.rules'))
+        shutil.copy(f.name, os.path.join(rules_dir, "sigs.rules"))
 
         self.save()
 
         # category based on filename
-        category = Category.objects.filter(source=self, name=('%s Sigs' % (self.name))[:100]).first()
+        category = Category.objects.filter(source=self, name=(f"{self.name} Sigs")[:100]).first()
         if category is None:
             category = Category.objects.create(
                 source=self,
-                name=('%s Sigs' % (self.name))[:100],
+                name=(f"{self.name} Sigs")[:100],
                 created_date=timezone.now(),
-                filename=os.path.join('rules', 'sigs.rules')
+                filename=os.path.join("rules", "sigs.rules"),
             )
             for ruleset in self.ruleset_set.all():
                 if ruleset.activate_categories:
@@ -1450,7 +625,7 @@ class Source(models.Model):
         category.get_rules(self)
         if Rule.objects.filter(category=category).count() == 0:
             category.delete()
-            raise ValidationError('The source %s contains no valid signature' % self.name)
+            raise ValidationError("The source %s contains no valid signature" % self.name)
 
     def handle_custom_file(self, f, upload=False):
         from scirius.utils import get_middleware_module
@@ -1462,36 +637,32 @@ class Source(models.Model):
         self.first_run = False
         self.updated_date = timezone.now()
         sources_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
-        version_path = os.path.join(sources_dir, 'rules', 'version.txt')
+        version_path = os.path.join(sources_dir, "rules", "version.txt")
 
         # create rules dir if needed
         if not os.path.isdir(sources_dir):
             os.makedirs(sources_dir)
 
         f.seek(0)
-        get_middleware_module('common').extract_custom_source(f, sources_dir)
+        get_middleware_module("common").extract_custom_source(f, sources_dir)
         self.set_is_stamus()
         if upload:
-            sources_path = os.path.join(sources_dir, 'rules')
-            get_middleware_module('common').update_custom_source(sources_path)
+            sources_path = os.path.join(sources_dir, "rules")
+            get_middleware_module("common").update_custom_source(sources_path)
 
-        with open(version_path, 'r') as f:
+        with open(version_path, "r") as f:
             self.version = int(f.read())
 
         self.save()
         from scirius.utils import get_middleware_module
-        Rule.SID_RANGES = get_middleware_module('common').get_stamus_range(self)
+
+        Rule.SID_RANGES = get_middleware_module("common").get_stamus_range(self)
         self.get_categories()
 
     def json_rules_list(self, rlist):
         rules = []
         for rule in rlist:
-            rules.append({
-                "sid": rule.sid,
-                "msg": rule.msg,
-                "category": rule.category.name,
-                "pk": rule.pk}
-            )
+            rules.append({"sid": rule.sid, "msg": rule.msg, "category": rule.category.name, "pk": rule.pk})
         # for each rule we create a json object sid + msg + content
         return rules
 
@@ -1514,8 +685,8 @@ class Source(models.Model):
         # lock
         if not os.path.exists(settings.FLOCK_PATH):
             os.makedirs(settings.FLOCK_PATH)
-        source_lock_path = os.path.join(settings.FLOCK_PATH, 'source_%s' % self.pk)
-        source_lock = open(source_lock_path, 'w')
+        source_lock_path = os.path.join(settings.FLOCK_PATH, "source_%s" % self.pk)
+        source_lock = open(source_lock_path, "w")
         fcntl.flock(source_lock, fcntl.LOCK_EX)
 
         try:
@@ -1525,7 +696,7 @@ class Source(models.Model):
             if not categories:
                 firstimport = True
 
-            if self.method not in ['http', 'local']:
+            if self.method not in ["http", "local"]:
                 raise FieldError("Currently unsupported method")
 
             need_update = False
@@ -1537,26 +708,27 @@ class Source(models.Model):
                     self._handle_file(f)
 
             if need_update:
-                if (self.datatype in ('sig', 'sigs') or self.datatype in self.custom_data_type) and not firstimport:
+                if (self.datatype in ("sig", "sigs") or self.datatype in self.custom_data_type) and not firstimport:
                     self.create_update()
 
                 if self.datatype in self.custom_data_type:
                     from scirius.utils import get_middleware_module
-                    source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
-                    get_middleware_module('common').update_custom_source(source_path)
 
-                rules_pk = [rule.sid for rule in self.updated_rules['deleted']]
+                    source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
+                    get_middleware_module("common").update_custom_source(source_path)
+
+                rules_pk = [rule.sid for rule in self.updated_rules["deleted"]]
                 Rule.objects.filter(pk__in=rules_pk).delete()
 
         finally:
             source_lock.close()
 
     def export_files(self, directory):
-        source_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
-        cats_content = ''
-        iprep_content = ''
+        source_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
+        cats_content = ""
+        iprep_content = ""
 
-        datatypes = ['sig', 'sigs', 'ioc']
+        datatypes = ["sig", "sigs", "ioc"]
         if self.custom_data_type:
             datatypes.append(self.custom_data_type[0])
 
@@ -1566,8 +738,8 @@ class Source(models.Model):
         # by sourceA update from ruleset2
         if not os.path.exists(settings.FLOCK_PATH):
             os.makedirs(settings.FLOCK_PATH)
-        source_lock_path = os.path.join(settings.FLOCK_PATH, 'source_analysis_%s' % self.pk)
-        source_lock = open(source_lock_path, 'w')
+        source_lock_path = os.path.join(settings.FLOCK_PATH, "source_analysis_%s" % self.pk)
+        source_lock = open(source_lock_path, "w")
         fcntl.flock(source_lock, fcntl.LOCK_EX)
 
         try:
@@ -1575,16 +747,16 @@ class Source(models.Model):
                 full_path = os.path.join(source_dir, filename)
 
                 # don't copy original rules file to dest
-                if filename.endswith('.rules') and self.datatype in datatypes:
+                if filename.endswith(".rules") and self.datatype in datatypes:
                     continue
 
-                if filename.endswith('categories.txt') and self.datatype in ('sig', 'sigs'):
-                    with open(full_path, 'r') as f:
+                if filename.endswith("categories.txt") and self.datatype in ("sig", "sigs"):
+                    with open(full_path, "r") as f:
                         cats_content = f.read()
                     continue
 
-                if filename.endswith('.list') and self.datatype in ('sig', 'sigs'):
-                    with open(full_path, 'r') as f:
+                if filename.endswith(".list") and self.datatype in ("sig", "sigs"):
+                    with open(full_path, "r") as f:
                         iprep_content = f.read()
                     continue
 
@@ -1596,40 +768,45 @@ class Source(models.Model):
         return cats_content, iprep_content
 
     def get_absolute_url(self):
-        return reverse('source', args=[str(self.id)])
+        return reverse("source", args=[str(self.id)])
 
     def is_ti_url(self):
-        return self.uri.startswith('https://ti.stamus-networks.io/')
+        return self.uri.startswith("https://ti.stamus-networks.io/")
 
     def is_ti_dev_url(self):
-        return self.uri.startswith('https://ti-dev.stamus-networks.io/')
+        return self.uri.startswith("https://ti-dev.stamus-networks.io/")
 
     def is_etpro_url(self):
-        return self.uri.startswith('https://rules.emergingthreatspro.com/') or \
-            self.uri.startswith('https://rules.emergingthreats.net/') or \
-            self.is_ti_url()
+        return (
+            self.uri.startswith("https://rules.emergingthreatspro.com/")
+            or self.uri.startswith("https://rules.emergingthreats.net/")
+            or self.is_ti_url()
+        )
 
     def update_ruleset_http(self, f):
-        from scirius.utils import RequestsWrapper
-        from scirius.utils import get_middleware_module
+        from scirius.utils import RequestsWrapper, get_middleware_module
 
-        get_middleware_module('common').update_custom_sources_url(self)
+        get_middleware_module("common").update_custom_sources_url(self)
 
-        agent = f'scirius/{settings.SCIRIUS_VERSION}'
-        if os.getenv('STAMUSCTL_SEED'):
-            seed = os.getenv('STAMUSCTL_SEED').strip('"')
-            agent = f'scirius/{settings.SCIRIUS_VERSION} ({seed})'
-        hdrs = {'User-Agent': agent}
+        agent = f"scirius/{settings.SCIRIUS_VERSION}"
+        if os.getenv("STAMUSCTL_SEED"):
+            seed = os.getenv("STAMUSCTL_SEED").strip('"')
+            agent = f"scirius/{settings.SCIRIUS_VERSION} ({seed})"
+        hdrs = {"User-Agent": agent}
         if self.authkey:
-            hdrs['Authorization'] = self.authkey
+            hdrs["Authorization"] = self.authkey
 
         version_uri = None
-        if self.is_etpro_url() or (self.datatype not in ('sigs', 'sig', 'other', 'b64dataset', 'ioc') and not self.is_ti_dev_url()):
-            version_uri = os.path.join(os.path.dirname(self.uri), 'version.txt')
+        if self.is_etpro_url() or (
+            self.datatype not in ("sigs", "sig", "other", "b64dataset", "ioc") and not self.is_ti_dev_url()
+        ):
+            version_uri = os.path.join(os.path.dirname(self.uri), "version.txt")
 
         version_server = 1
         if version_uri:
-            resp = RequestsWrapper(verify=self.cert_verif, use_proxy=self.use_sys_proxy).get(url=version_uri, headers=hdrs)
+            resp = RequestsWrapper(verify=self.cert_verif, use_proxy=self.use_sys_proxy).get(
+                url=version_uri, headers=hdrs
+            )
             version_server = int(resp.content.strip())
 
             if self.version < version_server:
@@ -1652,40 +829,40 @@ class Source(models.Model):
         # by sourceA update from ruleset2
         if not os.path.exists(settings.FLOCK_PATH):
             os.makedirs(settings.FLOCK_PATH)
-        source_lock_path = os.path.join(settings.FLOCK_PATH, 'source_analysis_%s' % self.pk)
-        source_lock = open(source_lock_path, 'w')
+        source_lock_path = os.path.join(settings.FLOCK_PATH, "source_analysis_%s" % self.pk)
+        source_lock = open(source_lock_path, "w")
         fcntl.flock(source_lock, fcntl.LOCK_EX)
 
         try:
             self.remove_rules_dir()
 
-            if self.datatype == 'sigs':
+            if self.datatype == "sigs":
                 self.handle_rules_in_tar(_file)
-            elif self.datatype == 'sig':
+            elif self.datatype == "sig":
                 self.handle_rules_file(_file)
-            elif self.datatype == 'other':
+            elif self.datatype == "other":
                 self.handle_other_file(_file)
-            elif self.datatype == 'b64dataset':
+            elif self.datatype == "b64dataset":
                 self.handle_b64dataset(_file)
-            elif self.datatype == 'ioc':
+            elif self.datatype == "ioc":
                 self.handle_ioc_file(_file)
             elif self.datatype in self.custom_data_type:
                 self.handle_custom_file(_file, upload=upload)
         except DuplicateSidException as e:
             sid = str(e)
-            source_name = ''
+            source_name = ""
             if len(sid):
-                sub_string = ' with other '
+                sub_string = " with other "
                 if e.same_source is False:
-                    source_name = f' ({Rule.objects.filter(sid=sid).values_list("category__source__name", flat=True).first()})'
+                    source_name = (
+                        f" ({Rule.objects.filter(sid=sid).values_list('category__source__name', flat=True).first()})"
+                    )
                 else:
                     source_name = self.name
-                    sub_string = ' in same '
-                sid = f'({sid})'
-                raise ValidationError(
-                    f'The source contains conflicting SID {sid} {sub_string} source {source_name}'
-                )
-            raise ValidationError('Duplicate sids')
+                    sub_string = " in same "
+                sid = f"({sid})"
+                raise ValidationError(f"The source contains conflicting SID {sid} {sub_string} source {source_name}")
+            raise ValidationError("Duplicate sids")
         finally:
             source_lock.close()
 
@@ -1693,7 +870,7 @@ class Source(models.Model):
         from scirius.utils import read_in_chunks
 
         with tempfile.NamedTemporaryFile(dir=self.TMP_DIR) as dest:
-            if hasattr(f, 'chunks'):
+            if hasattr(f, "chunks"):
                 # FileField
                 for chunk in f.chunks():
                     dest.write(chunk)
@@ -1711,7 +888,7 @@ class Source(models.Model):
             firstimport = True
 
         self.handle_uploaded_file(f)
-        if self.datatype in ('sig', 'sigs') and not firstimport:
+        if self.datatype in ("sig", "sigs") and not firstimport:
             self.create_update()
         for rule in self.updated_rules["deleted"]:
             rule.delete()
@@ -1720,51 +897,35 @@ class Source(models.Model):
 class IoCMeta(models.Model):
     key = models.CharField(max_length=100, null=False, blank=False)
     value = models.CharField(max_length=100, null=False, blank=False)
-    ioc_source = models.ForeignKey(
-        Source,
-        on_delete=models.CASCADE,
-        related_name='ioc_meta',
-        null=True,
-        blank=True
-    )
-
-
-class UserActionObject(models.Model):
-    action_key = models.CharField(max_length=20)
-    action_value = models.CharField(max_length=100)
-
-    user_action = models.ForeignKey(UserAction, related_name='user_action_objects', on_delete=models.CASCADE)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
-    object_id = models.PositiveIntegerField(null=True)
-    content = GenericForeignKey('content_type', 'object_id')
+    ioc_source = models.ForeignKey(Source, on_delete=models.CASCADE, related_name="ioc_meta", null=True, blank=True)
 
 
 class SourceUpdate(models.Model):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
-    created_date = models.DateTimeField('date of update', blank=True, default=timezone.now)
+    created_date = models.DateTimeField("date of update", blank=True, default=timezone.now)
     # Store update info as a JSON document
     data = models.TextField()
     changed = models.IntegerField(default=0)
 
+    def get_absolute_url(self) -> str:
+        return reverse("sourceupdate", args=[str(self.id)])
+
     def diff(self):
         data = json.loads(self.data)
         diff = data
-        diff['stats'] = {'updated': len(data['updated']), 'added': len(data['added']), 'deleted': len(data['deleted'])}
-        diff['date'] = self.created_date
+        diff["stats"] = {"updated": len(data["updated"]), "added": len(data["added"]), "deleted": len(data["deleted"])}
+        diff["date"] = self.created_date
         return diff
-
-    def get_absolute_url(self):
-        return reverse('sourceupdate', args=[str(self.id)])
 
 
 class TransfoType(Enum):
     @classmethod
     def get_choices(cls, attr_=None):
-        return [(attr.value, attr.name.replace('_', ' ').title()) for attr in cls if attr_ is None or attr_ == attr]
+        return [(attr.value, attr.name.replace("_", " ").title()) for attr in cls if attr_ is None or attr_ == attr]
 
     @classmethod
     def get_choices_name(cls, attr_=None):
-        return [attr.name.replace('_', ' ').title() for attr in cls if attr_ is None or attr_ == attr]
+        return [attr.name.replace("_", " ").title() for attr in cls if attr_ is None or attr_ == attr]
 
     @classmethod
     def get_choices_value(cls, attr_=None):
@@ -1774,43 +935,43 @@ class TransfoType(Enum):
 class Transformation(models.Model):
     @unique
     class Type(TransfoType):
-        ACTION = 'action'
-        LATERAL = 'lateral'
-        TARGET = 'target'
+        ACTION = "action"
+        LATERAL = "lateral"
+        TARGET = "target"
         # cannot be removed: used by 0056_auto_20180223_0823.py
-        SUPPRESSED = 'suppressed'
+        SUPPRESSED = "suppressed"
 
     @unique
     class ActionTransfoType(TransfoType):
-        DROP = 'drop'
-        REJECT = 'reject'
-        FILESTORE = 'filestore'
-        NONE = 'none'
-        BYPASS = 'bypass'
-        CATEGORY_DEFAULT = 'category'
-        RULESET_DEFAULT = 'ruleset'
+        DROP = "drop"
+        REJECT = "reject"
+        FILESTORE = "filestore"
+        NONE = "none"
+        BYPASS = "bypass"
+        CATEGORY_DEFAULT = "category"
+        RULESET_DEFAULT = "ruleset"
 
     @unique
     class LateralTransfoType(TransfoType):
-        AUTO = 'auto'
-        YES = 'yes'
-        NO = 'no'
-        CATEGORY_DEFAULT = 'category'
-        RULESET_DEFAULT = 'ruleset'
+        AUTO = "auto"
+        YES = "yes"
+        NO = "no"
+        CATEGORY_DEFAULT = "category"
+        RULESET_DEFAULT = "ruleset"
 
     @unique
     class TargetTransfoType(TransfoType):
-        SOURCE = 'src'
-        DESTINATION = 'dst'
-        AUTO = 'auto'
-        NONE = 'none'
-        CATEGORY_DEFAULT = 'category'
-        RULESET_DEFAULT = 'ruleset'
+        SOURCE = "src"
+        DESTINATION = "dst"
+        AUTO = "auto"
+        NONE = "none"
+        CATEGORY_DEFAULT = "category"
+        RULESET_DEFAULT = "ruleset"
 
     # cannot be removed: used by 0056_auto_20180223_0823.py
     @unique
     class SuppressTransforType(TransfoType):
-        SUPPRESSED = 'suppressed'
+        SUPPRESSED = "suppressed"
 
     class Meta:
         abstract = True
@@ -1850,9 +1011,24 @@ class Transformation(models.Model):
     T_RULESET_DEFAULT = TargetTransfoType.RULESET_DEFAULT
 
     AVAILABLE_MODEL_TRANSFO = {
-        ACTION.value: (A_DROP.value, A_REJECT.value, A_FILESTORE.value, A_BYPASS.value, A_NONE.value,),
-        LATERAL.value: (L_AUTO.value, L_YES.value, L_NO.value,),
-        TARGET.value: (T_SOURCE.value, T_DESTINATION.value, T_AUTO.value, T_NONE.value,)
+        ACTION.value: (
+            A_DROP.value,
+            A_REJECT.value,
+            A_FILESTORE.value,
+            A_BYPASS.value,
+            A_NONE.value,
+        ),
+        LATERAL.value: (
+            L_AUTO.value,
+            L_YES.value,
+            L_NO.value,
+        ),
+        TARGET.value: (
+            T_SOURCE.value,
+            T_DESTINATION.value,
+            T_AUTO.value,
+            T_NONE.value,
+        ),
     }
 
     # Fields
@@ -1868,19 +1044,19 @@ class Transformable:
         raise NotImplementedError()
 
     def _set_target(self, rule, target="dest_ip"):
-        target = ' target:%s;)' % target
+        target = " target:%s;)" % target
         rule.raw = re.sub(r"\)$", "%s" % (target), rule.raw) if target not in rule.raw else rule.raw
 
     def _test_scan_rules(self, rule_ids):
         for option in rule_ids.options:
-            if option['name'] == 'flags':
-                if option['value'] == 'S,12':
+            if option["name"] == "flags":
+                if option["value"] == "S,12":
                     return True
                 return False
         return False
 
     def _apply_target_trans(self, rule_ids):
-        terms = re.split(r' +', rule_ids.format())
+        terms = re.split(r" +", rule_ids.format())
         src = terms[2]
         dst = terms[5]
 
@@ -1940,13 +1116,13 @@ class Transformable:
         # TARGET + DST/SRC
         if key == Transformation.TARGET:
             if value == Transformation.T_SOURCE:
-                rule_ids.raw = re.sub(r' target:\w*;', '', rule_ids.raw)
-                self._set_target(rule_ids, target='src_ip')
+                rule_ids.raw = re.sub(r" target:\w*;", "", rule_ids.raw)
+                self._set_target(rule_ids, target="src_ip")
             elif value == Transformation.T_DESTINATION:
-                rule_ids.raw = re.sub(r' target:\w*;', '', rule_ids.raw)
-                self._set_target(rule_ids, target='dest_ip')
+                rule_ids.raw = re.sub(r" target:\w*;", "", rule_ids.raw)
+                self._set_target(rule_ids, target="dest_ip")
             elif value == Transformation.T_NONE:
-                rule_ids.raw = re.sub(r' target:\w*;', '', rule_ids.raw)
+                rule_ids.raw = re.sub(r" target:\w*;", "", rule_ids.raw)
             elif value == Transformation.T_AUTO:
                 target_client = False
                 for meta in rule_ids.metadata:
@@ -1966,7 +1142,7 @@ class Transformable:
                     target_client = True
                 if rule_ids.classtype == "not-suspicious":
                     target_client = False
-                if target_client is True and 'target' not in rule_ids:
+                if target_client is True and "target" not in rule_ids:
                     self._apply_target_trans(rule_ids)
 
         return rule_ids.format()
@@ -2009,215 +1185,206 @@ class Cache:
             cls.TRANSFORMATIONS = {
                 ACTION: {
                     rule_str: {
-                        A_DROP: None, A_REJECT: None, A_FILESTORE: None, A_NONE: None, A_BYPASS: None,
+                        A_DROP: None,
+                        A_REJECT: None,
+                        A_FILESTORE: None,
+                        A_NONE: None,
+                        A_BYPASS: None,
                     },
                     category_str: {
-                        A_DROP: None, A_REJECT: None, A_FILESTORE: None, A_NONE: None, A_BYPASS: None,
+                        A_DROP: None,
+                        A_REJECT: None,
+                        A_FILESTORE: None,
+                        A_NONE: None,
+                        A_BYPASS: None,
                     },
                     ruleset_str: {
-                        A_DROP: None, A_REJECT: None, A_FILESTORE: None, A_BYPASS: None,
-                    }
+                        A_DROP: None,
+                        A_REJECT: None,
+                        A_FILESTORE: None,
+                        A_BYPASS: None,
+                    },
                 },
                 LATERAL: {
                     rule_str: {
-                        L_AUTO: None, L_YES: None, L_NO: None,
+                        L_AUTO: None,
+                        L_YES: None,
+                        L_NO: None,
                     },
                     category_str: {
-                        L_AUTO: None, L_YES: None, L_NO: None,
+                        L_AUTO: None,
+                        L_YES: None,
+                        L_NO: None,
                     },
                     ruleset_str: {
-                        L_AUTO: None, L_YES: None,
-                    }
+                        L_AUTO: None,
+                        L_YES: None,
+                    },
                 },
                 TARGET: {
                     rule_str: {
-                        T_AUTO: None, T_SOURCE: None, T_DST: None, T_NONE: None,
+                        T_AUTO: None,
+                        T_SOURCE: None,
+                        T_DST: None,
+                        T_NONE: None,
                     },
                     category_str: {
-                        T_AUTO: None, T_SOURCE: None, T_DST: None, T_NONE: None,
+                        T_AUTO: None,
+                        T_SOURCE: None,
+                        T_DST: None,
+                        T_NONE: None,
                     },
                     ruleset_str: {
-                        T_AUTO: None, T_SOURCE: None, T_DST: None,
-                    }
-                }
+                        T_AUTO: None,
+                        T_SOURCE: None,
+                        T_DST: None,
+                    },
+                },
             }
 
             # ##### Rules
             # Actions
             drop_rules = Rule.objects.filter(
-                ruletransformation__key=ACTION.value,
-                ruletransformation__value=A_DROP.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=ACTION.value, ruletransformation__value=A_DROP.value
+            ).values_list("pk", flat=True)
 
             reject_rules = Rule.objects.filter(
-                ruletransformation__key=ACTION.value,
-                ruletransformation__value=A_REJECT.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=ACTION.value, ruletransformation__value=A_REJECT.value
+            ).values_list("pk", flat=True)
 
             filestore_rules = Rule.objects.filter(
-                ruletransformation__key=ACTION.value,
-                ruletransformation__value=A_FILESTORE.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=ACTION.value, ruletransformation__value=A_FILESTORE.value
+            ).values_list("pk", flat=True)
 
             none_rules = Rule.objects.filter(
-                ruletransformation__key=ACTION.value,
-                ruletransformation__value=A_NONE.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=ACTION.value, ruletransformation__value=A_NONE.value
+            ).values_list("pk", flat=True)
 
             bypass_rules = Rule.objects.filter(
-                ruletransformation__key=ACTION.value,
-                ruletransformation__value=A_BYPASS.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=ACTION.value, ruletransformation__value=A_BYPASS.value
+            ).values_list("pk", flat=True)
 
             # Lateral
             rule_l_auto = Rule.objects.filter(
-                ruletransformation__key=LATERAL.value,
-                ruletransformation__value=L_AUTO.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=LATERAL.value, ruletransformation__value=L_AUTO.value
+            ).values_list("pk", flat=True)
 
             rule_l_yes = Rule.objects.filter(
-                ruletransformation__key=LATERAL.value,
-                ruletransformation__value=L_YES.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=LATERAL.value, ruletransformation__value=L_YES.value
+            ).values_list("pk", flat=True)
 
             rule_l_no = Rule.objects.filter(
-                ruletransformation__key=LATERAL.value,
-                ruletransformation__value=L_NO.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=LATERAL.value, ruletransformation__value=L_NO.value
+            ).values_list("pk", flat=True)
 
             # Target
             rule_t_auto = Rule.objects.filter(
-                ruletransformation__key=TARGET.value,
-                ruletransformation__value=T_AUTO.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=TARGET.value, ruletransformation__value=T_AUTO.value
+            ).values_list("pk", flat=True)
 
             rule_t_src = Rule.objects.filter(
-                ruletransformation__key=TARGET.value,
-                ruletransformation__value=T_SOURCE.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=TARGET.value, ruletransformation__value=T_SOURCE.value
+            ).values_list("pk", flat=True)
 
             rule_t_dst = Rule.objects.filter(
-                ruletransformation__key=TARGET.value,
-                ruletransformation__value=T_DST.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=TARGET.value, ruletransformation__value=T_DST.value
+            ).values_list("pk", flat=True)
 
             rule_t_none = Rule.objects.filter(
-                ruletransformation__key=TARGET.value,
-                ruletransformation__value=T_NONE.value
-            ).values_list('pk', flat=True)
+                ruletransformation__key=TARGET.value, ruletransformation__value=T_NONE.value
+            ).values_list("pk", flat=True)
 
             # #### Categories
             # Actions
             drop_cats = Category.objects.filter(
-                categorytransformation__key=ACTION.value,
-                categorytransformation__value=A_DROP.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=ACTION.value, categorytransformation__value=A_DROP.value
+            ).values_list("pk", flat=True)
 
             reject_cats = Category.objects.filter(
-                categorytransformation__key=ACTION.value,
-                categorytransformation__value=A_REJECT.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=ACTION.value, categorytransformation__value=A_REJECT.value
+            ).values_list("pk", flat=True)
 
             filestore_cats = Category.objects.filter(
-                categorytransformation__key=ACTION.value,
-                categorytransformation__value=A_FILESTORE.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=ACTION.value, categorytransformation__value=A_FILESTORE.value
+            ).values_list("pk", flat=True)
 
             none_cats = Category.objects.filter(
-                categorytransformation__key=ACTION.value,
-                categorytransformation__value=A_NONE.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=ACTION.value, categorytransformation__value=A_NONE.value
+            ).values_list("pk", flat=True)
 
             bypass_cats = Category.objects.filter(
-                categorytransformation__key=ACTION.value,
-                categorytransformation__value=A_BYPASS.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=ACTION.value, categorytransformation__value=A_BYPASS.value
+            ).values_list("pk", flat=True)
 
             # Lateral
             cat_l_auto = Category.objects.filter(
-                categorytransformation__key=LATERAL.value,
-                categorytransformation__value=L_AUTO.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=LATERAL.value, categorytransformation__value=L_AUTO.value
+            ).values_list("pk", flat=True)
 
             cat_l_yes = Category.objects.filter(
-                categorytransformation__key=LATERAL.value,
-                categorytransformation__value=L_YES.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=LATERAL.value, categorytransformation__value=L_YES.value
+            ).values_list("pk", flat=True)
 
             cat_l_no = Category.objects.filter(
-                categorytransformation__key=LATERAL.value,
-                categorytransformation__value=L_NO.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=LATERAL.value, categorytransformation__value=L_NO.value
+            ).values_list("pk", flat=True)
 
             # Target
             cat_t_auto = Category.objects.filter(
-                categorytransformation__key=TARGET.value,
-                categorytransformation__value=T_AUTO.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=TARGET.value, categorytransformation__value=T_AUTO.value
+            ).values_list("pk", flat=True)
 
             cat_t_src = Category.objects.filter(
-                categorytransformation__key=TARGET.value,
-                categorytransformation__value=T_SOURCE.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=TARGET.value, categorytransformation__value=T_SOURCE.value
+            ).values_list("pk", flat=True)
 
             cat_t_dst = Category.objects.filter(
-                categorytransformation__key=TARGET.value,
-                categorytransformation__value=T_DST.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=TARGET.value, categorytransformation__value=T_DST.value
+            ).values_list("pk", flat=True)
 
             cat_t_none = Category.objects.filter(
-                categorytransformation__key=TARGET.value,
-                categorytransformation__value=T_NONE.value
-            ).values_list('pk', flat=True)
+                categorytransformation__key=TARGET.value, categorytransformation__value=T_NONE.value
+            ).values_list("pk", flat=True)
 
             # #### Rulesets
             # Actions
             drop_rulesets = Ruleset.objects.filter(
-                rulesettransformation__key=ACTION.value,
-                rulesettransformation__value=A_DROP.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=ACTION.value, rulesettransformation__value=A_DROP.value
+            ).values_list("pk", flat=True)
 
             reject_rulesets = Ruleset.objects.filter(
-                rulesettransformation__key=ACTION.value,
-                rulesettransformation__value=A_REJECT.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=ACTION.value, rulesettransformation__value=A_REJECT.value
+            ).values_list("pk", flat=True)
 
             filestore_rulesets = Ruleset.objects.filter(
-                rulesettransformation__key=ACTION.value,
-                rulesettransformation__value=A_FILESTORE.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=ACTION.value, rulesettransformation__value=A_FILESTORE.value
+            ).values_list("pk", flat=True)
 
             bypass_rulesets = Ruleset.objects.filter(
-                rulesettransformation__key=ACTION.value,
-                rulesettransformation__value=A_BYPASS.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=ACTION.value, rulesettransformation__value=A_BYPASS.value
+            ).values_list("pk", flat=True)
 
             # Lateral
             ruleset_l_auto = Ruleset.objects.filter(
-                rulesettransformation__key=LATERAL.value,
-                rulesettransformation__value=L_AUTO.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=LATERAL.value, rulesettransformation__value=L_AUTO.value
+            ).values_list("pk", flat=True)
 
             ruleset_l_yes = Ruleset.objects.filter(
-                rulesettransformation__key=LATERAL.value,
-                rulesettransformation__value=L_YES.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=LATERAL.value, rulesettransformation__value=L_YES.value
+            ).values_list("pk", flat=True)
 
             # Target
             ruleset_t_auto = Ruleset.objects.filter(
-                rulesettransformation__key=TARGET.value,
-                rulesettransformation__value=T_AUTO.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=TARGET.value, rulesettransformation__value=T_AUTO.value
+            ).values_list("pk", flat=True)
 
             ruleset_t_src = Ruleset.objects.filter(
-                rulesettransformation__key=TARGET.value,
-                rulesettransformation__value=T_SOURCE.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=TARGET.value, rulesettransformation__value=T_SOURCE.value
+            ).values_list("pk", flat=True)
 
             ruleset_t_dst = Ruleset.objects.filter(
-                rulesettransformation__key=TARGET.value,
-                rulesettransformation__value=T_DST.value
-            ).values_list('pk', flat=True)
+                rulesettransformation__key=TARGET.value, rulesettransformation__value=T_DST.value
+            ).values_list("pk", flat=True)
 
             # Set rules action cache
             cls.TRANSFORMATIONS[ACTION][rule_str][A_DROP] = set(drop_rules)
@@ -2280,7 +1447,7 @@ class Category(models.Model, Transformable, Cache):
     name = models.CharField(max_length=100)
     filename = models.CharField(max_length=200)
     descr = models.CharField(max_length=400, blank=True)
-    created_date = models.DateTimeField('date created', default=timezone.now)
+    created_date = models.DateTimeField("date created", default=timezone.now)
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
 
     class Meta:
@@ -2295,36 +1462,37 @@ class Category(models.Model, Transformable, Cache):
 
     @staticmethod
     def get_icon():
-        return 'fa-list-alt'
+        return "fa-list-alt"
 
     def build_sigs_group(self, existing_rules_hash):
         sigs_groups = {}
 
         # build hash on message
-        ravs = existing_rules_hash.get('groups', {}).get(self.name, [])
+        ravs = existing_rules_hash.get("groups", {}).get(self.name, [])
         for rav in ravs:
             # let's get the new IP only, will output that as text field at save time
             rule = rav.rule
             rule.ips_list = set()
-            sigs_groups[rule.msg] = {
-                'rule': rule,
-                'rav': rav
-            }
+            sigs_groups[rule.msg] = {"rule": rule, "rav": rav}
         return sigs_groups
 
     def parse_group_signature(self, group_rule, rule):
-        if group_rule.group_by == 'by_src':
-            ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
+        if group_rule.group_by == "by_src":
+            ips_list = Rule.IPSREGEXP["src"].findall(rule.header)[0]
         else:
-            ips_list = Rule.IPSREGEXP['dest'].findall(rule.header)[0]
-        if ips_list.startswith('['):
-            ips_list = ips_list[1:-1].split(',')
+            ips_list = Rule.IPSREGEXP["dest"].findall(rule.header)[0]
+        if ips_list.startswith("["):
+            ips_list = ips_list[1:-1].split(",")
         else:
-            ips_list = [ips_list, ]
+            ips_list = [
+                ips_list,
+            ]
         group_rule.ips_list.update(ips_list)
         group_rule.next_rev = rule.rev
 
-    def add_group_signature(self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged):
+    def add_group_signature(
+        self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged
+    ):
         # parse the line with ids tools
         try:
             rule = rule_idstools.parse(line)
@@ -2336,14 +1504,14 @@ class Category(models.Model, Transformable, Cache):
         # version is always at 0 here while versioning is done on stamus source only
         version = 0
         rule_base_msg = Rule.GROUPSNAMEREGEXP.findall(rule.msg)[0]
-        ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
-        track_by = 'src' if ips_list.startswith('[') else 'dst'
+        ips_list = Rule.IPSREGEXP["src"].findall(rule.header)[0]
+        track_by = "src" if ips_list.startswith("[") else "dst"
         content = rule.raw
         iprep_group = rule.sid
 
-        content = content.replace(';)', '; iprep:%s,%s,>,1;)' % (track_by, iprep_group))
+        content = content.replace(";)", "; iprep:%s,%s,>,1;)" % (track_by, iprep_group))
         # replace IP list by any
-        content = re.sub(r'\[\d+.*\d+\]', r'any', content)
+        content = re.sub(r"\[\d+.*\d+\]", r"any", content)
         # fix message
         content = re.sub(r'msg:".*";', r'msg:"%s";' % rule_base_msg, content)
 
@@ -2352,8 +1520,8 @@ class Category(models.Model, Transformable, Cache):
         if rule_base_msg in sigs_groups:
             # TODO coherence check
             # add IPs to the list if revision has changed
-            rav = sigs_groups[rule_base_msg]['rav']
-            group_rule = sigs_groups[rule_base_msg]['rule']
+            rav = sigs_groups[rule_base_msg]["rav"]
+            group_rule = sigs_groups[rule_base_msg]["rule"]
 
             if content != rav.content:
                 self.parse_group_signature(group_rule, rule)
@@ -2408,23 +1576,20 @@ class Category(models.Model, Transformable, Cache):
                     state=state,
                     commented_in_source=not state,
                     imported_date=creation_date,
-                    updated_date=creation_date
+                    updated_date=creation_date,
                 )
 
                 rav.parse_metadata()
                 rav.parse_flowbits(source, flowbits, addition=True)
                 rules_update["updated"].append(group_rule)
-                rules_update['ravs'].append(rav)
-            if track_by == 'src':
-                group_rule.group_by = 'by_src'
+                rules_update["ravs"].append(rav)
+            if track_by == "src":
+                group_rule.group_by = "by_src"
             else:
-                group_rule.group_by = 'by_dest'
+                group_rule.group_by = "by_dest"
             group_rule.ips_list = set()
             self.parse_group_signature(group_rule, rule)
-            sigs_groups[group_rule.msg] = {
-                'rule': group_rule,
-                'rav': rav
-            }
+            sigs_groups[group_rule.msg] = {"rule": group_rule, "rav": rav}
 
     def get_rules(self, source, version=0, filename=None, existing_rules_hash=None):
         # parse file
@@ -2437,17 +1602,18 @@ class Category(models.Model, Transformable, Cache):
         if filename is None:
             filename = self.filename
 
-        rules_update = {"added": [], "deleted": [], "updated": [], 'ravs': []}
-        flowbits = {'added': {'flowbit': [], 'through_set': [], 'through_isset': []}}
+        rules_update = {"added": [], "deleted": [], "updated": [], "ravs": []}
+        flowbits = {"added": {"flowbit": [], "through_set": [], "through_isset": []}}
         rules_unchanged = []
 
         if existing_rules_hash is None:
-            existing_rules_hash = {'groups': {}}
-            for rav in RuleAtVersion.objects.filter(rule__category__source=self.source). \
-                    prefetch_related('rule'). \
-                    prefetch_related('rule__category'). \
-                    prefetch_related('rule__category__source'):
-
+            existing_rules_hash = {"groups": {}}
+            for rav in (
+                RuleAtVersion.objects.filter(rule__category__source=self.source)
+                .prefetch_related("rule")
+                .prefetch_related("rule__category")
+                .prefetch_related("rule__category__source")
+            ):
                 rule = rav.rule
                 if rule.sid not in existing_rules_hash:
                     existing_rules_hash[rule.sid] = {}
@@ -2455,17 +1621,17 @@ class Category(models.Model, Transformable, Cache):
                 existing_rules_hash[rule.sid][rav.version] = rav
 
                 if source.use_iprep and rule.group:
-                    if rule.category.name not in existing_rules_hash['groups']:
-                        existing_rules_hash['groups'][rule.category.name] = []
-                    existing_rules_hash['groups'][rule.category.name].append(rav)
+                    if rule.category.name not in existing_rules_hash["groups"]:
+                        existing_rules_hash["groups"][rule.category.name] = []
+                    existing_rules_hash["groups"][rule.category.name].append(rav)
 
         rules_list = Rule.objects.filter(
-            sid__in=RuleAtVersion.objects.filter(
-                rule__category=self, version=version
-            ).values_list('rule__sid', flat=True)
+            sid__in=RuleAtVersion.objects.filter(rule__category=self, version=version).values_list(
+                "rule__sid", flat=True
+            )
         )
 
-        for key in ('flowbits', 'hostbits', 'xbits'):
+        for key in ("flowbits", "hostbits", "xbits"):
             flowbits[key] = {}
             for flowb in Flowbit.objects.filter(source=source, type=key):
                 flowbits[key][flowb.name] = flowb
@@ -2480,7 +1646,7 @@ class Category(models.Model, Transformable, Cache):
             with transaction.atomic():
                 for line in rfile.readlines():
                     state = True
-                    if line.startswith('#'):
+                    if line.startswith("#"):
                         # check if it is a commented signature
                         if "->" in line and "sid" in line and ")" in line:
                             line = line.lstrip("# ")
@@ -2506,7 +1672,9 @@ class Category(models.Model, Transformable, Cache):
                             msg = msg[0:999]
 
                     if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
-                        self.add_group_signature(rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged)
+                        self.add_group_signature(
+                            rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged
+                        )
                     else:
                         sid = int(sid_str)
                         if sid in existing_rules_hash and version in existing_rules_hash[sid]:
@@ -2522,7 +1690,11 @@ class Category(models.Model, Transformable, Cache):
                             if rav.pk is None:
                                 raise DuplicateSidException(sid, same_source=True)
 
-                            if rav.content != line or rule.group is True or (rav.state != rav.commented_in_source and rav.commented_in_source == state):
+                            if (
+                                rav.content != line
+                                or rule.group is True
+                                or (rav.state != rav.commented_in_source and rav.commented_in_source == state)
+                            ):
                                 rav.content = line
 
                                 if rav.state != rav.commented_in_source and rav.commented_in_source == state:
@@ -2565,9 +1737,9 @@ class Category(models.Model, Transformable, Cache):
                                     rule.clean()
                                     # we avoid foreign key / pk (sid) to not call DB
                                     # on each rule
-                                    rule.full_clean(exclude=('category', 'sid'))
+                                    rule.full_clean(exclude=("category", "sid"))
                                 except ValidationError as e:
-                                    err = {'sid_': rule.sid}
+                                    err = {"sid_": rule.sid}
                                     err.update(e.message_dict)
                                     raise ValidationError(err)
 
@@ -2581,7 +1753,7 @@ class Category(models.Model, Transformable, Cache):
                                 state=state,
                                 commented_in_source=not state,
                                 imported_date=creation_date,
-                                updated_date=creation_date
+                                updated_date=creation_date,
                             )
 
                             rav.parse_metadata()
@@ -2594,33 +1766,33 @@ class Category(models.Model, Transformable, Cache):
                         Rule.objects.bulk_create(rules_update["added"])
                     except IntegrityError as e:
                         error = str(e)
-                        match = re.search(r'\(sid\)=\((\d+)\)', error)
-                        sid = ''
+                        match = re.search(r"\(sid\)=\((\d+)\)", error)
+                        sid = ""
                         if match:
                             sid = match.group(1)
                         raise DuplicateSidException(sid)
 
-                if len(rules_update['ravs']):
+                if len(rules_update["ravs"]):
                     # We cannot validate before like rules,
                     # because rules need to be saved first
-                    for rav in rules_update['ravs']:
+                    for rav in rules_update["ravs"]:
                         try:
                             rav.clean()
-                            rav.full_clean(exclude=('rule',))
+                            rav.full_clean(exclude=("rule",))
                         except ValidationError as e:
-                            err = {'sid_': rav.rule.sid}
+                            err = {"sid_": rav.rule.sid}
                             err.update(e.message_dict)
                             raise ValidationError(err)
 
-                    RuleAtVersion.objects.bulk_create(rules_update['ravs'])
+                    RuleAtVersion.objects.bulk_create(rules_update["ravs"])
 
                 if len(rules_groups):
                     for val in rules_groups.values():
                         # If IP list is empty it will be deleted because it has not
                         # been put in a changed or unchanged list. So we just care
                         # about saving the rule.
-                        rav = val['rav']
-                        rule = val['rule']
+                        rav = val["rav"]
+                        rule = val["rule"]
 
                         if len(rule.ips_list) > 0:
                             rule.group_ips_list = ",".join(rule.ips_list)
@@ -2628,9 +1800,9 @@ class Category(models.Model, Transformable, Cache):
                             rav.rev = rule.next_rev
                             rav.save()
 
-                            if rule.category.name not in existing_rules_hash['groups']:
-                                existing_rules_hash['groups'][rule.category.name] = []
-                            existing_rules_hash['groups'][rule.category.name].append(rav)
+                            if rule.category.name not in existing_rules_hash["groups"]:
+                                existing_rules_hash["groups"][rule.category.name] = []
+                            existing_rules_hash["groups"][rule.category.name].append(rav)
 
                 if len(flowbits["added"]["flowbit"]):
                     Flowbit.objects.bulk_create(flowbits["added"]["flowbit"])
@@ -2639,65 +1811,44 @@ class Category(models.Model, Transformable, Cache):
                 if len(flowbits["added"]["through_isset"]):
                     Flowbit.isset.through.objects.bulk_create(flowbits["added"]["through_isset"])
                 rules_update["deleted"] = list(
-                    set(rules_list) -
-                    set(rules_update["added"]).union(set(rules_update["updated"])) -
-                    set(rules_unchanged)
+                    set(rules_list)
+                    - set(rules_update["added"]).union(set(rules_update["updated"]))
+                    - set(rules_unchanged)
                 )
                 source.aggregate_update(rules_update)
 
     def get_absolute_url(self):
-        return reverse('category', args=[str(self.id)])
+        return reverse("category", args=[str(self.id)])
 
     def enable(self, ruleset, request=None, comment=None):
         ruleset.categories.add(self)
         if request:
             UserAction.create(
-                action_type='enable_category',
-                comment=comment,
-                request=request,
-                category=self,
-                ruleset=ruleset
+                action_type="enable_category", comment=comment, request=request, category=self, ruleset=ruleset
             )
 
     def disable(self, ruleset, request=None, comment=None):
         ruleset.categories.remove(self)
         if request:
             UserAction.create(
-                action_type='disable_category',
-                comment=comment,
-                request=request,
-                category=self,
-                ruleset=ruleset
+                action_type="disable_category", comment=comment, request=request, category=self, ruleset=ruleset
             )
 
     def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
         if Category.TRANSFORMATIONS == {}:
-            return (self.pk in ruleset.get_transformed_categories(key=key, value=value).values_list('pk', flat=True))
+            return self.pk in ruleset.get_transformed_categories(key=key, value=value).values_list("pk", flat=True)
 
         category_str = Category.__name__.lower()
-        return (self.pk in Category.TRANSFORMATIONS[key][category_str][value])
+        return self.pk in Category.TRANSFORMATIONS[key][category_str][value]
 
     def suppress_transformation(self, ruleset, key):
-        CategoryTransformation.objects.filter(
-            ruleset=ruleset,
-            category_transformation=self,
-            key=key.value
-        ).delete()
+        CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=self, key=key.value).delete()
 
     def toggle_transformation(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
         if self.is_transformed(ruleset, key=key, value=value):
-            CategoryTransformation.objects.filter(
-                ruleset=ruleset,
-                category_transformation=self,
-                key=key.value
-            ).delete()
+            CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=self, key=key.value).delete()
         else:
-            c = CategoryTransformation(
-                ruleset=ruleset,
-                category_transformation=self,
-                key=key.value,
-                value=value.value
-            )
+            c = CategoryTransformation(ruleset=ruleset, category_transformation=self, key=key.value, value=value.value)
             c.save()
 
     def get_transformation(self, ruleset, key=Transformation.ACTION, override=False):
@@ -2713,19 +1864,12 @@ class Category(models.Model, Transformable, Cache):
             raise Exception("Key '%s' is unknown" % key)
 
         if Category.TRANSFORMATIONS == {}:
-            ct = CategoryTransformation.objects.filter(
-                key=key.value,
-                ruleset=ruleset,
-                category_transformation=self
-            )
+            ct = CategoryTransformation.objects.filter(key=key.value, ruleset=ruleset, category_transformation=self)
             if ct.count() > 0:
                 return TYPE(ct[0].value)
 
             if override:
-                rt = RulesetTransformation.objects.filter(
-                    key=key.value,
-                    ruleset_transformation=ruleset
-                )
+                rt = RulesetTransformation.objects.filter(key=key.value, ruleset_transformation=ruleset)
                 if rt.count() > 0:
                     return TYPE(rt[0].value)
 
@@ -2765,18 +1909,18 @@ class Category(models.Model, Transformable, Cache):
 
             # TODO: move me in settings.RULESET_TRANSFORMATIONS
             allowed_choices.append((A_BYPASS.value, A_BYPASS.name.title()))
-            allowed_choices.append((A_RULESET_DEFAULT.value, A_RULESET_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.append((A_RULESET_DEFAULT.value, A_RULESET_DEFAULT.name.replace("_", " ").title()))
             allowed_choices.append((A_NONE.value, A_NONE.name.title()))
 
         if key == TARGET:
             CAT_DEFAULT = Transformation.T_CAT_DEFAULT
             allowed_choices = list(Transformation.TargetTransfoType.get_choices())
-            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace("_", " ").title()))
 
         if key == LATERAL:
             CAT_DEFAULT = Transformation.L_CAT_DEFAULT
             allowed_choices = list(Transformation.LateralTransfoType.get_choices())
-            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace("_", " ").title()))
 
         return tuple(sorted(allowed_choices))
 
@@ -2793,7 +1937,7 @@ class RangeCheckIntegerFields(models.Model):
             if field.__class__ == models.IntegerField:
                 value = getattr(self, field.name)
                 if value < self.MIN or value > self.MAX:
-                    raise ValidationError({f'{field.name}': f'"{value}" is out of range'})
+                    raise ValidationError({f"{field.name}": f'"{value}" is out of range'})
 
 
 class Reference:
@@ -2804,21 +1948,21 @@ class Reference:
 
 
 class Rule(RangeCheckIntegerFields, Transformable, Cache):
-    GROUP_BY_CHOICES = (('by_src', 'by_src'), ('by_dst', 'by_dst'))
+    GROUP_BY_CHOICES = (("by_src", "by_src"), ("by_dst", "by_dst"))
     sid = models.BigIntegerField(primary_key=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     msg = models.CharField(max_length=1000)
     group = models.BooleanField(default=False)
-    group_by = models.CharField(max_length=10, choices=GROUP_BY_CHOICES, default='by_src')
+    group_by = models.CharField(max_length=10, choices=GROUP_BY_CHOICES, default="by_src")
     group_ips_list = models.TextField(blank=True, null=True)  # store one IP per line
     created = models.DateField(blank=True, null=True)
     updated = models.DateField(blank=True, null=True)
 
     hits = 0
 
-    IPSREGEXP = {'src': re.compile(r'^\S+ +\S+ (.*) +\S+ +\->'), 'dest': re.compile(r'\-> (.*) +\S+$')}
+    IPSREGEXP = {"src": re.compile(r"^\S+ +\S+ (.*) +\S+ +\->"), "dest": re.compile(r"\-> (.*) +\S+$")}
 
-    GROUPSNAMEREGEXP = re.compile(r'^(.*) +group +\d+$')
+    GROUPSNAMEREGEXP = re.compile(r"^(.*) +group +\d+$")
 
     READ_ONLY_SIDS = (999999999,)
 
@@ -2836,30 +1980,34 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
 
     @classmethod
     def get_ioc_next_sid(cls) -> int:
-        return cls.objects.filter(  # pyright: ignore
-            sid__range=cls.IOC_RANGE
-        ).aggregate(
-            # remove 1 because we add 1 in the next line
-            max_sid=Coalesce(models.Max('sid'), cls.IOC_RANGE[0] - 1)
-        ).get('max_sid') + 1
+        return (
+            cls.objects.filter(  # pyright: ignore
+                sid__range=cls.IOC_RANGE
+            )
+            .aggregate(
+                # remove 1 because we add 1 in the next line
+                max_sid=Coalesce(models.Max("sid"), cls.IOC_RANGE[0] - 1)
+            )
+            .get("max_sid")
+            + 1
+        )
 
     def is_in_stamus_range(self):
         for values in self.SID_RANGES.values():
             for arr in values.values():
                 for item in arr:
-                    if item['min'] <= self.sid <= item['max']:
+                    if item["min"] <= self.sid <= item["max"]:
                         name = f"({item.get('name', '')})"
-                        raise ValidationError({'sid': f'"{self.sid}" is in Stamus ranges {name}'})
+                        raise ValidationError({"sid": f'"{self.sid}" is in Stamus ranges {name}'})
 
     @classmethod
     def get_last_real_version(cls, version, **kwargs):
         if cls.objects.exists():
-            return cls.objects.filter(
-                ruleatversion__version__range=[0, version],
-                **kwargs
-            ).aggregate(
-                max_version=models.Max('ruleatversion__version', default=0)
-            ).get('max_version', 0)
+            return (
+                cls.objects.filter(ruleatversion__version__range=[0, version], **kwargs)
+                .aggregate(max_version=models.Max("ruleatversion__version", default=0))
+                .get("max_version", 0)
+            )
         return version
 
     def clean(self):
@@ -2869,36 +2017,36 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
             self.is_in_stamus_range()
 
     def can_drop(self):
-        '''
+        """
         True if one of the rule at version is True
-        '''
+        """
         for rav in self.ruleatversion_set.all():
             if rav.can_drop():
                 return True
         return False
 
     def can_filestore(self):
-        '''
+        """
         True if one of the rule at version is True
-        '''
+        """
         for rav in self.ruleatversion_set.all():
             if rav.can_filestore():
                 return True
         return False
 
     def can_lateral(self):
-        '''
+        """
         True if one of the rule at version is True
-        '''
+        """
         for rav in self.ruleatversion_set.all():
             if rav.can_lateral():
                 return True
         return False
 
     def can_target(self):
-        '''
+        """
         True if one of the rule at version is True
-        '''
+        """
         for rav in self.ruleatversion_set.all():
             if rav.can_target():
                 return True
@@ -2926,35 +2074,44 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
 
     @staticmethod
     def get_icon():
-        return 'pficon-security'
+        return "pficon-security"
 
     def get_absolute_url(self):
-        return reverse('rule', args=[str(self.sid)])
+        return reverse("rule", args=[str(self.sid)])
 
     def get_actions(self, user):
         history = UserAction.objects.filter(
             user_action_objects__content_type=ContentType.objects.get_for_model(Rule),
-            user_action_objects__object_id=self.pk
-        ).order_by('-date')
+            user_action_objects__object_id=self.pk,
+        ).order_by("-date")
 
         res = []
         for item in history:
-            res.append({
-                'description': item.generate_description(user),
-                'comment': item.comment,
-                'title': item.get_title(),
-                'date': item.date,
-                'icons': item.get_icons(),
-                'client_ip': item.client_ip
-            })
+            res.append(
+                {
+                    "description": item.generate_description(user),
+                    "comment": item.comment,
+                    "title": item.get_title(),
+                    "date": item.date,
+                    "icons": item.get_icons(),
+                    "client_ip": item.client_ip,
+                }
+            )
         return res
 
     def get_comments(self):
         return UserAction.objects.filter(
-            action_type__in=['comment_rule', 'transform_rule', 'enable_rule', 'suppress_rule', 'disable_rule', 'delete_suppress_rule'],
+            action_type__in=[
+                "comment_rule",
+                "transform_rule",
+                "enable_rule",
+                "suppress_rule",
+                "disable_rule",
+                "delete_suppress_rule",
+            ],
             user_action_objects__content_type=ContentType.objects.get_for_model(Rule),
-            user_action_objects__object_id=self.pk
-        ).order_by('-date')
+            user_action_objects__object_id=self.pk,
+        ).order_by("-date")
 
     def get_dependant_rules_at_version(self, ruleset):
         ravs = []
@@ -2966,25 +2123,13 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
     def enable(self, ruleset, request=None, comment=None):
         ruleset.enable_rules_at_version(self.get_dependant_rules_at_version(ruleset))
         if request:
-            UserAction.create(
-                action_type='enable_rule',
-                comment=comment,
-                request=request,
-                rule=self,
-                ruleset=ruleset
-            )
+            UserAction.create(action_type="enable_rule", comment=comment, request=request, rule=self, ruleset=ruleset)
         return
 
     def disable(self, ruleset, request=None, comment=None):
         ruleset.disable_rules_at_version(self.get_dependant_rules_at_version(ruleset))
         if request:
-            UserAction.create(
-                action_type='disable_rule',
-                comment=comment,
-                request=request,
-                rule=self,
-                ruleset=ruleset
-            )
+            UserAction.create(action_type="disable_rule", comment=comment, request=request, rule=self, ruleset=ruleset)
         return
 
     def test(self, ruleset):
@@ -3004,7 +2149,6 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
             rav.toggle_availability()
 
     def apply_transformation(self, content, key=Transformation.ACTION, value=None):
-
         if key == Transformation.ACTION:
             if value == Transformation.A_REJECT:
                 content = re.sub(r"^ *\S+", "reject", content)
@@ -3013,7 +2157,7 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
             elif value == Transformation.A_FILESTORE:
                 content = re.sub(r"; *\)", "; filestore;)", content)
             elif value == Transformation.A_BYPASS:
-                if 'noalert' in content:
+                if "noalert" in content:
                     content = re.sub(r"; noalert;", "; noalert; bypass;", content)
                 else:
                     content = re.sub(r"; *\)$", "; noalert; bypass;)", content)
@@ -3026,10 +2170,10 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
 
     def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
         if Rule.TRANSFORMATIONS == {}:
-            return (self in ruleset.get_transformed_rules(key=key, value=value).values_list('pk', flat=True))
+            return self in ruleset.get_transformed_rules(key=key, value=value).values_list("pk", flat=True)
 
         rule_str = Rule.__name__.lower()
-        return (self.pk in Rule.TRANSFORMATIONS[key][rule_str][value])
+        return self.pk in Rule.TRANSFORMATIONS[key][rule_str][value]
 
     def get_transformation(self, ruleset, key=Transformation.ACTION, override=False):
         TYPE = None
@@ -3044,29 +2188,20 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
             raise Exception("Key '%s' is unknown" % key)
 
         if Rule.TRANSFORMATIONS == {}:
-            rt = RuleTransformation.objects.filter(
-                key=key.value,
-                ruleset=ruleset,
-                rule_transformation=self
-            ).all()
+            rt = RuleTransformation.objects.filter(key=key.value, ruleset=ruleset, rule_transformation=self).all()
 
             if rt.count() > 0:
                 return TYPE(rt[0].value)
 
             if override:
                 ct = CategoryTransformation.objects.filter(
-                    key=key.value,
-                    ruleset=ruleset,
-                    category_transformation=self.category
+                    key=key.value, ruleset=ruleset, category_transformation=self.category
                 ).all()
 
                 if ct.count() > 0:
                     return TYPE(ct[0].value)
 
-                rt = RulesetTransformation.objects.filter(
-                    key=key.value,
-                    ruleset_transformation=ruleset
-                )
+                rt = RulesetTransformation.objects.filter(key=key.value, ruleset_transformation=ruleset)
                 if rt.count() > 0:
                     return TYPE(rt[0].value)
 
@@ -3091,23 +2226,14 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
         return None
 
     def remove_transformations(self, ruleset, key):
-        RuleTransformation.objects.filter(
-            ruleset=ruleset,
-            rule_transformation=self,
-            key=key.value
-        ).delete()
+        RuleTransformation.objects.filter(ruleset=ruleset, rule_transformation=self, key=key.value).delete()
 
         ruleset.save()
 
     def set_transformation(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
         self.remove_transformations(ruleset, key)
 
-        r = RuleTransformation(
-            ruleset=ruleset,
-            rule_transformation=self,
-            key=key.value,
-            value=value.value
-        )
+        r = RuleTransformation(ruleset=ruleset, rule_transformation=self, key=key.value, value=value.value)
         r.save()
 
         ruleset.save()
@@ -3123,8 +2249,8 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
         try:
             rule_at_version = self.ruleatversion_set.get(version=version)
         except self.DoesNotExist:
-            request_logger.warning('Rule %s at version %s does not exist' % (self.pk, version))
-            return ''
+            request_logger.warning("Rule %s at version %s does not exist" % (self.pk, version))
+            return ""
         return rule_at_version.generate_content(ruleset)
 
     def get_transformation_choices(self, key=Transformation.ACTION):
@@ -3163,14 +2289,14 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
             allowed_choices.append((A_BYPASS.value, A_BYPASS.name.title()))
 
             # Add None/Category actions (Only for Rules)
-            allowed_choices.append((A_CATEGORY.value, A_CATEGORY.name.replace('_', ' ').title()))
+            allowed_choices.append((A_CATEGORY.value, A_CATEGORY.name.replace("_", " ").title()))
             allowed_choices.append((A_NONE.value, A_NONE.name.title()))
 
         elif key == TARGET:
             RULESET_DEFAULT = Transformation.T_RULESET_DEFAULT
 
             allowed_choices = list(Transformation.TargetTransfoType.get_choices())
-            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace("_", " ").title()))
             # Workaround (self.target): ref #674
             # Cannot transform, idstools cannot parse it
             # So remove this transformation from choices
@@ -3186,7 +2312,7 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
             RULESET_DEFAULT = Transformation.L_RULESET_DEFAULT
 
             allowed_choices = list(Transformation.LateralTransfoType.get_choices())
-            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace("_", " ").title()))
 
             L_YES = Transformation.L_YES
             L_AUTO = Transformation.L_AUTO
@@ -3201,22 +2327,22 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
         references = []
         for ref in re.findall(r"reference: *(\w+), *(\S+);", self.ruleatversion_set.first().content):
             refer = Reference(ref[0], ref[1])
-            if refer.key == 'url':
+            if refer.key == "url":
                 if not refer.value.startswith("http"):
                     refer.url = "http://" + refer.value
                 else:
                     refer.url = refer.value
-            elif refer.key == 'cve':
+            elif refer.key == "cve":
                 refer.url = "http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-" + refer.value
                 refer.key = refer.key.upper()
-            elif refer.key == 'bugtraq':
+            elif refer.key == "bugtraq":
                 refer.url = "http://www.securityfocus.com/bid/" + refer.value
             references.append(refer)
         return references
 
 
 def build_iprep_name(msg):
-    return re.sub('[^0-9a-zA-Z]+', '_', msg.replace(' ', ''))
+    return re.sub("[^0-9a-zA-Z]+", "_", msg.replace(" ", ""))
 
 
 class RuleAtVersion(RangeCheckIntegerFields):
@@ -3234,31 +2360,27 @@ class RuleAtVersion(RangeCheckIntegerFields):
     analysis = models.TextField(blank=True, null=True)
 
     BITSREGEXP = {
-        'flowbits': re.compile("flowbits *: *(isset|set),(.*?) *;"),
-        'hostbits': re.compile("hostbits *: *(isset|set),(.*?) *;"),
-        'xbits': re.compile("xbits *: *(isset|set),(.*?) *;"),
+        "flowbits": re.compile("flowbits *: *(isset|set),(.*?) *;"),
+        "hostbits": re.compile("hostbits *: *(isset|set),(.*?) *;"),
+        "xbits": re.compile("xbits *: *(isset|set),(.*?) *;"),
     }
 
     MANAGER_VERSION = None
 
     class Meta:
-        unique_together = ('rule', 'version')
+        unique_together = ("rule", "version")
 
     @classmethod
     def write_analyse(cls, content, version):
-        ravs = cls.objects.select_related('rule'). \
-            filter(
-                rule__sid__in=content.keys(),
-                version=version
-        ).all()
+        ravs = cls.objects.select_related("rule").filter(rule__sid__in=content.keys(), version=version).all()
 
         for rav in ravs:
             msg = content[rav.rule.sid]
-            msg.pop('raw')
+            msg.pop("raw")
             rav.analysis = json.dumps(msg)
 
         if ravs:
-            RuleAtVersion.objects.bulk_update(ravs, ['analysis'], batch_size=1000)
+            RuleAtVersion.objects.bulk_update(ravs, ["analysis"], batch_size=1000)
 
     @classmethod
     def get_versions_to_analyse(cls):
@@ -3269,21 +2391,19 @@ class RuleAtVersion(RangeCheckIntegerFields):
         return all_versions
 
     def is_active(self, ruleset):
-        return self.state and \
-            self.rule.category in ruleset.categories.all() and \
-            not self.is_suppressed(ruleset)
+        return self.state and self.rule.category in ruleset.categories.all() and not self.is_suppressed(ruleset)
 
     def is_suppressed(self, ruleset):
         return SuppressedRuleAtVersion.objects.filter(ruleset=ruleset, rule_at_version=self).count() > 0
 
     def get_dependant_rules_at_version(self, ruleset):
-        '''
+        """
         flowbit dependency:
         if we disable a rule that is the last one set a flag then we must disable all the
         dependant rules
-        '''
+        """
         # get list of flowbit we are setting
-        flowbits_list = Flowbit.objects.filter(set=self).prefetch_related('set', 'isset')
+        flowbits_list = Flowbit.objects.filter(set=self).prefetch_related("set", "isset")
         dependant_ravs = []
         for flowbit in flowbits_list:
             set_count = 0
@@ -3304,16 +2424,16 @@ class RuleAtVersion(RangeCheckIntegerFields):
         self.save()
 
     def match_dataset(self):
-        return re.match(r'.* \(.*dataset:.*(save|state) .*;\)$', self.content)
+        return re.match(r".* \(.*dataset:.*(save|state) .*;\)$", self.content)
 
     def match_luajit(self):
-        return re.match(r'.* \(.*(luajit|lua):.*;\)$', self.content)
+        return re.match(r".* \(.*(luajit|lua):.*;\)$", self.content)
 
     def can_drop(self):
         return "noalert" not in self.content
 
     def can_filestore(self):
-        return self.content.split(' ')[1] in ('http', 'smtp', 'smb', 'nfs', 'ftp-data')
+        return self.content.split(" ")[1] in ("http", "smtp", "smb", "nfs", "ftp-data")
 
     def can_lateral(self):
         try:
@@ -3323,10 +2443,10 @@ class RuleAtVersion(RangeCheckIntegerFields):
         # Workaround: ref #674
         # Cannot transform, idstools cannot parse it
         # So remove this transformation from choices
-        if rule_ids is None or 'outbound' in rule_ids['msg'].lower():
+        if rule_ids is None or "outbound" in rule_ids["msg"].lower():
             return False
 
-        if '$EXTERNAL_NET' in rule_ids.raw:
+        if "$EXTERNAL_NET" in rule_ids.raw:
             return True
 
         return False
@@ -3336,13 +2456,13 @@ class RuleAtVersion(RangeCheckIntegerFields):
             rule_ids = rule_idstools.parse(self.content)
         except:
             return False
-        return (rule_ids is not None)
+        return rule_ids is not None
 
     def generate_content(self, ruleset):
         content = self.content
 
         if self.rule.is_untrusted() and (self.match_luajit() or self.match_dataset()):
-            return 'disabled_as_source_is_untrusted: %s' % content
+            return "disabled_as_source_is_untrusted: %s" % content
 
         # explicitely set prio on transformation here
         # Action
@@ -3353,9 +2473,11 @@ class RuleAtVersion(RangeCheckIntegerFields):
         A_BYPASS = Transformation.A_BYPASS
 
         trans = self.rule.get_transformation(key=ACTION, ruleset=ruleset, override=True)
-        if (trans in (A_DROP, A_REJECT) and self.can_drop()) or \
-                (trans == A_FILESTORE and self.can_filestore()) or \
-                (trans == A_BYPASS):
+        if (
+            (trans in (A_DROP, A_REJECT) and self.can_drop())
+            or (trans == A_FILESTORE and self.can_filestore())
+            or (trans == A_BYPASS)
+        ):
             content = self.rule.apply_transformation(content, key=Transformation.ACTION, value=trans)
 
         # Lateral
@@ -3392,29 +2514,25 @@ class RuleAtVersion(RangeCheckIntegerFields):
                         continue
                     # create Flowbit if needed
                     if not flowinst[1] in list(flowbits[ftype].keys()):
-                        elt = Flowbit(
-                            type=ftype,
-                            name=flowinst[1],
-                            source=source
-                        )
+                        elt = Flowbit(type=ftype, name=flowinst[1], source=source)
                         flowbits[ftype][flowinst[1]] = elt
-                        flowbits['added']['flowbit'].append(elt)
+                        flowbits["added"]["flowbit"].append(elt)
                     else:
                         elt = flowbits[ftype][flowinst[1]]
 
                     if flowinst[0] == "isset":
                         if addition or not self.checker.filter(isset=self):
                             through_elt = Flowbit.isset.through(flowbit=elt, rule_at_version=self)
-                            flowbits['added']['through_isset'].append(through_elt)
+                            flowbits["added"]["through_isset"].append(through_elt)
                     elif flowinst[0] == "set":
                         if addition or not self.setter.filter(set=self):
                             through_elt = Flowbit.set.through(flowbit=elt, rule_at_version=self)
-                            flowbits['added']['through_set'].append(through_elt)
+                            flowbits["added"]["through_set"].append(through_elt)
 
     def parse_metadata_time(self, sfield):
-        sdate = sfield.split(' ')[1]
+        sdate = sfield.split(" ")[1]
         if sdate:
-            de = sdate.split('_')
+            de = sdate.split("_")
             try:
                 return datetime_date(int(de[0]), int(de[1]), int(de[2]))
             except ValueError:
@@ -3431,9 +2549,9 @@ class RuleAtVersion(RangeCheckIntegerFields):
         if rule_ids is None:
             return
         for meta in rule_ids.metadata:
-            if meta.startswith('created_at '):
+            if meta.startswith("created_at "):
                 self.created = self.parse_metadata_time(meta)
-            if meta.startswith('updated_at '):
+            if meta.startswith("updated_at "):
                 self.updated = self.parse_metadata_time(meta)
 
         if self.rule.created is None or self.rule.created > self.created:
@@ -3444,27 +2562,29 @@ class RuleAtVersion(RangeCheckIntegerFields):
 
 
 class Flowbit(models.Model):
-    FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
+    FLOWBIT_TYPE = (("flowbits", "Flowbits"), ("hostbits", "Hostbits"), ("xbits", "Xbits"))
     type = models.CharField(max_length=12, choices=FLOWBIT_TYPE)
     name = models.CharField(max_length=100)
-    set = models.ManyToManyField(RuleAtVersion, related_name='setter', through='FlowbitSetRuleAtVersion')
-    isset = models.ManyToManyField(RuleAtVersion, related_name='checker', through='FlowbitISSetRuleAtVersion')
+    set = models.ManyToManyField(RuleAtVersion, related_name="setter", through="FlowbitSetRuleAtVersion")
+    isset = models.ManyToManyField(RuleAtVersion, related_name="checker", through="FlowbitISSetRuleAtVersion")
     enable = models.BooleanField(default=True)
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
 
 
 class FlowbitSetRuleAtVersion(models.Model):
-    '''
+    """
     Intermediate table between Flowbits.set and Rule (pk)
-    '''
+    """
+
     flowbit = models.ForeignKey(Flowbit, on_delete=models.CASCADE)
     rule_at_version = models.ForeignKey(RuleAtVersion, on_delete=models.CASCADE)
 
 
 class FlowbitISSetRuleAtVersion(models.Model):
-    '''
+    """
     Intermediate table between Flowbits.isset and Rule (pk)
-    '''
+    """
+
     flowbit = models.ForeignKey(Flowbit, on_delete=models.CASCADE)
     rule_at_version = models.ForeignKey(RuleAtVersion, on_delete=models.CASCADE)
 
@@ -3474,12 +2594,12 @@ class FlowbitISSetRuleAtVersion(models.Model):
 class Ruleset(models.Model, Transformable):
     name = models.CharField(max_length=100, unique=True)
     descr = models.CharField(max_length=400, blank=True)
-    created_date = models.DateTimeField('date created')
-    updated_date = models.DateTimeField('date updated', blank=True)
+    created_date = models.DateTimeField("date created")
+    updated_date = models.DateTimeField("date updated", blank=True)
     validity = models.BooleanField(default=True)
     errors = models.TextField(blank=True)
     rules_count = models.IntegerField(default=0)
-    suppressed_sids = models.TextField(verbose_name='Suppress events', default='', blank=True)
+    suppressed_sids = models.TextField(verbose_name="Suppress events", default="", blank=True)
     activate_categories = models.BooleanField(default=True)
 
     editable = True
@@ -3491,16 +2611,10 @@ class Ruleset(models.Model, Transformable):
     # List of Category selected in the ruleset
     categories = models.ManyToManyField(Category, blank=True)
     rules_transformation = models.ManyToManyField(
-        Rule,
-        through='RuleTransformation',
-        related_name='rules_transformed',
-        blank=True
+        Rule, through="RuleTransformation", related_name="rules_transformed", blank=True
     )
     categories_transformation = models.ManyToManyField(
-        Category,
-        through='CategoryTransformation',
-        related_name='categories_transformed',
-        blank=True
+        Category, through="CategoryTransformation", related_name="categories_transformed", blank=True
     )
 
     # List or Rules to suppressed from the Ruleset
@@ -3535,7 +2649,7 @@ class Ruleset(models.Model, Transformable):
     json_errors = property(_json_errors)
 
     def get_processing_filter_thresholds(self):
-        for f in self.processing_filters.filter(enabled=True, action='threshold'):
+        for f in self.processing_filters.filter(enabled=True, action="threshold"):
             for item in f.get_threshold_content(self):
                 yield item
 
@@ -3543,16 +2657,21 @@ class Ruleset(models.Model, Transformable):
         ua_objects_from = rversion_from.ua_objects.filter(user_action__action_type__in=actions_type)
         ua_objects_to = rversion_to.ua_objects.filter(user_action__action_type__in=actions_type)
 
-        user_action_pk_min = ua_objects_from.filter(
-            user_action__action_type__in=actions_type
-        ).aggregate(models.Min('user_action__pk')).get('user_action__pk__min')
+        user_action_pk_min = (
+            ua_objects_from.filter(user_action__action_type__in=actions_type)
+            .aggregate(models.Min("user_action__pk"))
+            .get("user_action__pk__min")
+        )
 
-        user_action_pk_max = ua_objects_to.filter(
-            user_action__action_type__in=actions_type
-        ).aggregate(models.Max('user_action__pk')).get('user_action__pk__max')
+        user_action_pk_max = (
+            ua_objects_to.filter(user_action__action_type__in=actions_type)
+            .aggregate(models.Max("user_action__pk"))
+            .get("user_action__pk__max")
+        )
 
-        user_has_all_ua = (ua_objects_from.values('user_action').count() == rversion_from.ua_objects.values('user_action').count()) and \
-            (ua_objects_to.values('user_action').count() == rversion_to.ua_objects.values('user_action').count())
+        user_has_all_ua = (
+            ua_objects_from.values("user_action").count() == rversion_from.ua_objects.values("user_action").count()
+        ) and (ua_objects_to.values("user_action").count() == rversion_to.ua_objects.values("user_action").count())
 
         qs = UserAction.objects.none()
         if user_action_pk_min is not None and user_action_pk_max is not None:
@@ -3560,9 +2679,9 @@ class Ruleset(models.Model, Transformable):
                 pk__gte=user_action_pk_min,
                 pk__lte=user_action_pk_max,
                 action_type__in=actions_type,
-                user_action_objects__action_key='ruleset',
-                user_action_objects__object_id=self.pk
-            ).order_by('-date')
+                user_action_objects__action_key="ruleset",
+                user_action_objects__object_id=self.pk,
+            ).order_by("-date")
         return qs, user_has_all_ua
 
     @staticmethod
@@ -3590,47 +2709,37 @@ class Ruleset(models.Model, Transformable):
             RULESET_DEFAULT = Transformation.T_RULESET_DEFAULT
 
             allowed_choices = list(Transformation.TargetTransfoType.get_choices())
-            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
-            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace("_", " ").title()))
+            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace("_", " ").title()))
 
         if key == LATERAL:
             CAT_DEFAULT = Transformation.L_CAT_DEFAULT
             RULESET_DEFAULT = Transformation.L_RULESET_DEFAULT
 
             allowed_choices = list(Transformation.LateralTransfoType.get_choices())
-            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
-            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace("_", " ").title()))
+            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace("_", " ").title()))
 
         return tuple(allowed_choices)
 
     @staticmethod
     def get_icon():
-        return 'fa-th'
+        return "fa-th"
 
     def remove_transformation(self, key):
-        RulesetTransformation.objects.filter(
-            ruleset_transformation=self,
-            key=key.value
-        ).delete()
+        RulesetTransformation.objects.filter(ruleset_transformation=self, key=key.value).delete()
 
         self.save()
 
     def set_transformation(self, key=Transformation.ACTION, value=Transformation.A_DROP):
         self.remove_transformation(key)
 
-        r = RulesetTransformation(
-            ruleset_transformation=self,
-            key=key.value,
-            value=value.value
-        )
+        r = RulesetTransformation(ruleset_transformation=self, key=key.value, value=value.value)
         r.save()
 
         self.save()
 
-    def get_transformed_categories(self,
-                                   key=Transformation.ACTION,
-                                   value=Transformation.A_DROP):
-
+    def get_transformed_categories(self, key=Transformation.ACTION, value=Transformation.A_DROP):
         # All transformed categories from this ruleset
         if key is None:
             return Category.objects.filter(categorytransformation__ruleset=self)
@@ -3638,23 +2747,18 @@ class Ruleset(models.Model, Transformable):
         categories = Category.objects.filter(
             categorytransformation__ruleset=self,
             categorytransformation__key=key.value,
-            categorytransformation__value=value.value
+            categorytransformation__value=value.value,
         )
 
         return categories
 
-    def get_transformed_rules(self,
-                              key=Transformation.ACTION,
-                              value=Transformation.A_DROP):
-
+    def get_transformed_rules(self, key=Transformation.ACTION, value=Transformation.A_DROP):
         # All transformed rules from this ruleset
         if key is None:
             return Rule.objects.filter(ruletransformation__ruleset=self)
 
         rules = Rule.objects.filter(
-            ruletransformation__ruleset=self,
-            ruletransformation__key=key.value,
-            ruletransformation__value=value.value
+            ruletransformation__ruleset=self, ruletransformation__key=key.value, ruletransformation__value=value.value
         )
 
         return rules
@@ -3675,10 +2779,7 @@ class Ruleset(models.Model, Transformable):
         else:
             raise Exception("Key '%s' is unknown" % key)
 
-        rt = RulesetTransformation.objects.filter(
-            key=key.value,
-            ruleset_transformation=self
-        ).exclude(value=NONE.value)
+        rt = RulesetTransformation.objects.filter(key=key.value, ruleset_transformation=self).exclude(value=NONE.value)
 
         if rt.count() > 0:
             return TYPE(rt[0].value)
@@ -3687,14 +2788,13 @@ class Ruleset(models.Model, Transformable):
 
     def is_transformed(self, key=Transformation.ACTION, value=Transformation.A_DROP):
         rulesets_t = Ruleset.objects.filter(
-            rulesettransformation__key=key.value,
-            rulesettransformation__value=value.value
+            rulesettransformation__key=key.value, rulesettransformation__value=value.value
         )
 
-        return (self.pk in rulesets_t.values_list('pk', flat=True))
+        return self.pk in rulesets_t.values_list("pk", flat=True)
 
     def get_absolute_url(self):
-        return reverse('ruleset', args=[str(self.id)])
+        return reverse("ruleset", args=[str(self.id)])
 
     def update(self):
         update_errors = []
@@ -3704,13 +2804,14 @@ class Ruleset(models.Model, Transformable):
             try:
                 source.update()
 
-                if source.method == 'http' and source.is_ti_url() and not is_ti_url:
+                if source.method == "http" and source.is_ti_url() and not is_ti_url:
                     from scirius.utils import get_middleware_module
+
                     try:
-                        get_middleware_module('common').data_export()
+                        get_middleware_module("common").data_export()
                         is_ti_url = True
                     except Exception as exc:
-                        request_logger.error('Unable to export data: %s' % exc)
+                        request_logger.error("Unable to export data: %s" % exc)
             except IOError as e:
                 update_errors.append('Source "%s" update failed:\n\t%s' % (source.name, str(e)))
 
@@ -3720,47 +2821,48 @@ class Ruleset(models.Model, Transformable):
             self.save()
 
         if len(update_errors):
-            raise IOError(len(update_errors), '\n'.join(update_errors))
+            raise IOError(len(update_errors), "\n".join(update_errors))
 
     def generate(self, rules=False, version=None):
-
         filters = {
-            'rule__category__source__in': self.sources.all(),
-            'rule__category__in': self.categories.all(),
-            'state': True
+            "rule__category__source__in": self.sources.all(),
+            "rule__category__in": self.categories.all(),
+            "state": True,
         }
         if version is not None:
-            filters.update({'version': version})
+            filters.update({"version": version})
 
-        ravs = RuleAtVersion.objects. \
-            select_related('rule'). \
-            select_related('rule__category'). \
-            select_related('rule__category__source'). \
-            filter(**filters). \
-            exclude(
-                pk__in=SuppressedRuleAtVersion.objects.filter(
-                    ruleset=self
-                ).values_list('rule_at_version__pk', flat=True).distinct()
-            ). \
-            order_by('rule__sid')
+        ravs = (
+            RuleAtVersion.objects.select_related("rule")
+            .select_related("rule__category")
+            .select_related("rule__category__source")
+            .filter(**filters)
+            .exclude(
+                pk__in=SuppressedRuleAtVersion.objects.filter(ruleset=self)
+                .values_list("rule_at_version__pk", flat=True)
+                .distinct()
+            )
+            .order_by("rule__sid")
+        )
         if rules is False:
             return ravs
 
-        return Rule.objects.filter(
-            pk__in=ravs.values_list('rule__pk', flat=True)
-        ).annotate(
-            untrusted=models.Case(
-                models.When(category__source__untrusted=False, then=False),
-                models.When(category__source__untrusted=True, then=True),
-                default=True,
-                output_field=models.BooleanField()
-
+        return (
+            Rule.objects.filter(pk__in=ravs.values_list("rule__pk", flat=True))
+            .annotate(
+                untrusted=models.Case(
+                    models.When(category__source__untrusted=False, then=False),
+                    models.When(category__source__untrusted=True, then=True),
+                    default=True,
+                    output_field=models.BooleanField(),
+                )
             )
-        ).order_by('sid')
+            .order_by("sid")
+        )
 
     def generate_threshold(self, directory):
-        thresholdfile = os.path.join(directory, 'threshold.config')
-        with open(thresholdfile, 'w') as f:
+        thresholdfile = os.path.join(directory, "threshold.config")
+        with open(thresholdfile, "w") as f:
             for threshold in Threshold.objects.filter(ruleset=self):
                 f.write("%s\n" % (threshold))
 
@@ -3806,33 +2908,33 @@ class Ruleset(models.Model, Transformable):
         return self
 
     def export_files(self, directory):
-        cats_content = ''
-        iprep_content = ''
+        cats_content = ""
+        iprep_content = ""
         for src in self.sources.all():
             cats, iprep = src.export_files(directory)
             if cats_content and cats:
-                cats_content += '\n'
+                cats_content += "\n"
             cats_content += cats
 
             if iprep_content and iprep:
-                iprep_content += '\n'
+                iprep_content += "\n"
             iprep_content += iprep
 
         # generate threshold.config
         self.generate_threshold(directory)
         return cats_content, iprep_content
 
-    def diff(self, mode='long'):
+    def diff(self, mode="long"):
         sources = self.sources.all()
         sdiff = {}
         for source in sources:
-            supdate = SourceUpdate.objects.filter(source=source).order_by('-created_date')
+            supdate = SourceUpdate.objects.filter(source=source).order_by("-created_date")
             if supdate.count() > 0:
                 srcdiff = supdate[0].diff()
-                if mode == 'short':
+                if mode == "short":
                     num = 0
-                    for key in srcdiff['stats']:
-                        num = num + srcdiff['stats'][key]
+                    for key in srcdiff["stats"]:
+                        num = num + srcdiff["stats"][key]
                     if num > 0:
                         sdiff[source.name] = srcdiff
                 else:
@@ -3844,11 +2946,11 @@ class Ruleset(models.Model, Transformable):
         tar_path_io = BytesIO()
         try:
             with tarfile.open(fileobj=tar_path_io, mode="w:gz") as tar:
-                file_info = tarfile.TarInfo('scirius.rules')
+                file_info = tarfile.TarInfo("scirius.rules")
                 file_info.size = len(content)
-                tar.addfile(file_info, BytesIO(bytes(content, 'utf-8')))
+                tar.addfile(file_info, BytesIO(bytes(content, "utf-8")))
         except Exception as e:
-            request_logger.warning('Ruleset export failed: %s' % e)
+            request_logger.warning("Ruleset export failed: %s" % e)
 
         return tar_path_io
 
@@ -3856,10 +2958,10 @@ class Ruleset(models.Model, Transformable):
         from scirius.utils import get_middleware_module
 
         ravs = self.generate(version=0)
-        self.number_of_rules(ravs.values('rule').distinct())
+        self.number_of_rules(ravs.values("rule").distinct())
 
         # test is not done on stamus source
-        sources = get_middleware_module('common').custom_source_datatype()
+        sources = get_middleware_module("common").custom_source_datatype()
         ravs = ravs.exclude(rule__category__source__datatype__in=sources)
         file_content = "# Rules file for %s generated by Scirius at %s\n" % (self.name, str(timezone.now()))
 
@@ -3886,7 +2988,7 @@ class Ruleset(models.Model, Transformable):
 
         self.rules_count = rules.count()
         self.save()
-        result = {'rules_count': self.rules_count}
+        result = {"rules_count": self.rules_count}
         return result
 
     def test_rule_buffer(self, rule_buffer, engine_analysis=False):
@@ -3898,7 +3000,7 @@ class Ruleset(models.Model, Transformable):
             related_files=related_files,
             cats_content=cats_content,
             iprep_content=iprep_content,
-            engine_analysis=engine_analysis
+            engine_analysis=engine_analysis,
         )
 
     def prepare_tests_files(self):
@@ -3909,7 +3011,7 @@ class Ruleset(models.Model, Transformable):
         for root, _, files in os.walk(tmpdir):
             for f in files:
                 fullpath = os.path.join(root, f)
-                with open(fullpath, 'r') as cf:
+                with open(fullpath, "r") as cf:
                     related_files[f] = cf.read(50 * 1024)
 
         shutil.rmtree(tmpdir)
@@ -3922,28 +3024,30 @@ class Ruleset(models.Model, Transformable):
         all_versions = RuleAtVersion.get_versions_to_analyse()
         for version in all_versions:
             for source in self.sources.all():
-                contents = RuleAtVersion.objects.filter(
-                    rule__category__source=source,
-                    updated_date__gte=source.updated_date,
-                    version=version
-                ).distinct().values_list('content', flat=True)
+                contents = (
+                    RuleAtVersion.objects.filter(
+                        rule__category__source=source, updated_date__gte=source.updated_date, version=version
+                    )
+                    .distinct()
+                    .values_list("content", flat=True)
+                )
 
                 if contents:
                     content = testor.rules_infos(
-                        '\n'.join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH}\n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000',
+                        "\n".join(contents) + f"\n## SLS dataset-dir: {Source.DATASET_PATH}\n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000",
                         related_files=related_files,
                         cats_content=cats_content,
-                        iprep_content=iprep_content
+                        iprep_content=iprep_content,
                     )
                     RuleAtVersion.write_analyse(content, version)
 
     def test(self):
         rule_buffer = self.to_buffer() + "\n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000"
         result = self.test_rule_buffer(rule_buffer)
-        result['rules_count'] = self.rules_count
-        self.validity = result['status']
-        if 'errors' in result:
-            self.errors = json.dumps(result['errors'])
+        result["rules_count"] = self.rules_count
+        self.validity = result["status"]
+        if "errors" in result:
+            self.errors = json.dumps(result["errors"])
         else:
             self.errors = json.dumps([])
         self.save()
@@ -3968,12 +3072,11 @@ class Ruleset(models.Model, Transformable):
             SuppressedRuleAtVersion.objects.filter(rule_at_version__in=restore_ravs, ruleset=self).delete()
 
     @classmethod
-    def create_ruleset(cls, name, sources=[], activate_categories=False):
+    def create_ruleset(cls, name, sources=None, activate_categories=False):
+        if sources is None:
+            sources = []
         ruleset = cls.objects.create(
-            name=name,
-            created_date=timezone.now(),
-            updated_date=timezone.now(),
-            activate_categories=activate_categories
+            name=name, created_date=timezone.now(), updated_date=timezone.now(), activate_categories=activate_categories
         )
 
         for src_pk in sources:
@@ -4008,11 +3111,11 @@ class Ruleset(models.Model, Transformable):
         # rebuild policy index
         counter = 0
         objs = []
-        for policy in RuleProcessingFilter.objects.order_by('index').iterator():
+        for policy in RuleProcessingFilter.objects.order_by("index").iterator():
             policy.index = counter
             objs.append(policy)
             counter += 1
-        RuleProcessingFilter.objects.bulk_update(objs, ['index'])
+        RuleProcessingFilter.objects.bulk_update(objs, ["index"])
         # finally, delete the ruleset
         super().delete()
 
@@ -4022,7 +3125,7 @@ class RuleTransformation(Transformation):
     rule_transformation = models.ForeignKey(Rule, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('ruleset', 'rule_transformation', 'key')
+        unique_together = ("ruleset", "rule_transformation", "key")
 
 
 class SuppressedRuleAtVersion(models.Model):
@@ -4030,7 +3133,7 @@ class SuppressedRuleAtVersion(models.Model):
     rule_at_version = models.ForeignKey(RuleAtVersion, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('ruleset', 'rule_at_version')
+        unique_together = ("ruleset", "rule_at_version")
 
 
 class CategoryTransformation(Transformation):
@@ -4038,27 +3141,27 @@ class CategoryTransformation(Transformation):
     category_transformation = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('ruleset', 'category_transformation', 'key')
+        unique_together = ("ruleset", "category_transformation", "key")
 
 
 class RulesetTransformation(Transformation):
     ruleset_transformation = models.ForeignKey(Ruleset, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('ruleset_transformation', 'key')
+        unique_together = ("ruleset_transformation", "key")
 
 
 class Threshold(models.Model):
-    THRESHOLD_TYPES = (('threshold', 'threshold'), ('suppress', 'suppress'))
-    THRESHOLD_TYPE_TYPES = (('limit', 'limit'), ('threshold', 'threshold'), ('both', 'both'))
-    TRACK_BY_CHOICES = (('by_src', 'by_src'), ('by_dst', 'by_dst'))
+    THRESHOLD_TYPES = (("threshold", "threshold"), ("suppress", "suppress"))
+    THRESHOLD_TYPE_TYPES = (("limit", "limit"), ("threshold", "threshold"), ("both", "both"))
+    TRACK_BY_CHOICES = (("by_src", "by_src"), ("by_dst", "by_dst"))
     descr = models.CharField(max_length=400, blank=True)
-    threshold_type = models.CharField(max_length=20, choices=THRESHOLD_TYPES, default='suppress')
-    type = models.CharField(max_length=20, choices=THRESHOLD_TYPE_TYPES, default='limit')
+    threshold_type = models.CharField(max_length=20, choices=THRESHOLD_TYPES, default="suppress")
+    type = models.CharField(max_length=20, choices=THRESHOLD_TYPE_TYPES, default="limit")
     gid = models.IntegerField(default=1)
     rule = models.ForeignKey(Rule, default=None, on_delete=models.CASCADE)
     ruleset = models.ForeignKey(Ruleset, default=None, on_delete=models.CASCADE)
-    track_by = models.CharField(max_length=10, choices=TRACK_BY_CHOICES, default='by_src')
+    track_by = models.CharField(max_length=10, choices=TRACK_BY_CHOICES, default="by_src")
     net = models.CharField(max_length=100, blank=True, validators=[validate_addresses_or_networks])
     count = models.IntegerField(default=1)
     seconds = models.IntegerField(default=60)
@@ -4067,17 +3170,25 @@ class Threshold(models.Model):
         rep = ""
         if self.threshold_type == "suppress":
             net = self.net
-            if ',' in self.net:
-                net = '[%s]' % self.net
+            if "," in self.net:
+                net = "[%s]" % self.net
 
             rep = "suppress gen_id %d, sig_id %d" % (self.gid, self.rule.sid)
             rep += ", track %s, ip %s" % (self.track_by, net)
         else:
-            rep = "%s gen_id %d, sig_id %d, type %s, track %s, count %d, seconds %d" % (self.threshold_type, self.gid, self.rule.sid, self.type, self.track_by, self.count, self.seconds)
+            rep = "%s gen_id %d, sig_id %d, type %s, track %s, count %d, seconds %d" % (
+                self.threshold_type,
+                self.gid,
+                self.rule.sid,
+                self.type,
+                self.track_by,
+                self.count,
+                self.seconds,
+            )
         return rep
 
     def get_absolute_url(self):
-        return reverse('threshold', args=[str(self.id)])
+        return reverse("threshold", args=[str(self.id)])
 
     def contain(self, elt):
         if elt.threshold_type != self.threshold_type:
@@ -4086,180 +3197,11 @@ class Threshold(models.Model):
         if elt.track_by != self.track_by:
             return False
 
-        if elt.threshold_type == 'suppress':
+        if elt.threshold_type == "suppress":
             if not IPy.IP(self.net).overlaps(IPy.IP(elt.net)):
                 return False
 
         return True
-
-
-class RuleProcessingFilter(models.Model):
-    """
-    Also called policy
-    """
-    action = models.CharField(max_length=10)
-    options = models.CharField(max_length=512, null=True, blank=True)
-    index = models.PositiveIntegerField()
-    description = models.TextField(default='')
-    enabled = models.BooleanField(default=True)
-    rulesets = models.ManyToManyField(Ruleset, related_name='processing_filters')
-    imported = models.BooleanField(default=False)
-    event_type = models.CharField(max_length=32, default='alert', null=False, blank=False)
-
-    class Meta:
-        ordering = ['index']
-
-    def get_options(self):
-        if not self.options:
-            return {}
-        return json.loads(self.options)
-
-    def get_threshold_content(self, ruleset=None):
-        sid_track_ip = {}
-        sids = []
-        try:
-            sid = self.filter_defs.get(key='alert.signature_id').value
-            sid_track_ip = {str(sid): []}
-            sids.append(sid)
-        except models.ObjectDoesNotExist:
-            pass
-
-        try:
-            msg = self.filter_defs.get(key='msg').value
-            sids = list(Rule.objects.filter(msg__icontains=msg).order_by('sid').values_list('sid', flat=True))
-            sid_track_ip = dict([(str(sid_), []) for sid_ in sids]) if msg else None
-        except models.ObjectDoesNotExist:
-            pass
-
-        try:
-            content = self.filter_defs.get(key='content').value
-            sids = list(Rule.objects.filter(content__icontains=content).order_by('sid').values_list('sid', flat=True))
-            sid_track_ip = dict([(str(sid_), []) for sid_ in sids]) if content else None
-        except models.ObjectDoesNotExist:
-            pass
-
-        try:
-            msg = self.filter_defs.get(key='alert.signature').value
-            sids = list(Rule.objects.filter(msg=msg).order_by('sid').values_list('sid', flat=True))
-            sid_track_ip = dict([(str(sid), []) for sid in sids]) if msg else None
-        except models.ObjectDoesNotExist:
-            pass
-
-        if self.action == 'suppress':
-            try:
-                src_ip = self.filter_defs.get(key='src_ip')
-            except models.ObjectDoesNotExist:
-                src_ip = None
-
-            try:
-                dest_ip = self.filter_defs.get(key='dest_ip')
-            except models.ObjectDoesNotExist:
-                dest_ip = None
-
-            try:
-                alert_target_ip = self.filter_defs.get(key='alert.target.ip')
-            except models.ObjectDoesNotExist:
-                alert_target_ip = None
-
-            try:
-                alert_source_ip = self.filter_defs.get(key='alert.source.ip')
-            except models.ObjectDoesNotExist:
-                alert_source_ip = None
-
-            if alert_source_ip or alert_target_ip:
-                rules = Rule.objects.filter(sid__in=sids).annotate(
-                    untrusted=models.Case(
-                        models.When(category__source__untrusted=False, then=False),
-                        models.When(category__source__untrusted=True, then=True),
-                        default=True,
-                        output_field=models.BooleanField()
-                    ))
-
-                alert_ip = alert_source_ip if alert_source_ip is not None else alert_target_ip
-
-                for rule in rules:
-                    content = rule.generate_content(ruleset)
-
-                    if 'target:src_ip;' in content:
-                        if alert_target_ip:
-                            sid_track_ip[str(rule.sid)] = ('by_src', alert_ip.value,)
-                        elif alert_source_ip:
-                            sid_track_ip[str(rule.sid)] = ('by_dst', alert_ip.value,)
-                    elif 'target:dest_ip;' in content:
-                        if alert_target_ip:
-                            sid_track_ip[str(rule.sid)] = ('by_dst', alert_ip.value,)
-                        elif alert_source_ip:
-                            sid_track_ip[str(rule.sid)] = ('by_src', alert_ip.value,)
-                    else:
-                        sid_track_ip.pop(str(rule.sid), None)
-
-            elif src_ip:
-                for sid in sids:
-                    sid_track_ip[str(sid)] = ('by_src', src_ip.value)
-            else:
-                for sid in sids:
-                    sid_track_ip[str(sid)] = ('by_dst', dest_ip.value)
-
-            res = []
-            for sid, val in sorted(sid_track_ip.items()):
-                if len(val):
-                    res.append('suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, val[0], val[1]))
-            return res
-
-        elif self.action == 'threshold':
-            options = self.get_options()
-
-            res = []
-            for sid in sid_track_ip.keys():
-                res.append('threshold gen_id 1, sig_id %s, type %s, track %s, count %s, seconds %s\n' % (sid, options['type'], options['track'], options['count'], options['seconds']))
-            return res
-
-        raise Exception('Invalid processing filter action %s' % self.action)
-
-    @staticmethod
-    def get_icon():
-        return 'pficon-filter'
-
-    def __str__(self):
-        filters = []
-        for f in self.filter_defs.order_by('key'):
-            filters.append(str(f))
-        return '%s (%s)' % (self.action, ', '.join(filters))
-
-
-class RuleProcessingFilterDef(models.Model):
-    OPERATOR = (('equal', 'Equal'), ('different', 'Different'), ('contains', 'Contains'))
-    OPERATOR_DISPLAY = {
-        'equal': '=',
-        'different': '!='
-    }
-
-    key = models.CharField(max_length=512)
-    value = models.CharField(max_length=1024)
-    operator = models.CharField(max_length=10, choices=OPERATOR)
-    proc_filter = models.ForeignKey(RuleProcessingFilter, on_delete=models.CASCADE, related_name='filter_defs')
-    full_string = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ('key', 'value')
-
-    def __str__(self):
-        op = self.OPERATOR_DISPLAY.get(self.operator, self.operator)
-        return '%s %s %s' % (self.key, op, self.value)
-
-
-class DeepLink(models.Model):
-    name = models.CharField(max_length=128, null=False, blank=False)
-    template = models.CharField(max_length=2048, validators=[validate_url], null=False, blank=False)
-    all = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ('name', 'template')
-
-
-class DeepLinkEntity(models.Model):
-    deeplink = models.ManyToManyField(DeepLink, related_name='entities', blank=True)
-    name = models.CharField(max_length=128, null=False, blank=False)
 
 
 def dependencies_check(obj):
@@ -4281,21 +3223,189 @@ def dependencies_check(obj):
 
 
 def export_iprep_files(target_dir, cats_content, iprep_content):
-    group_rules = Rule.objects.filter(group=True).order_by('sid')
+    group_rules = Rule.objects.filter(group=True).order_by("sid")
     cat_map = {}
 
-    with open(target_dir + "/" + "scirius-categories.txt", 'w') as rfile:
+    with open(target_dir + "/" + "scirius-categories.txt", "w") as rfile:
         index = 1
         for rule in group_rules:
-            rfile.write('%s,%d,%s\n' % (index, rule.sid, rule.msg))
+            rfile.write("%s,%d,%s\n" % (index, rule.sid, rule.msg))
             cat_map[index] = rule
             index = index + 1
         if cats_content:
             rfile.write(cats_content)
 
-    with open(target_dir + "/" + "scirius-iprep.list", 'w') as rfile:
+    with open(target_dir + "/" + "scirius-iprep.list", "w") as rfile:
         for cate in cat_map:
-            for IP in cat_map[cate].group_ips_list.split(','):
-                rfile.write('%s,%d,100\n' % (IP, cate))
+            for IP in cat_map[cate].group_ips_list.split(","):
+                rfile.write("%s,%d,100\n" % (IP, cate))
         if iprep_content:
             rfile.write(iprep_content)
+
+
+class RuleProcessingFilter(models.Model):
+    """
+    Also called policy
+    """
+
+    action = models.CharField(max_length=10)
+    options = models.CharField(max_length=512, null=True, blank=True)
+    index = models.PositiveIntegerField()
+    description = models.TextField(default="")
+    enabled = models.BooleanField(default=True)
+    rulesets = models.ManyToManyField(Ruleset, related_name="processing_filters")
+    imported = models.BooleanField(default=False)
+    event_type = models.CharField(max_length=32, default="alert", null=False, blank=False)
+
+    class Meta:
+        ordering: Iterable[str] = ["index"]
+
+    def __str__(self):
+        filters = [str(f) for f in self.filter_defs.order_by("key")]
+        return "{} ({})".format(self.action, ", ".join(filters))
+
+    def get_options(self):
+        if not self.options:
+            return {}
+        return json.loads(self.options)
+
+    def get_threshold_content(self, ruleset=None):
+        sid_track_ip = {}
+        sids = []
+        try:
+            sid = self.filter_defs.get(key="alert.signature_id").value
+            sid_track_ip = {str(sid): []}
+            sids.append(sid)
+        except models.ObjectDoesNotExist:
+            pass
+
+        try:
+            msg = self.filter_defs.get(key="msg").value
+            sids = list(Rule.objects.filter(msg__icontains=msg).order_by("sid").values_list("sid", flat=True))
+            sid_track_ip = {str(sid_): [] for sid_ in sids} if msg else None
+        except models.ObjectDoesNotExist:
+            pass
+
+        try:
+            content = self.filter_defs.get(key="content").value
+            sids = list(Rule.objects.filter(content__icontains=content).order_by("sid").values_list("sid", flat=True))
+            sid_track_ip = {str(sid_): [] for sid_ in sids} if content else None
+        except models.ObjectDoesNotExist:
+            pass
+
+        try:
+            msg = self.filter_defs.get(key="alert.signature").value
+            sids = list(Rule.objects.filter(msg=msg).order_by("sid").values_list("sid", flat=True))
+            sid_track_ip = {str(sid): [] for sid in sids} if msg else None
+        except models.ObjectDoesNotExist:
+            pass
+
+        if self.action == "suppress":
+            try:
+                src_ip = self.filter_defs.get(key="src_ip")
+            except models.ObjectDoesNotExist:
+                src_ip = None
+
+            try:
+                dest_ip = self.filter_defs.get(key="dest_ip")
+            except models.ObjectDoesNotExist:
+                dest_ip = None
+
+            try:
+                alert_target_ip = self.filter_defs.get(key="alert.target.ip")
+            except models.ObjectDoesNotExist:
+                alert_target_ip = None
+
+            try:
+                alert_source_ip = self.filter_defs.get(key="alert.source.ip")
+            except models.ObjectDoesNotExist:
+                alert_source_ip = None
+
+            if alert_source_ip or alert_target_ip:
+                rules = Rule.objects.filter(sid__in=sids).annotate(
+                    untrusted=models.Case(
+                        models.When(category__source__untrusted=False, then=False),
+                        models.When(category__source__untrusted=True, then=True),
+                        default=True,
+                        output_field=models.BooleanField(),
+                    )
+                )
+
+                alert_ip = alert_source_ip if alert_source_ip is not None else alert_target_ip
+
+                for rule in rules:
+                    content = rule.generate_content(ruleset)
+
+                    if "target:src_ip;" in content:
+                        if alert_target_ip:
+                            sid_track_ip[str(rule.sid)] = (
+                                "by_src",
+                                alert_ip.value,
+                            )
+                        elif alert_source_ip:
+                            sid_track_ip[str(rule.sid)] = (
+                                "by_dst",
+                                alert_ip.value,
+                            )
+                    elif "target:dest_ip;" in content:
+                        if alert_target_ip:
+                            sid_track_ip[str(rule.sid)] = (
+                                "by_dst",
+                                alert_ip.value,
+                            )
+                        elif alert_source_ip:
+                            sid_track_ip[str(rule.sid)] = (
+                                "by_src",
+                                alert_ip.value,
+                            )
+                    else:
+                        sid_track_ip.pop(str(rule.sid), None)
+
+            elif src_ip:
+                for sid in sids:
+                    sid_track_ip[str(sid)] = ("by_src", src_ip.value)
+            else:
+                for sid in sids:
+                    sid_track_ip[str(sid)] = ("by_dst", dest_ip.value)
+
+            res = []
+            for sid, val in sorted(sid_track_ip.items()):
+                if len(val):
+                    res.append(f"suppress gen_id 1, sid_id {sid}, track {val[0]}, ip {val[1]}\n")
+            return res
+
+        if self.action == "threshold":
+            options = self.get_options()
+
+            res = []
+            for sid in sid_track_ip:
+                res.append(
+                    "threshold gen_id 1, sig_id {}, type {}, track {}, count {}, seconds {}\n".format(
+                        sid, options["type"], options["track"], options["count"], options["seconds"]
+                    )
+                )
+            return res
+
+        raise Exception(f"Invalid processing filter action {self.action}")
+
+    @staticmethod
+    def get_icon():
+        return "pficon-filter"
+
+
+class RuleProcessingFilterDef(models.Model):
+    OPERATOR = (("equal", "Equal"), ("different", "Different"), ("contains", "Contains"))
+    OPERATOR_DISPLAY: ClassVar[dict[str, str]] = {"equal": "=", "different": "!="}
+
+    key = models.CharField(max_length=512)
+    value = models.CharField(max_length=1024)
+    operator = models.CharField(max_length=10, choices=OPERATOR)
+    proc_filter = models.ForeignKey(RuleProcessingFilter, on_delete=models.CASCADE, related_name="filter_defs")
+    full_string = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ("key", "value")
+
+    def __str__(self) -> str:
+        op = self.OPERATOR_DISPLAY.get(self.operator, self.operator)
+        return f"{self.key} {op} {self.value}"

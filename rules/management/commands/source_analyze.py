@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from rules.models import Source, TestRules, RuleAtVersion
+from rules.models.model import Source, TestRules
+from rules.models.model import RuleAtVersion
 
 
 class Command(BaseCommand):

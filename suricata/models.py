@@ -34,7 +34,7 @@ import socket
 from copy import deepcopy
 from datetime import datetime, timedelta
 
-from rules.models import Ruleset, Rule, export_iprep_files
+from rules.models.model import Ruleset, Rule, export_iprep_files
 from suricata import tasks
 
 from celery.utils.log import get_task_logger

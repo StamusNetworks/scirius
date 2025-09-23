@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
-from rules.models import Source
+from rules.models.model import Source
 
 
 class Command(BaseCommand):

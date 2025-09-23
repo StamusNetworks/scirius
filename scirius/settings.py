@@ -336,7 +336,7 @@ CSP_BASE_URI = ("'self'",)
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rules.rest_permissions.HasGroupPermission',
+        'rules.api.permissions.HasGroupPermission',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',

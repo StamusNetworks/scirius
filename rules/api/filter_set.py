@@ -8,9 +8,7 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-from rules.models import (
-    FilterSet,
-)
+from rules.models.filter_sets import FilterSet
 from scirius.utils import get_middleware_module
 
 

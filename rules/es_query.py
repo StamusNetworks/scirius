@@ -17,7 +17,7 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.utils.urls import replace_query_param, remove_query_param
 
-from rules.models import get_system_settings
+from rules.models.misc import get_system_settings
 from scirius.utils import get_middleware_module
 from scirius.rest_utils import SciriusSetPagination
 
