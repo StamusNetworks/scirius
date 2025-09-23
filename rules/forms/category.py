@@ -22,10 +22,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django import forms
 from django.conf import settings
 
-from rules.models import (
-    Category,
-    Transformation,
-)
+from rules.models.model import Category, Transformation
 
 from .common import BaseEditForm
 from .misc import RulesetPolicyEditPermForm

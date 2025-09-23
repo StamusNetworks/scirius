@@ -24,9 +24,7 @@ from typing import ClassVar, Iterable
 from django import forms
 from django.conf import settings
 
-from rules.models import (
-    SystemSettings,
-)
+from rules.models.misc import SystemSettings
 
 from .common import BaseEditForm, CommentForm
 

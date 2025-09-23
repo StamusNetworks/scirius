@@ -32,7 +32,7 @@ from ipware.ip import HttpRequest
 
 from rules.forms.common import CommentForm
 from rules.forms.ruleset import RulesetCopyForm, RulesetEditForm, RulesetForm
-from rules.models import (
+from rules.models.model import (
     Category,
     Rule,
     Ruleset,

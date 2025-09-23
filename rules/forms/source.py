@@ -25,14 +25,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 
-from rules.models import (
-    Category,
-    IoCMeta,
-    Ruleset,
-    RuleAtVersion,
-    Source,
-    validate_source_datatype,
-)
+from rules.models.model import Category, IoCMeta, Source, Ruleset, validate_source_datatype, RuleAtVersion
 from rules.validators import no_space_validator
 
 from .common import CommentForm

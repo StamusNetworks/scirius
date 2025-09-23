@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.utils.timezone
-import rules.models
+import rules.models.misc
 
 
 class Migration(migrations.Migration):
@@ -120,12 +120,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='systemsettings',
             name='http_proxy',
-            field=models.CharField(blank=True, default='', help_text='Proxy address of the form "host:port".', max_length=200, validators=[rules.models.validate_proxy]),
+            field=models.CharField(blank=True, default='', help_text='Proxy address of the form "host:port".', max_length=200, validators=[rules.models.misc.validate_proxy]),
         ),
         migrations.AlterField(
             model_name='systemsettings',
             name='https_proxy',
-            field=models.CharField(blank=True, default='', max_length=200, validators=[rules.models.validate_proxy]),
+            field=models.CharField(blank=True, default='', max_length=200, validators=[rules.models.misc.validate_proxy]),
         ),
         migrations.AlterField(
             model_name='threshold',

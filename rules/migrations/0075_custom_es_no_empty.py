@@ -3,7 +3,7 @@
 
 
 from django.db import migrations, models
-import rules.models
+import rules.models.misc
 
 
 class Migration(migrations.Migration):
@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='systemsettings',
             name='elasticsearch_url',
-            field=models.CharField(default='http://elasticsearch:9200/', max_length=200, validators=[rules.models.validate_url]),
+            field=models.CharField(default='http://elasticsearch:9200/', max_length=200, validators=[rules.models.misc.validate_url]),
         ),
     ]

@@ -28,14 +28,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.db.models import F
 
-from rules.models import (
-    FilterSet,
-    RuleProcessingFilter,
-    RuleProcessingFilterDef,
-    Ruleset,
-    Threshold,
-    Transformation,
-)
+from rules.models.filter_sets import FilterSet
+from rules.models.model import Ruleset, Threshold, Transformation, RuleProcessingFilter, RuleProcessingFilterDef
 
 from .common import BaseEditForm, CommentForm
 from .misc import RulesetPolicyEditPermForm
