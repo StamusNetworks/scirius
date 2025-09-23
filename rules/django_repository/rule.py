@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from rules.models import Rule
+from rules.models.model import Rule
 
 
 class RuleRepositoryIterface(ABC):

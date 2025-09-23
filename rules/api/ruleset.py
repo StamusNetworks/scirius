@@ -8,12 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 
-from rules.models import (
-    Category,
-    Ruleset,
-    Source,
-    UserAction,
-)
+from rules.models.model import Category, Ruleset, Source
+from rules.models.model import UserAction
 from scirius.utils import get_middleware_module
 from suricata.rest_tasks import SciriusTaskSerializer
 

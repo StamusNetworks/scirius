@@ -33,7 +33,7 @@ reputation-files:
     '''
 
     def build_iprep_buffers(self, cats_content, iprep_content):
-        from rules.models import Rule
+        from rules.models.model import Rule
 
         group_rules = Rule.objects.filter(group=True)
         cat_map = {}

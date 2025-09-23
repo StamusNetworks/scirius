@@ -3,7 +3,7 @@ from functools import wraps
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
-from rules.models import Rule
+from rules.models.model import Rule
 from scirius.utils import get_middleware_module
 
 

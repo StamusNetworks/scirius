@@ -11,14 +11,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from rules.models import (
-    DeepLink,
-    DeepLinkEntity,
-    SystemSettings,
-    UserAction,
-    UserActionObject,
-    get_system_settings,
-)
+from rules.models.misc import DeepLink, DeepLinkEntity, SystemSettings, get_system_settings
+from rules.models.user_action import UserAction, UserActionObject
 from scirius.rest_utils import (
     SciriusModelViewSet,
     SciriusReadOnlyModelViewSet,

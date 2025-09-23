@@ -27,13 +27,8 @@ from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from rules.models import (
-    Rule,
-    RuleProcessingFilter,
-    RuleProcessingFilterDef,
-    Threshold,
-    UserAction,
-)
+from rules.models.model import Rule, Threshold, RuleProcessingFilter, RuleProcessingFilterDef
+from rules.models.user_action import UserAction
 from scirius.rest_utils import SciriusModelViewSet
 import contextlib
 

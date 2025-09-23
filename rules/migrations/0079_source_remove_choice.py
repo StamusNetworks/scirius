@@ -3,7 +3,7 @@
 
 
 from django.db import migrations, models
-import rules.models
+import rules.models.model
 
 
 class Migration(migrations.Migration):
@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='source',
             name='datatype',
-            field=models.CharField(max_length=10, validators=[rules.models.validate_source_datatype]),
+            field=models.CharField(max_length=10, validators=[rules.models.model.validate_source_datatype]),
         ),
     ]

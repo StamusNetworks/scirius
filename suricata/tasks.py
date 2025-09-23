@@ -29,7 +29,7 @@ from celery import shared_task, chord, group, chain
 
 from suricata import celery_app
 from rules.api.permissions import HasGroupPermission
-from rules.models import Ruleset, Source
+from rules.models.model import Ruleset, Source
 from accounts.models import SciriusTokenUser
 
 from django.utils import timezone
