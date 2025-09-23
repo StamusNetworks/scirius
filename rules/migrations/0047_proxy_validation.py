@@ -2,7 +2,7 @@
 
 
 from django.db import migrations, models
-import rules.models
+import rules.models.misc
 
 
 class Migration(migrations.Migration):
@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='systemsettings',
             name='http_proxy',
-            field=models.CharField(default=b'', help_text=b'Proxy address of the form "host:port".', max_length=200, blank=True, validators=[rules.models.validate_proxy]),
+            field=models.CharField(default=b'', help_text=b'Proxy address of the form "host:port".', max_length=200, blank=True, validators=[rules.models.misc.validate_proxy]),
         ),
         migrations.AlterField(
             model_name='systemsettings',
             name='https_proxy',
-            field=models.CharField(default=b'', max_length=200, blank=True, validators=[rules.models.validate_proxy]),
+            field=models.CharField(default=b'', max_length=200, blank=True, validators=[rules.models.misc.validate_proxy]),
         ),
     ]

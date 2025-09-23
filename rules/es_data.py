@@ -33,7 +33,7 @@ from django.conf import settings
 
 from rules.es_graphs import get_es_major_version, ESError
 from rules.es_query import ESQuery
-from rules.models import get_system_settings
+from rules.models.misc import get_system_settings
 
 if get_system_settings(static=True).use_opensearch_2():
     from opensearchpy import ConnectionError

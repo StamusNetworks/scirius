@@ -38,14 +38,8 @@ from rules.forms.source import (
     SourceForm,
     get_ioc_meta_formset,
 )
-from rules.models import (
-    Category,
-    IoCMeta,
-    Ruleset,
-    Source,
-    SourceUpdate,
-    UserAction,
-)
+from rules.models.model import Category, IoCMeta, Source, SourceUpdate, Ruleset
+from rules.models.user_action import UserAction
 from rules.tables import (
     CategoryTable,
     DeletedRuleTable,

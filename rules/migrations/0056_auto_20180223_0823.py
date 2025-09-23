@@ -4,7 +4,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-from rules.models import Transformation
+from rules.models.model import Transformation
 
 
 def migrate_transformations_data(apps, schema_editor):

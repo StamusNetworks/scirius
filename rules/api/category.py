@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from rules.models import Category, Ruleset
+from rules.models.model import Category, Ruleset
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)

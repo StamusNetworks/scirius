@@ -1,128 +1,163 @@
-from django.conf import settings
+"""
+Copyright(C) 2014-2018 Stamus Networks
+Written by Eric Leblond <eleblond@stamus-networks.com>
 
-FILTER_SETS = [
+This file is part of Scirius.
+
+Scirius is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Scirius is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+from typing import NotRequired, TypedDict
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import models
+
+
+class FilterSetContentDict(TypedDict):
+    value: str | int
+    label: str
+    fullString: bool
+    query: NotRequired[str]
+    negated: bool
+    id: str
+
+
+class FilterSetDict(TypedDict):
+    content: list[FilterSetContentDict]
+    name: str
+    page: str
+    description: str
+
+
+FILTER_SETS: list[FilterSetDict] = [
     {
-        'content': [
+        "content": [
             {
-                'value': 1,
-                'label': 'Alerts min: 1',
-                'fullString': True,
-                'query': 'rest',
-                'negated': False,
-                'id': 'hits_min'
+                "value": 1,
+                "label": "Alerts min: 1",
+                "fullString": True,
+                "query": "rest",
+                "negated": False,
+                "id": "hits_min",
             },
             {
-                'value': 10,
-                'label': 'Alerts max: 10',
-                'fullString': True,
-                'query': 'rest',
-                'negated': False,
-                'id': 'hits_max'
-            }
-        ],
-        'name': 'Hunt: Low noise signature events',
-        'page': 'RULES_LIST',
-        'description': 'This filter highlights the events which have rarely triggered. These low noise alerts can sometimes hide valuable artifacts and discoveries.',
-    },
-    {
-        'content': [
-            {
-                'value': 'TROJAN',
-                'label': 'alert.signature: TROJAN',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'alert.signature'
-            }
-        ],
-        'name': 'Hunt: Trojan related events',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights the trojan-related events.',
-    },
-    {
-        'content': [
-            {
-                'value': 'MALWARE',
-                'label': 'alert.signature: MALWARE',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'alert.signature'
-            }
-        ],
-        'name': 'Hunt: Malware related events',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights the malware-related events.',
-    },
-    {
-        'content': [
-            {
-                'value': 'HUNTING',
-                'label': 'alert.signature: HUNTING',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'alert.signature'
-            }
-        ],
-        'name': 'Hunt: HUNTING related events',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights all the events that are generated from  rules with the "hunting" designation.',
-    },
-    {
-        'content': [
-            {
-                'value': 'Executable',
-                'label': 'alert.signature: Executable',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'alert.signature'
-            }
-        ],
-        'name': 'Hunt: Executable related events',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights all the events related to executable files, including downloads, posts, and others. This usually provides interesting data that warrants further investigation.',
-    },
-    {
-        'content': [
-            {
-                'value': 'Executable',
-                'label': 'alert.signature: Executable',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'alert.signature'
-            },
-            {
-                'value': 'http',
-                'label': 'app_proto: http',
-                'fullString': False,
-                'query': 'filter_host_id',
-                'negated': False,
-                'id': 'app_proto'
+                "value": 10,
+                "label": "Alerts max: 10",
+                "fullString": True,
+                "query": "rest",
+                "negated": False,
+                "id": "hits_max",
             },
         ],
-        'name': 'Hunt: HTTP Executable related events',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights all the events that take place via HTTP and are either posting or downloading executables.',
+        "name": "Hunt: Low noise signature events",
+        "page": "RULES_LIST",
+        "description": "This filter highlights the events which have rarely triggered. These low noise alerts can sometimes hide valuable artifacts and discoveries.",
     },
     {
         "content": [
             {
-                "id": "app_proto",
+                "value": "TROJAN",
+                "label": "alert.signature: TROJAN",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "alert.signature",
+            }
+        ],
+        "name": "Hunt: Trojan related events",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights the trojan-related events.",
+    },
+    {
+        "content": [
+            {
+                "value": "MALWARE",
+                "label": "alert.signature: MALWARE",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "alert.signature",
+            }
+        ],
+        "name": "Hunt: Malware related events",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights the malware-related events.",
+    },
+    {
+        "content": [
+            {
+                "value": "HUNTING",
+                "label": "alert.signature: HUNTING",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "alert.signature",
+            }
+        ],
+        "name": "Hunt: HUNTING related events",
+        "page": "DASHBOARDS",
+        "description": 'This filter highlights all the events that are generated from  rules with the "hunting" designation.',
+    },
+    {
+        "content": [
+            {
+                "value": "Executable",
+                "label": "alert.signature: Executable",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "alert.signature",
+            }
+        ],
+        "name": "Hunt: Executable related events",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights all the events related to executable files, including downloads, posts, and others. This usually provides interesting data that warrants further investigation.",
+    },
+    {
+        "content": [
+            {
+                "value": "Executable",
+                "label": "alert.signature: Executable",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "alert.signature",
+            },
+            {
                 "value": "http",
                 "label": "app_proto: http",
-                "fullString": True,
-                "negated": False
+                "fullString": False,
+                "query": "filter_host_id",
+                "negated": False,
+                "id": "app_proto",
             },
+        ],
+        "name": "Hunt: HTTP Executable related events",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights all the events that take place via HTTP and are either posting or downloading executables.",
+    },
+    {
+        "content": [
+            {"id": "app_proto", "value": "http", "label": "app_proto: http", "fullString": True, "negated": False},
             {
                 "label": "es_filter: ( http.hostname.keyword: /10\\..*\\..*\\..*/ OR http.hostname.keyword: /192\\.168\\..*\\..*/ OR  http.hostname.keyword: /172\\.<16-32>\\..*\\..*/ ) AND http.hostname.keyword: /([0-9]{1,3}\\.){3}[0-9]{1,3}/",
                 "id": "es_filter",
                 "value": "( http.hostname.keyword: /10\\..*\\..*\\..*/ OR http.hostname.keyword: /192\\.168\\..*\\..*/ OR  http.hostname.keyword: /172\\.<16-32>\\..*\\..*/ ) AND http.hostname.keyword: /([0-9]{1,3}\\.){3}[0-9]{1,3}/",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
         ],
         "name": "Hunt: HTTP direct requests and replies to private IP",
@@ -131,20 +166,14 @@ FILTER_SETS = [
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "http",
-                "label": "app_proto: http",
-                "fullString": True,
-                "negated": False
-            },
+            {"id": "app_proto", "value": "http", "label": "app_proto: http", "fullString": True, "negated": False},
             {
                 "label": "ES Filter: ( NOT http.hostname.keyword: /10\\..*\\..*\\..*/ AND NOT http.hostname.keyword: /192\\.168\\..*\\..*/ AND NOT http.hostname.keyword: /172\\.<16-32>\\..*\\..*/ ) AND http.hostname.keyword: /([0-9]{1,3}\\.){3}[0-9]{1,3}/",
                 "id": "es_filter",
                 "value": "( NOT http.hostname.keyword: /10\\..*\\..*\\..*/ AND NOT http.hostname.keyword: /192\\.168\\..*\\..*/ AND NOT http.hostname.keyword: /172\\.<16-32>\\..*\\..*/ ) AND http.hostname.keyword: /([0-9]{1,3}\\.){3}[0-9]{1,3}/",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
         ],
         "name": "Hunt: HTTP non-internal  direct IP requests and replies",
@@ -153,20 +182,14 @@ FILTER_SETS = [
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "dns",
-                "label": "app_proto: dns",
-                "fullString": True,
-                "negated": True
-            },
+            {"id": "app_proto", "value": "dns", "label": "app_proto: dns", "fullString": True, "negated": True},
             {
                 "label": "ES Filter: payload_printable.keyword: *admin*",
                 "id": "es_filter",
                 "value": "payload_printable.keyword: *admin*",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
         ],
         "name": "Hunt: Admin payload search",
@@ -175,20 +198,14 @@ FILTER_SETS = [
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "dns",
-                "label": "app_proto: dns",
-                "fullString": True,
-                "negated": True
-            },
+            {"id": "app_proto", "value": "dns", "label": "app_proto: dns", "fullString": True, "negated": True},
             {
                 "label": "es_filter: payload_printable.keyword: *root*",
                 "id": "es_filter",
                 "value": "payload_printable.keyword: *root*",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
         ],
         "name": "Hunt: Root payload search",
@@ -197,20 +214,14 @@ FILTER_SETS = [
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "http",
-                "label": "app_proto: http",
-                "fullString": True,
-                "negated": False
-            },
+            {"id": "app_proto", "value": "http", "label": "app_proto: http", "fullString": True, "negated": False},
             {
                 "label": "es_filter: payload_printable.keyword: *root* ",
                 "id": "es_filter",
                 "value": "payload_printable.keyword: *root* ",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
         ],
         "name": "Hunt: HTTP payloads containing root",
@@ -219,20 +230,14 @@ FILTER_SETS = [
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "http",
-                "label": "app_proto: http",
-                "fullString": True,
-                "negated": False
-            },
+            {"id": "app_proto", "value": "http", "label": "app_proto: http", "fullString": True, "negated": False},
             {
                 "label": "es_filter: payload_printable.keyword: *admin* ",
                 "id": "es_filter",
                 "value": "payload_printable.keyword: *admin* ",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
         ],
         "name": "Hunt: HTTP payloads containing admin",
@@ -241,20 +246,14 @@ FILTER_SETS = [
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "tls",
-                "label": "app_proto: tls",
-                "fullString": True,
-                "negated": False
-            },
+            {"id": "app_proto", "value": "tls", "label": "app_proto: tls", "fullString": True, "negated": False},
             {
                 "label": "es_filter: payload_printable.keyword: *admin* OR payload_printable.keyword: *root* ",
                 "id": "es_filter",
                 "value": "payload_printable.keyword: *admin* OR payload_printable.keyword: *root* ",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
         ],
         "name": "Hunt: TLS payloads containing root or admin",
@@ -263,34 +262,28 @@ FILTER_SETS = [
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "tls",
-                "label": "app_proto: tls",
-                "fullString": True,
-                "negated": False
-            },
+            {"id": "app_proto", "value": "tls", "label": "app_proto: tls", "fullString": True, "negated": False},
             {
                 "id": "tls.version",
                 "value": "TLS 1.2",
                 "label": "tls.version: TLS 1.2",
                 "fullString": True,
-                "negated": True
+                "negated": True,
             },
             {
                 "id": "tls.version",
                 "value": "TLS 1.3",
                 "label": "tls.version: TLS 1.3",
                 "fullString": True,
-                "negated": True
+                "negated": True,
             },
             {
                 "id": "tls.version",
                 "value": "UNDETERMINED",
                 "label": "tls.version: UNDETERMINED",
                 "fullString": True,
-                "negated": True
-            }
+                "negated": True,
+            },
         ],
         "name": "Policy: Old TLS versions",
         "page": "DASHBOARDS",
@@ -298,281 +291,263 @@ FILTER_SETS = [
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "ftp*",
-                "label": "app_proto: ftp*",
-                "fullString": False,
-                "negated": False
-            }
+            {"id": "app_proto", "value": "ftp*", "label": "app_proto: ftp*", "fullString": False, "negated": False}
         ],
         "name": "Policy: FTP clear text alerts and sightings",
         "page": "DASHBOARDS",
         "description": "This filter set returns FTP and FTP based data alert events.",
     },
     {
-        'content': [
+        "content": [
             {
-                'value': 'post',
-                'label': 'http.http_method: post',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'http.http_method'
+                "value": "post",
+                "label": "http.http_method: post",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "http.http_method",
             }
         ],
-        'name': 'Hunt: HTTP POSTs',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights all the events that include HTTP POST requests. This type of request can hide malicious activity.',
+        "name": "Hunt: HTTP POSTs",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights all the events that include HTTP POST requests. This type of request can hide malicious activity.",
     },
     {
         "content": [
-            {
-                "id": "app_proto",
-                "value": "smtp",
-                "label": "app_proto: smtp",
-                "fullString": False,
-                "negated": False
-            }
+            {"id": "app_proto", "value": "smtp", "label": "app_proto: smtp", "fullString": False, "negated": False}
         ],
         "name": "Policy: SMTP clear text events",
         "page": "DASHBOARDS",
         "description": "This filter set returns SMTP based alert events.",
     },
     {
-        'content': [
+        "content": [
             {
-                'value': 'firefox*',
-                'label': 'http.http_user_agent: firefox*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "firefox*",
+                "label": "http.http_user_agent: firefox*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'explorer*',
-                'label': 'http.http_user_agent: explorer*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "explorer*",
+                "label": "http.http_user_agent: explorer*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'opera*',
-                'label': 'http.http_user_agent: opera*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "opera*",
+                "label": "http.http_user_agent: opera*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'edge*',
-                'label': 'http.http_user_agent: edge*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "edge*",
+                "label": "http.http_user_agent: edge*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'mozilla*',
-                'label': 'http.http_user_agent: mozilla*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "mozilla*",
+                "label": "http.http_user_agent: mozilla*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'wget*',
-                'label': 'http.http_user_agent: wget*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "wget*",
+                "label": "http.http_user_agent: wget*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'curl*',
-                'label': 'http.http_user_agent: curl*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "curl*",
+                "label": "http.http_user_agent: curl*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'perl*',
-                'label': 'http.http_user_agent: perl*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "perl*",
+                "label": "http.http_user_agent: perl*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'python*',
-                'label': 'http.http_user_agent: python*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "python*",
+                "label": "http.http_user_agent: python*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'http',
-                'label': 'app_proto: http',
-                'fullString': True,
-                'query': 'filter',
-                'negated': False,
-                'id': 'app_proto'
-            }
+                "value": "http",
+                "label": "app_proto: http",
+                "fullString": True,
+                "query": "filter",
+                "negated": False,
+                "id": "app_proto",
+            },
         ],
-        'name': 'Hunt: Suspicious HTTP User Agents - 1',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights events that are using HTTP application layer protocol but with an user agent that includes specific characters not common to user agents.',
+        "name": "Hunt: Suspicious HTTP User Agents - 1",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights events that are using HTTP application layer protocol but with an user agent that includes specific characters not common to user agents.",
     },
     {
-        'content': [
+        "content": [
             {
-                'value': '*(*',
-                'label': 'http.http_user_agent: *(*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
+                "value": "*(*",
+                "label": "http.http_user_agent: *(*",
+                "fullString": False,
+                "query": "filter",
+                "negated": True,
+                "id": "http.http_user_agent",
             },
             {
-                'value': 'http',
-                'label': 'app_proto: http',
-                'fullString': True,
-                'query': 'filter',
-                'negated': False,
-                'id': 'app_proto'
-            }
+                "value": "http",
+                "label": "app_proto: http",
+                "fullString": True,
+                "query": "filter",
+                "negated": False,
+                "id": "app_proto",
+            },
         ],
-        'name': 'Hunt: Suspicious HTTP User Agents -2',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights events that are using HTTP application layer protocol but with an user agent that is not common - aka not mozilla/firefox/opera/edge/wget and similar.',
+        "name": "Hunt: Suspicious HTTP User Agents -2",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights events that are using HTTP application layer protocol but with an user agent that is not common - aka not mozilla/firefox/opera/edge/wget and similar.",
     },
     {
-        'content': [
+        "content": [
             {
-                'value': 'CURRENT_EVENTS',
-                'label': 'alert.signature: CURRENT_EVENTS',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'alert.signature'
+                "value": "CURRENT_EVENTS",
+                "label": "alert.signature: CURRENT_EVENTS",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "alert.signature",
             }
         ],
-        'name': 'Hunt: Current events',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights the events that trigger based on the CURRENT_EVENTS ET rules',
+        "name": "Hunt: Current events",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights the events that trigger based on the CURRENT_EVENTS ET rules",
     },
     {
-        'content': [
+        "content": [
             {
-                'negated': False,
-                'fullString': False,
-                'id': f'{"dns.queries" if settings.SURICATA_VERSION == 8 else "dns.query"}.rrname',
-                'value': '*',
-                'label': f'{"dns.queries" if settings.SURICATA_VERSION == 8 else "dns.query"}.rrname: *'
+                "negated": False,
+                "fullString": False,
+                "id": f"{'dns.queries' if settings.SURICATA_VERSION == 8 else 'dns.query'}.rrname",
+                "value": "*",
+                "label": f"{'dns.queries' if settings.SURICATA_VERSION == 8 else 'dns.query'}.rrname: *",
             }
         ],
-        'name': 'Hunt: DNS related events',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights all the events with DNS-related metadata.',
+        "name": "Hunt: DNS related events",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights all the events with DNS-related metadata.",
     },
     {
-        'content': [
-            {
-                'negated': False,
-                'fullString': True,
-                'id': 'alert.severity',
-                'value': 1,
-                'label': 'alert.severity: 1'
-            }
+        "content": [
+            {"negated": False, "fullString": True, "id": "alert.severity", "value": 1, "label": "alert.severity: 1"}
         ],
-        'name': 'Hunt: Severity 1 events',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights the events classified as "Severity 1" by one of the rulesets.',
+        "name": "Hunt: Severity 1 events",
+        "page": "DASHBOARDS",
+        "description": 'This filter highlights the events classified as "Severity 1" by one of the rulesets.',
     },
     {
-        'content': [
+        "content": [
             {
-                'negated': True,
-                'fullString': False,
-                'id': 'ssh.client.software_version',
-                'value': '*ssh*',
-                'label': 'ssh.client.software_version: *ssh*'
+                "negated": True,
+                "fullString": False,
+                "id": "ssh.client.software_version",
+                "value": "*ssh*",
+                "label": "ssh.client.software_version: *ssh*",
             },
             {
-                'value': 'ssh',
-                'label': 'app_proto: ssh',
-                'fullString': False,
-                'query': 'filter_host_id',
-                'negated': False,
-                'id': 'app_proto'
-            }
+                "value": "ssh",
+                "label": "app_proto: ssh",
+                "fullString": False,
+                "query": "filter_host_id",
+                "negated": False,
+                "id": "app_proto",
+            },
         ],
-        'name': 'Hunt: Non lib/open ssh clients',
-        'page': 'DASHBOARDS',
-        'description': 'This filter highlights the SSH-related events that have no libssh or openssh client version. ',
+        "name": "Hunt: Non lib/open ssh clients",
+        "page": "DASHBOARDS",
+        "description": "This filter highlights the SSH-related events that have no libssh or openssh client version. ",
     },
     {
-        'content': [
+        "content": [
             {
-                'value': 'python*',
-                'label': 'http.http_user_agent: python*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'http.http_user_agent'
+                "value": "python*",
+                "label": "http.http_user_agent: python*",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "http.http_user_agent",
             }
         ],
-        'name': 'Info: Python HTTP User Agents',
-        'page': 'DASHBOARDS',
-        'description': 'This informational filter highlights the HTTP-based events that contain Python HTTP User Agents.',
+        "name": "Info: Python HTTP User Agents",
+        "page": "DASHBOARDS",
+        "description": "This informational filter highlights the HTTP-based events that contain Python HTTP User Agents.",
     },
     {
-        'content': [
+        "content": [
             {
-                'value': 'curl*',
-                'label': 'http.http_user_agent: curl*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'http.http_user_agent'
+                "value": "curl*",
+                "label": "http.http_user_agent: curl*",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "http.http_user_agent",
             }
         ],
-        'name': 'Info: Curl HTTP User Agents',
-        'page': 'DASHBOARDS',
-        'description': 'This informational filter highlights the HTTP-based events that contain Curl HTTP User Agents.',
+        "name": "Info: Curl HTTP User Agents",
+        "page": "DASHBOARDS",
+        "description": "This informational filter highlights the HTTP-based events that contain Curl HTTP User Agents.",
     },
     {
-        'content': [
+        "content": [
             {
-                'value': 'perl*',
-                'label': 'http.http_user_agent: perl*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'http.http_user_agent'
+                "value": "perl*",
+                "label": "http.http_user_agent: perl*",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "http.http_user_agent",
             }
         ],
-        'name': 'Info: Perl HTTP User Agents',
-        'page': 'DASHBOARDS',
-        'description': 'This informational filter highlights the HTTP-based events that contain Perl HTTP User Agents.',
+        "name": "Info: Perl HTTP User Agents",
+        "page": "DASHBOARDS",
+        "description": "This informational filter highlights the HTTP-based events that contain Perl HTTP User Agents.",
     },
     {
-        'content': [
+        "content": [
             {
-                'value': 'wget*',
-                'label': 'http.http_user_agent: wget*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': False,
-                'id': 'http.http_user_agent'
+                "value": "wget*",
+                "label": "http.http_user_agent: wget*",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "http.http_user_agent",
             }
         ],
-        'name': 'Info: Wget HTTP User Agents',
-        'page': 'DASHBOARDS',
-        'description': 'This informational filter highlights the HTTP-based events that contain Wget HTTP User Agents.',
+        "name": "Info: Wget HTTP User Agents",
+        "page": "DASHBOARDS",
+        "description": "This informational filter highlights the HTTP-based events that contain Wget HTTP User Agents.",
     },
     {
         "content": [
@@ -581,7 +556,7 @@ FILTER_SETS = [
                 "value": "*outdated*",
                 "label": "alert.signature: *outdated*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Policy: Outdated software",
@@ -595,7 +570,7 @@ FILTER_SETS = [
                 "value": "*vulnerable*",
                 "label": "alert.signature: *vulnerable*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Policy: Vulnerable software",
@@ -609,7 +584,7 @@ FILTER_SETS = [
                 "value": "*CVE-*",
                 "label": "alert.signature: *CVE-*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Policy: CVE global detection",
@@ -623,7 +598,7 @@ FILTER_SETS = [
                 "value": "*phishing*",
                 "label": "alert.signature: *phishing*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Phishing: Phishing general detection",
@@ -638,14 +613,14 @@ FILTER_SETS = [
                 "value": "adware_pup",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
             {
                 "id": "alert.category",
                 "value": "Possibly Unwanted Program Detected",
                 "label": "alert.category: Possibly Unwanted Program Detected",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Adware: PUP",
@@ -660,14 +635,14 @@ FILTER_SETS = [
                 "value": "web_client",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
             {
                 "id": "alert.signature",
                 "value": "*encoded*",
                 "label": "alert.signature: *encoded*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Hunt: web client encoded values",
@@ -682,14 +657,14 @@ FILTER_SETS = [
                 "value": "web_server",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
             {
                 "id": "alert.signature",
                 "value": "*encoded*",
                 "label": "alert.signature: *encoded*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Hunt: web server encoded values",
@@ -704,14 +679,14 @@ FILTER_SETS = [
                 "value": "shellcode",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
             {
                 "id": "alert.signature",
                 "value": "*encoded*",
                 "label": "alert.signature: *encoded*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Hunt: possible encoded shell code strings",
@@ -726,14 +701,14 @@ FILTER_SETS = [
                 "value": "-http.http_user_agent.keyword:/.{55}.*/",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
             {
                 "id": "http.http_user_agent",
                 "value": "*",
                 "label": "http.http_user_agent: *",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Hunt: Unusual in length http user agents",
@@ -748,7 +723,7 @@ FILTER_SETS = [
                 "fullString": False,
                 "query": "filter",
                 "negated": False,
-                "id": "http.http_user_agent"
+                "id": "http.http_user_agent",
             },
         ],
         "name": "Info: Java HTTP User Agents",
@@ -762,7 +737,7 @@ FILTER_SETS = [
                 "value": "*shockwave*",
                 "label": "http.http_user_agent: *shockwave*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Info: Shockwave Flash HTTP User Agents",
@@ -777,14 +752,14 @@ FILTER_SETS = [
                 "value": "url",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
             {
                 "id": "alert.signature",
                 "value": "short*",
                 "label": "alert.signature: short*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Hunt: URL Shortener services",
@@ -798,22 +773,22 @@ FILTER_SETS = [
                 "value": "lateral",
                 "label": "alert.metadata.stamus_classification: lateral",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
             {
                 "id": "alert.metadata.source",
                 "value": "smb_lateral",
                 "label": "alert.metadata.source: smb_lateral",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
             {
                 "id": "alert.metadata.signature_severity",
                 "value": "Critical",
                 "label": "alert.metadata.signature_severity: Critical",
                 "fullString": True,
-                "negated": False
-            }
+                "negated": False,
+            },
         ],
         "name": "Hunt: Stamus critical lateral SMB, DCERPC",
         "page": "DASHBOARDS",
@@ -826,22 +801,22 @@ FILTER_SETS = [
                 "value": "lateral",
                 "label": "alert.metadata.stamus_classification: lateral",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
             {
                 "id": "alert.metadata.source",
                 "value": "smb_lateral",
                 "label": "alert.metadata.source: smb_lateral",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
             {
                 "id": "alert.metadata.signature_severity",
                 "value": "Informational",
                 "label": "alert.metadata.signature_severity: Informational",
                 "fullString": True,
-                "negated": False
-            }
+                "negated": False,
+            },
         ],
         "name": "Hunt: Stamus lateral SMB, DCERPC",
         "page": "DASHBOARDS",
@@ -854,7 +829,7 @@ FILTER_SETS = [
                 "value": "OpenLocalMachine",
                 "label": "alert.metadata.lateral_function: OpenLocalMachine",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Hunt: Remote Administration Console OpenLocalMachine",
@@ -868,7 +843,7 @@ FILTER_SETS = [
                 "value": "OpenClassesRoot",
                 "label": "alert.metadata.lateral_function: OpenClassesRoot",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Hunt: Remote Administration Registry HKEY_CLASSES_ROOT",
@@ -882,14 +857,14 @@ FILTER_SETS = [
                 "value": "*cleartext*",
                 "label": "alert.signature: *cleartext*",
                 "fullString": False,
-                "negated": False
+                "negated": False,
             },
             {
                 "id": "alert.category",
                 "value": "Potential Corporate Privacy Violation",
                 "label": "alert.category: Potential Corporate Privacy Violation",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Policy: Clear text password - 1",
@@ -904,7 +879,7 @@ FILTER_SETS = [
                 "value": "password",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
             {
                 "label": "alert.signature: unencrypted",
@@ -912,18 +887,31 @@ FILTER_SETS = [
                 "value": "unencrypted",
                 "negated": False,
                 "query": "filter",
-                "fullString": False
+                "fullString": False,
             },
             {
                 "id": "alert.category",
                 "value": "Potential Corporate Privacy Violation",
                 "label": "alert.category: Potential Corporate Privacy Violation",
                 "fullString": True,
-                "negated": False
+                "negated": False,
             },
         ],
         "name": "Policy: Clear text password - 2",
         "page": "DASHBOARDS",
         "description": "This filter highlights events associated with unencrypted passwords.",
-    }
+    },
 ]
+
+
+class FilterSet(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    content = models.TextField()
+    name = models.CharField(max_length=150)
+    page = models.CharField(max_length=25)
+    description = models.TextField(blank=True, null=True)
+    imported = models.BooleanField(default=False)
+
+    @staticmethod
+    def get_default_filter_sets() -> list[FilterSetDict]:
+        return FILTER_SETS

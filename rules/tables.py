@@ -24,7 +24,8 @@ from django.utils.html import format_html
 from django.db.models import Max
 from django.urls import reverse
 from scirius.utils import SciriusTable
-from rules.models import Ruleset, Category, Rule, Source, SourceUpdate, Threshold, UserAction
+from rules.models.model import Rule, Ruleset, Category, Source, SourceUpdate, Threshold
+from rules.models.user_action import UserAction
 import django_tables2 as tables
 
 

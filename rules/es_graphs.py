@@ -25,7 +25,7 @@ import json
 from django.conf import settings
 
 from rules.es_query import ESQuery
-from rules.models import Rule
+from rules.models.model import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
 

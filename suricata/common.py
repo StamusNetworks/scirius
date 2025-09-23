@@ -144,12 +144,12 @@ def help_links(djlink):
 
 
 def get_user_actions_dict():
-    from rules.models import UserAction
+    from rules.models.user_action import UserAction
     return UserAction.get_user_actions_dict()
 
 
 def get_hunt_filters():
-    from rules.models import get_hunt_filters
+    from rules.models.misc import get_hunt_filters
     return get_hunt_filters()
 
 
@@ -211,7 +211,7 @@ def get_homepage_context():
 
 
 def get_default_filter_sets():
-    from rules.models import FilterSet
+    from rules.models.filter_sets import FilterSet
 
     fsets = FilterSet.get_default_filter_sets()
     for idx, fset in enumerate(fsets):
