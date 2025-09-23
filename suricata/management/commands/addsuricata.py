@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from django.core.management.base import BaseCommand, CommandError
-from rules.models import Ruleset
+from rules.models.model import Ruleset
 from suricata.models import Suricata
 from django.utils import timezone
 

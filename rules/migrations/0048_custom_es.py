@@ -2,7 +2,7 @@
 
 
 from django.db import migrations, models
-import rules.models
+import rules.models.misc
 
 
 class Migration(migrations.Migration):
@@ -20,6 +20,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='systemsettings',
             name='elasticsearch_url',
-            field=models.CharField(default=b'http://elasticsearch:9200/', max_length=200, blank=True, validators=[rules.models.validate_url]),
+            field=models.CharField(default=b'http://elasticsearch:9200/', max_length=200, blank=True, validators=[rules.models.misc.validate_url]),
         ),
     ]

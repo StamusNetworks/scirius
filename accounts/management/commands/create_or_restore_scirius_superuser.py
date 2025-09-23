@@ -3,7 +3,7 @@ from django.contrib.auth.models import Permission, Group as DjangoGroup
 from django.contrib.contenttypes.models import ContentType
 
 from accounts.models import SciriusUser, User, Group
-from rules.models import FakePermissionModel
+from rules.models.misc import FakePermissionModel
 
 
 PERMS = [

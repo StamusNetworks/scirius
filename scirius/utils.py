@@ -37,7 +37,7 @@ from django.db.models.query import QuerySet
 import django_tables2 as tables
 
 from accounts.models import SciriusUser
-from rules.models import get_system_settings
+from rules.models.misc import get_system_settings
 
 
 def build_path_info(request):

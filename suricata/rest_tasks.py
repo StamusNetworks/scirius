@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rules.models import Ruleset
+from rules.models.model import Ruleset
 from suricata.models import CeleryTask, CeleryTaskResult, RecurrentTask
 from typing import ClassVar
 
