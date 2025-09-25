@@ -4,13 +4,11 @@ version = "42.1.0"
 authors = [{ name = "Stamus Networks", email = "contact@stamus-networks.com" }]
 description = "A web interface to manage Suricata rulesets."
 readme = "README.rst"
-license = { file = "LICENSE" }
 requires-python = ">=3.11"
 classifiers = [
     'Environment :: Web Environment',
     'Framework :: Django',
     'Intended Audience :: Developers',
-    'License :: Stamus Networks Proprietary License',   # TODO: how to handle this?
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3.11',
