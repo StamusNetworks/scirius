@@ -1117,7 +1117,7 @@ class Source(models.Model):
 
             if contents:
                 content = testor.rules_infos(
-                    '\n'.join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH} + \n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000',
+                    '\n'.join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH}\n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000',
                     related_files=related_files,
                     cats_content=cats_content,
                     iprep_content=iprep_content
@@ -3930,7 +3930,7 @@ class Ruleset(models.Model, Transformable):
 
                 if contents:
                     content = testor.rules_infos(
-                        '\n'.join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH} + \n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000',
+                        '\n'.join(contents) + f'\n## SLS dataset-dir: {Source.DATASET_PATH}\n## SLS suricata-options: --set datasets.limits.single-hashsize=5000000',
                         related_files=related_files,
                         cats_content=cats_content,
                         iprep_content=iprep_content
