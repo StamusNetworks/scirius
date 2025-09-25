@@ -35,9 +35,11 @@ from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 from unittest.mock import patch
 
-from .models import Category, Rule, RuleAtVersion, Ruleset, Source, SuppressedRuleAtVersion, Transformation, RuleTransformation, \
-    RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef, InvalidCategoryException
-from .rest_api import UploadEditSourceTaskSerializer, router
+from rules.models.misc import SystemSettings
+from rules.models.model import Category, Rule, RuleAtVersion, Ruleset, Source, SuppressedRuleAtVersion, Transformation, RuleTransformation, \
+    RulesetTransformation, SourceUpdate, UserAction, RuleProcessingFilter, RuleProcessingFilterDef, InvalidCategoryException
+from rules.api.source import UploadEditSourceTaskSerializer
+from .rest_api import router
 from accounts.models import SciriusUser
 
 from copy import deepcopy
