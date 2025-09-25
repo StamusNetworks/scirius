@@ -59,7 +59,11 @@ RULE_CONTENT = 'alert ip any any -> any any (msg:"Unicode test rule éàç"; con
 class PermissionsTestCase(TestCase):
     def setUp(self):
         self.urls = urlpatterns
-        self.blacklist = {'rules.views': ('index', 'status', 'about', 'elasticsearch', 'info', 'history', 'edit_ruleset')}
+        self.blacklist = {
+            'rules.views.misc': ('index', 'elasticsearch', 'info', 'history'),
+            'rules.views.task': ('status',),
+            'rules.views.ruleset': ('edit_ruleset',),
+        }
 
     def test_001_test_view_decorator(self):
         for url in self.urls:
