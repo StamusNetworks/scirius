@@ -1609,6 +1609,9 @@ class Transformation(models.Model):
 
 
 class Transformable:
+    _TARGET_REGEX = re.compile(r' target:\w*;')
+    _SET_TARGET_REGEX = re.compile(r"\)$")
+
     def get_transformation(self, ruleset, key):
         raise NotImplementedError()
 
@@ -1616,8 +1619,8 @@ class Transformable:
         raise NotImplementedError()
 
     def _set_target(self, rule, target="dest_ip"):
-        target = " target:%s;)" % target
-        rule.raw = re.sub(r"\)$", "%s" % (target), rule.raw) if target not in rule.raw else rule.raw
+        target = f' target:{target};)'
+        rule.raw = self._SET_TARGET_REGEX.sub(target, rule.raw) if target not in rule.raw else rule.raw
 
     def _test_scan_rules(self, rule_ids):
         for option in rule_ids.options:
@@ -1659,7 +1662,7 @@ class Transformable:
     def apply_lateral_target_transfo(self, content, key=Transformation.LATERAL, value=Transformation.L_YES):
         try:
             rule_ids = rule_idstools.parse(content)
-        except:
+        except Exception:
             return content
 
         # Workaround: ref #674
@@ -1688,13 +1691,13 @@ class Transformable:
         # TARGET + DST/SRC
         if key == Transformation.TARGET:
             if value == Transformation.T_SOURCE:
-                rule_ids.raw = re.sub(r" target:\w*;", "", rule_ids.raw)
-                self._set_target(rule_ids, target="src_ip")
+                rule_ids.raw = self._TARGET_REGEX.sub('', rule_ids.raw)
+                self._set_target(rule_ids, target='src_ip')
             elif value == Transformation.T_DESTINATION:
-                rule_ids.raw = re.sub(r" target:\w*;", "", rule_ids.raw)
-                self._set_target(rule_ids, target="dest_ip")
+                rule_ids.raw = self._TARGET_REGEX.sub('', rule_ids.raw)
+                self._set_target(rule_ids, target='dest_ip')
             elif value == Transformation.T_NONE:
-                rule_ids.raw = re.sub(r" target:\w*;", "", rule_ids.raw)
+                rule_ids.raw = self._TARGET_REGEX.sub('', rule_ids.raw)
             elif value == Transformation.T_AUTO:
                 target_client = False
                 for meta in rule_ids.metadata:
@@ -2605,10 +2608,7 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
         """
         True if one of the rule at version is True
         """
-        for rav in self.ruleatversion_set.all():
-            if rav.can_lateral():
-                return True
-        return False
+        return any(rav.can_lateral() for rav in self.ruleatversion_set.all())
 
     def can_target(self):
         """
