@@ -144,7 +144,7 @@ def help_links(djlink):
 
 
 def get_user_actions_dict():
-    from rules.models.user_action import UserAction
+    from rules.models.model import UserAction
     return UserAction.get_user_actions_dict()
 
 
