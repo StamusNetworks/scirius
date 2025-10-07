@@ -17,7 +17,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from accounts.models import SciriusUser, SciriusTokenUser
 from rules.api.common import CommentSerializer
-from rules.models.user_action import UserAction
+from rules.models.model import UserAction
 from rules.models.misc import get_system_settings
 from rules.api.permissions import has_group_permission
 from scirius.utils import get_middleware_module

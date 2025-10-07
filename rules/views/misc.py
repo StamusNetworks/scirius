@@ -42,9 +42,8 @@ from rules.es_graphs import (
 )
 from rules.forms.common import CommentForm
 from rules.forms.misc import KibanaDataForm, SystemSettingsForm
-from rules.models.model import Category, Ruleset, Source, Rule
+from rules.models.model import Category, Ruleset, Source, Rule, UserAction
 from rules.models.misc import get_system_settings
-from rules.models.user_action import UserAction
 from rules.tables import (
     CategoryTable,
     ESIndexessTable,
@@ -297,9 +296,7 @@ def elasticsearch(request: HttpRequest):
             raise PermissionDenied()
 
         if (
-            query in PERM_CONF_AND_EVENT_VIEW
-            and not request.user.has_perm("rules.configuration_view")
-            and not request.user.has_perm("rules.events_view")
+            query in PERM_CONF_AND_EVENT_VIEW and not request.user.has_perm("rules.configuration_view") and not request.user.has_perm("rules.events_view")
         ):
             raise PermissionDenied()
 

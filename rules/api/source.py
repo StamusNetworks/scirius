@@ -7,8 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from rules.models.model import Source, SourceUpdate
-from rules.models.user_action import UserAction
+from rules.models.model import Source, SourceUpdate, UserAction
 from rules.views.source import fetch_public_sources, get_public_sources
 from scirius.utils import get_middleware_module
 from suricata.rest_tasks import SciriusTaskSerializer

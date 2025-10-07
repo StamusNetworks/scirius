@@ -27,8 +27,7 @@ from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from rules.models.model import Rule, Threshold, RuleProcessingFilter, RuleProcessingFilterDef
-from rules.models.user_action import UserAction
+from rules.models.model import Rule, Threshold, RuleProcessingFilter, RuleProcessingFilterDef, UserAction
 from scirius.rest_utils import SciriusModelViewSet
 import contextlib
 
@@ -123,8 +122,8 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
         self.option_serializer = None
 
-        if "context" in kwargs and  "enable_options" in kwargs["context"] and kwargs["context"]["enable_options"] is False:
-                self.fields.pop("options")
+        if "context" in kwargs and "enable_options" in kwargs["context"] and kwargs["context"]["enable_options"] is False:
+            self.fields.pop("options")
 
     def to_representation(self, instance):
         if not instance.options:
