@@ -31,8 +31,7 @@ from scirius.utils import scirius_render
 from suricata.tables import RecurrentTaskTable  # noqa: F401
 from suricata.forms import SuricataForm, SuricataUpdateForm
 from suricata.models import Suricata
-from rules.models.model import SuppressedRuleAtVersion, dependencies_check, Rule
-from rules.models.user_action import UserAction
+from rules.models.model import SuppressedRuleAtVersion, dependencies_check, Rule, UserAction
 
 from django.conf import settings
 from rules.es_graphs import *  # noqa: F403, F401
