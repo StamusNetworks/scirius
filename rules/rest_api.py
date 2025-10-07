@@ -2381,10 +2381,11 @@ class ESFieldsStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet, _ESF
         field_list = fields.split(',')
         tmpl_fields = []
         for field in field_list:
-            if field not in self.NO_KEYWORD_FIELDS:
-                tmpl_fields.append({'name': field, 'key': field + '.' + settings.ELASTICSEARCH_KEYWORD})
-            else:
+            # fields starting with - are ascending ordered
+            if field in self.NO_KEYWORD_FIELDS or (field[0] == '-' and field[1:] in self.NO_KEYWORD_FIELDS):
                 tmpl_fields.append({'name': field, 'key': field})
+            else:
+                tmpl_fields.append({'name': field, 'key': field + '.' + settings.ELASTICSEARCH_KEYWORD})
 
         values = ESFieldsStats(request, view=self).get(
             sid,
