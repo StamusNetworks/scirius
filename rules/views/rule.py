@@ -43,8 +43,7 @@ from rules.forms.rule import (
 )
 from rules.forms.ruleset import RulesetSuppressForm
 from rules.models.model import Ruleset, SuppressedRuleAtVersion, Threshold, Transformation
-from rules.models.model import Rule, RuleAtVersion
-from rules.models.user_action import UserAction
+from rules.models.model import Rule, RuleAtVersion, UserAction
 from rules.suripyg import SuriHTMLFormat
 from rules.tables import RuleSuppressTable, RuleThresholdTable, ThresholdTable
 from scirius.utils import (
@@ -216,8 +215,7 @@ def build_rule_context(request: HttpRequest, rule: Rule):
                 is_suppressed = (
                     SuppressedRuleAtVersion.objects.filter(
                         ruleset=ruleset, rule_at_version__in=rule.ruleatversion_set.all()
-                    ).count()
-                    > 0
+                    ).count() > 0
                 )
 
                 if rav.state and rule.category in ruleset.categories.all() and not is_suppressed:
@@ -412,10 +410,8 @@ def edit_rule(request: HttpRequest, rule_id: int):
                 # Case 1: One transfo on all rulesets
                 # Case 2: one transfo on n rulesets on x. x-n rulesets without transfo (None)
                 if (
-                    rulesets.count() == rulesets_res[key][value]
-                    or (
-                        None in rulesets_res[key]
-                        and rulesets.count() == rulesets_res[key][value] + rulesets_res[key][None]
+                    rulesets.count() == rulesets_res[key][value] or (
+                        None in rulesets_res[key] and rulesets.count() == rulesets_res[key][value] + rulesets_res[key][None]
                     )
                 ) and value:
                     initial[key.value] = current_trans[key].value

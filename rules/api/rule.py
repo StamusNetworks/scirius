@@ -27,8 +27,8 @@ from rules.models.model import (
     Transformation,
     Rule,
     RuleAtVersion,
+    UserAction,
 )
-from rules.models.user_action import UserAction
 from rules.api.permissions import NoPermission, edit_rule_permission
 from rules.suripyg import SuriHTMLFormat
 from scirius.rest_utils import (
@@ -217,8 +217,7 @@ class RuleHitsOrderingFilter(OrderingFilter, ESManageMultipleESIndexesViewSet):
                 queryset = queryset.order_by(*ordering)
 
             if (
-                self.get_query_param(request, "hits_min") is not None
-                or self.get_query_param(request, "hits_max") is not None
+                self.get_query_param(request, "hits_min") is not None or self.get_query_param(request, "hits_max") is not None
             ):
                 hits_order = self._get_hits_order(request, "asc")
                 return self._filter_min_max(request, queryset, hits_order)
