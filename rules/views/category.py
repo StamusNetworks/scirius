@@ -26,8 +26,7 @@ from django.shortcuts import get_object_or_404, redirect
 
 from rules.forms.category import CategoryTransformForm
 from rules.forms.ruleset import RulesetSuppressForm
-from rules.models.model import Category, Ruleset, Transformation, Rule
-from rules.models.user_action import UserAction
+from rules.models.model import Category, Ruleset, Transformation, Rule, UserAction
 from rules.tables import CategoryRulesetTable, CategoryTable, RuleTable
 from scirius.utils import (
     scirius_listing,

@@ -17,7 +17,7 @@ from django.urls import path, re_path
 from django.http import HttpResponse
 
 
-from rules.models.user_action import UserAction
+from rules.models.model import UserAction
 from rules.api.common import CommentSerializer
 from suricata.rest_tasks import SuricataRulesetCeleryTaskViewSet
 
