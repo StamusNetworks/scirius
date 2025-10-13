@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 
 import HeaderLogo from 'ui/components/Header/logo';
 import HelpMenu from 'ui/components/HelpMenu';
+import PreviewUI from 'ui/components/PreviewUI';
 import { ReloadButton } from 'ui/components/ReloadButton';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import UserMenu from 'ui/components/UserMenu';
@@ -74,6 +75,7 @@ const Header = ({ menuItems = [] }) => {
               )}
             </Popover>
           </Menu.Item>
+          <PreviewUI />
           <Menu.Item key="help" className="help-dropdown">
             <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" open={helpPopOver} onOpenChange={setHelpPopOver}>
               <QuestionCircleOutlined /> Help
