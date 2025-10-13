@@ -94,6 +94,8 @@ class DeepLink(models.Model):
     name = models.CharField(max_length=128, null=False, blank=False)
     template = models.CharField(max_length=2048, validators=[validate_url], null=False, blank=False)
     all = models.BooleanField(default=False)
+    user_defined = models.BooleanField(default=True)
+    enabled = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("name", "template")
