@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import Any
 
 from django.conf import settings
 from django_filters import rest_framework as filters
@@ -8,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -296,25 +298,42 @@ class DeepLinkEntitySerializer(serializers.ModelSerializer):
 
 
 class DeepLinkSerializer(serializers.ModelSerializer):
-    entities = DeepLinkEntitySerializer(many=True)
+    entities = DeepLinkEntitySerializer(many=True, default=[])
+    user_defined = serializers.BooleanField(default=True, read_only=True)
 
     class Meta:
         model = DeepLink
-        fields = ("pk", "name", "template", "all", "entities")
+        fields = ("pk", "name", "template", "all", "entities", "enabled", "user_defined")
 
-    def update(self, instance, validated_data):
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        if "user_defined" in self.initial_data:
+            raise serializers.ValidationError({"user_defined": ["You cannot change the user_defined field"]})
+        return super().validate(data)
+
+    def update(self, instance: DeepLink, validated_data: dict[str, Any]):
+        if not instance.user_defined:
+            # check only enabled is modified
+            modified_fields = set(validated_data.keys())
+            fields_to_check = modified_fields - {"entities"}  # entities are present event without modifications
+            if fields_to_check and fields_to_check != {"enabled"}:
+                raise serializers.ValidationError({"user_defined": ["Only user defned deeplinks are editable, you can only enable/disable it through a PATCH request."]})
+            if "enabled" in validated_data and validated_data["enabled"] != instance.enabled:
+                instance.enabled = validated_data["enabled"]
+                instance.save()
+            return instance
+
         entities_data = validated_data.get("entities", [])
         instance.all = validated_data.get("all", instance.all)
 
         instance.name = validated_data.get("name", instance.name)
         instance.template = validated_data.get("template", instance.template)
+        instance.enabled = validated_data.get("enabled", instance.enabled)
         instance.save()
 
-        entity_names = [data["name"] for data in entities_data if data.get("name", None)]
-        entities = []
-        for name in entity_names:
-            entity, _ = DeepLinkEntity.objects.get_or_create(name=name)
-            entities.append(entity)
+        entity_names: list[str] = [data["name"] for data in entities_data if data.get("name", None)]
+        entities = DeepLinkEntity.objects.filter(name__in=entity_names).all()
+        if len(entities) != len(entity_names):
+            raise serializers.ValidationError("Some deeplink entitie(s) does not exists")
         instance.entities.set(entities)
 
         return instance
@@ -322,10 +341,12 @@ class DeepLinkSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         entities = validated_data.pop("entities", None)
         deeplink = DeepLink.objects.create(**validated_data)
-        if entities:
-            for entity_data in entities:
-                entity, _ = DeepLinkEntity.objects.get_or_create(**entity_data)
-                deeplink.entities.add(entity)
+
+        entity_names: list[str] = [data["name"] for data in entities]
+        entities = DeepLinkEntity.objects.filter(name__in=entity_names).all()
+        if len(entities) != len(entity_names):
+            raise serializers.ValidationError("Some deeplink entitie(s) does not exists")
+        deeplink.entities.set(entities)
         return deeplink
 
 
@@ -339,32 +360,32 @@ class DeepLinkViewSet(SciriusModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"count":2,"next":null,"previous":null,"results":[{"pk":4,"name":"google","template":"http://google.com/search/{{ value }}","all":false,"entities":[]},{"pk":3,"name":"google2","template":"https://google2.com/search/{{ value }}","all":false,"entities":[{"name":"ip"}]}]}
+        {"count":2,"next":null,"previous":null,"results":[{"pk":4,"name":"google","template":"http://google.com/search/{{ value }}","all":false,"entities":[]},{"pk":3,"name":"google2","template":"https://google2.com/search/{{ value }}","all":false,"entities":[{"name":"IP"}]}]}
 
     Get a link:\n
         curl -k -v https://x.x.x.x/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":4,"name":"google","template":"http://google.com/search/{{ value }}","all":false,"entities":[]}
+        {"pk":4,"name":"google","template":"http://google.com/search/{{ value }}","all":false,"entities":[], "enabled": true, "user_defined": false}
 
     ==== POST ====\n
     Create a new link:\n
-        curl -k -v https://myssp/rest/rules/deeplink/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"name": "duckduckgo", "template": "http://duckduckgo.com/search/{{ value }}", "entities": [{"name": "ip"}, {"name": "port"}]}'
+        curl -k -v https://myssp/rest/rules/deeplink/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"name": "duckduckgo", "template": "http://duckduckgo.com/search/{{ value }}", "entities": [{"name": "IP"}, {"name": "PORT"}]}'
 
     Return:\n
         HTTP/1.1 201 Created
-        {"pk":5,"name":"duckduckgo","template":"http://duckduckgo.com/search/{{ value }}","all":false,"entities":[{"name":"ip"},{"name":"port"}]}
+        {"pk":5,"name":"duckduckgo","template":"http://duckduckgo.com/search/{{ value }}","all":false,"entities":[{"name":"IP"},{"name":"PORT"}]}
 
     ==== PUT ====\n
-    Update a link and its entities:\n
-        curl -k -v https://x.x.x.x/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X PUT -d '{"name": "yahoo", "template": "https://yahoo.com/search/{{ value }}", "entities": [{"name": "port"}], "all": false}'
+    Update a link and its entities (only user defined one are editable):\n
+        curl -k -v https://x.x.x.x/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X PUT -d '{"name": "yahoo", "template": "https://yahoo.com/search/{{ value }}", "entities": [{"name": "PORT"}], "all": false}'
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":3,"name":"yahoo","template":"https://yahoo.com/search/{{ value }}","all":false,"entities":[{"name":"port"}]}
+        {"pk":3,"name":"yahoo","template":"https://yahoo.com/search/{{ value }}","all":false,"entities":[{"name":"PORT"}]}
 
-    ==== PATCH ====\n
+    ==== PATCH (only user defined one are editable but can change enabled on non user defined ones) ====\n
     Partial update a link:\n
         curl -k -v https://myssp/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X PATCH -d '{"name": "google1"}'
 
@@ -373,7 +394,7 @@ class DeepLinkViewSet(SciriusModelViewSet):
         {"pk":4,"name":"google1","template":"http://google.com/search/{{ value }}","all":false,"entities":[]}&
 
     ==== DELETE ====\n
-    Delete a link:\n
+    Delete a link (only user defined ones are deletable):\n
         curl -k -v https://myssp/rest/rules/deeplink/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
 
     Return:\n
@@ -385,7 +406,7 @@ class DeepLinkViewSet(SciriusModelViewSet):
     queryset = DeepLink.objects.all()
     serializer_class = DeepLinkSerializer
     ordering = ("name",)
-    filterset_fields = ("name", "template", "all", "entities__name")
+    filterset_fields = ("name", "template", "all", "entities__name", "enabled", "user_defined")
     ordering_fields = ("pk", "name", "template", "all", "entities__name")
 
     REQUIRED_GROUPS = {
@@ -393,3 +414,12 @@ class DeepLinkViewSet(SciriusModelViewSet):
         "WRITE": ("rules.configuration_edit",),
     }
     no_tenant_check = True
+
+    def destroy(self, request: Request, pk: int | None = None):
+        """
+        Delete a deeplink user defined deeplink or return an HTTP 400.
+        """
+        obj: DeepLink = self.get_object()
+        if not obj.user_defined:
+            raise serializers.ValidationError({"user_defined": ["You cannot delete non user defined deeplink"]})
+        return super().destroy(request, pk)
