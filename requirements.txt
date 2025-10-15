@@ -8,7 +8,7 @@ celery
 certifi
 cryptography>=44.0.1
 daemon
-Django>=4.2.23,<5
+Django>=4.2.25,<5
 django_ace
 django-auth-ldap
 django-bootstrap3
