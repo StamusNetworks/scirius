@@ -19,12 +19,15 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
+from typing import ClassVar, Iterable, Any
 
-from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models, transaction
 from drf_spectacular.utils import extend_schema
 from IPy import IP
 from rest_framework import serializers
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from rules.models.model import Rule, Threshold, RuleProcessingFilter, RuleProcessingFilterDef, UserAction
@@ -48,14 +51,14 @@ class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
         fields = ("pk", "key", "value", "operator", "full_string")
         read_only_fields = ("pk",)
 
-    def to_representation(self, instance):
-        data = super(RuleProcessingFilterDefSerializer, self).to_representation(instance)
+    def to_representation(self, instance: RuleProcessingFilterDef):
+        data = super().to_representation(instance)
         if instance.key == "alert.signature_id":
             with contextlib.suppress(Rule.DoesNotExist):
                 data["msg"] = Rule.objects.get(sid=instance.value).msg
         return data
 
-    def validate(self, data):
+    def validate(self, data: dict[str, Any]):
         if data["key"] in self.IP_FIELDS:
             try:
                 addr = IP(data["value"])
@@ -70,13 +73,12 @@ class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
 
 
 class JSONStringField(serializers.Field):
-    def to_representation(self, data):
+    def to_representation(self, data: Any) -> dict[str, Any] | None:
         if data is None:
             return None
-        data = json.loads(data)
-        return data
+        return json.loads(data)
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: Any) -> str:
         return json.dumps(data)
 
 
@@ -122,15 +124,17 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
         self.option_serializer = None
 
-        if "context" in kwargs and "enable_options" in kwargs["context"] and kwargs["context"]["enable_options"] is False:
+        if (
+            "context" in kwargs and "enable_options" in kwargs["context"] and kwargs["context"]["enable_options"] is False
+        ):
             self.fields.pop("options")
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: RuleProcessingFilter):
         if not instance.options:
             from scirius.utils import get_middleware_module
 
             instance = get_middleware_module("common").update_processing_filter_action_options(instance)
-        res = super(RuleProcessingFilterSerializer, self).to_representation(instance)
+        res = super().to_representation(instance)
         user_action = (
             UserAction.objects.filter(action_type="create_rule_filter", user_action_objects__object_id=instance.pk)
             .distinct()
@@ -160,6 +164,8 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 get_middleware_module("common").validate_doc_dopv_policy(serializer.validated_data.get("options"))
             except serializers.ValidationError as e:
                 raise serializers.ValidationError({"options": [e.detail]})
+            except ObjectDoesNotExist as e:
+                raise serializers.ValidationError({"options": [str(e)]})
             options = serializer.validated_data
         else:
             if options:
@@ -179,7 +185,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         return super().to_internal_value(data)
 
     @staticmethod
-    def validate_rule_postprocessing(data, partial):
+    def validate_rule_postprocessing(data: dict[str, Any], partial: bool) -> None:
         action = data.get("action")
         has_ip = False
         has_bad_operator = False
@@ -247,7 +253,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError({"filter_defs": errors})
 
-    def validate(self, data):
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         from scirius.utils import get_middleware_module
 
         if data.get("action", "") == "threshold":
@@ -256,33 +262,38 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             get_middleware_module("common").validate_rule_postprocessing(data, self.partial, self)
         return data
 
-    def _set_filters(self, instance, filters):
-        current_filters = instance.filter_defs.all()
-        filters_pk = []
+    @transaction.atomic
+    def _set_filters(self, instance: RuleProcessingFilter, filters: list[dict[str, Any]]):
+        current_filters: dict[int, RuleProcessingFilterDef] = {f.pk: f for f in instance.filter_defs.all()}
+        filters_to_keep_pk: set[int] = set()
 
-        for f in filters:
-            f["proc_filter"] = instance
-            serializer = RuleProcessingFilterDefSerializer(data=f)
-            try:
-                serializer.is_valid(raise_exception=True)
-            except serializers.ValidationError as e:
-                raise serializers.ValidationError({"filter_defs": [e.detail]})
+        for _i, filter_data in enumerate(filters):
+            filter_data["proc_filter_id"] = instance.pk
+            pk = filter_data.get("pk")
 
-            # Update existing, create new ones
-            if f.get("pk"):
-                f_obj = current_filters.get(pk=f["pk"])
-                f_obj = serializer.update(f_obj, f)
-                filters_pk.append(f_obj.pk)
+            if pk is not None and pk in current_filters:
+                f_obj = current_filters[pk]
+                serializer = RuleProcessingFilterDefSerializer(instance=f_obj, data=filter_data)
+                try:
+                    serializer.is_valid(raise_exception=True)
+                    f_obj = serializer.update(f_obj, filter_data)
+                    filters_to_keep_pk.add(f_obj.pk)
+                except serializers.ValidationError as e:
+                    raise serializers.ValidationError({"filter_defs": [e.detail]})
             else:
-                f_obj = serializer.create(f)
-                filters_pk.append(f_obj.pk)
+                serializer = RuleProcessingFilterDefSerializer(data=filter_data)
+                try:
+                    serializer.is_valid(raise_exception=True)
+                    f_obj = serializer.create(filter_data)
+                    filters_to_keep_pk.add(f_obj.pk)
+                except serializers.ValidationError as e:
+                    raise serializers.ValidationError({"filter_defs": [e.detail]})
 
-        # Remove deleted filters
-        for f_obj in current_filters:
-            if f_obj.pk not in filters_pk:
-                f_obj.delete()
+        pks_to_delete = set(current_filters.keys()) - filters_to_keep_pk
+        if pks_to_delete:
+            instance.filter_defs.filter(pk__in=pks_to_delete).delete()
 
-    def _reorder(self, instance, previous_index, new_index):
+    def _reorder(self, instance: RuleProcessingFilter, previous_index: int | None, new_index: int):
         if new_index is previous_index:
             return
 
@@ -306,12 +317,18 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 index=models.F("index") + 1
             )
 
-    def _update_or_create(self, operation, instance, validated_data):
+    @transaction.atomic
+    def _update_or_create(
+        self,
+        operation: str,
+        instance: RuleProcessingFilter | None,
+        validated_data: dict[str, Any]
+    ) -> RuleProcessingFilter:
         filters = validated_data.pop("filter_defs", None)
         comment = validated_data.pop("comment", None)
         rulesets = validated_data.get("rulesets")
-        previous_index = None
-        new_index = None
+        previous_index: int | None = None
+        new_index: int | None = None
         index_max = RuleProcessingFilter.objects.aggregate(models.Max("index"))["index__max"]
 
         if operation == "create":
@@ -320,10 +337,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"filter_defs": ["This field is required."]})
 
             if validated_data.get("index") is None:
-                if index_max is None:
-                    validated_data["index"] = 0
-                else:
-                    validated_data["index"] = index_max + 1
+                validated_data["index"] = 0 if index_max is None else index_max + 1
 
             else:
                 new_index = validated_data["index"]
@@ -333,6 +347,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             instance = super().create(validated_data)
             user_action = "create"
 
+            # handle Stamus proprietary filter action that can store data in another table instead of the options field
             if self.option_serializer and hasattr(self.option_serializer.Meta.model, "action"):
                 self.option_serializer.save(action=instance)
                 if hasattr(self.option_serializer, "extra_actions"):
@@ -351,7 +366,16 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 elif new_index > index_max + 1:
                     raise serializers.ValidationError({"index": ["Invalid index value (too high)."]})
 
-            instance = super(RuleProcessingFilterSerializer, self).update(instance, validated_data)
+            # handle proprietary Stamus filter action that can store data in another table instead of the options field
+            if self.option_serializer and hasattr(self.option_serializer.Meta.model, "action"):
+                klass = self.option_serializer.Meta.model
+                action = klass.objects.filter(action_id=instance.pk).first()
+                self.option_serializer.instance = action
+                self.option_serializer.save()
+                if hasattr(self.option_serializer, "extra_actions"):
+                    self.option_serializer.extra_actions()
+
+            instance = super().update(instance, validated_data)
             user_action = "edit"
 
             if rulesets is None:
@@ -359,10 +383,10 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 
         self._reorder(instance, previous_index, new_index)
 
-        if filters:
+        if filters is not None:
             try:
                 self._set_filters(instance, filters)
-            except:
+            except Exception:
                 if operation == "create":
                     instance.delete()
                 raise
@@ -377,10 +401,10 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             )
         return instance
 
-    def update(self, instance, validated_data):
+    def update(self, instance: RuleProcessingFilter, validated_data: dict[str, Any]) -> RuleProcessingFilter:
         return RuleProcessingFilterSerializer._update_or_create(self, "update", instance, validated_data)
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict[str, Any]) -> RuleProcessingFilter:
         return RuleProcessingFilterSerializer._update_or_create(self, "create", None, validated_data)
 
 
@@ -467,18 +491,18 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
     =============================================================================================================================================================
     """
 
-    queryset = RuleProcessingFilter.objects.all()
+    queryset = RuleProcessingFilter.objects.prefetch_related("filter_defs").all()
     serializer_class = RuleProcessingFilterSerializer
     ordering = ("index",)
     ordering_fields = ("pk", "index", "action", "enabled")
     filterset_fields = ("action", "enabled", "filter_defs__key", "filter_defs__value")
     search_fields = ("description", "filter_defs__key", "filter_defs__value")
-    REQUIRED_GROUPS = {
+    REQUIRED_GROUPS: ClassVar[dict[str, Iterable[str]]] = {
         "READ": ("rules.ruleset_policy_view",),
         "WRITE": ("rules.ruleset_policy_edit",),
     }
 
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request: Request, *args, **kwargs):
         from rules.api.common import CommentSerializer
 
         instance = self.get_object()
@@ -502,7 +526,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         return response
 
     @action(detail=False, methods=["post"])
-    def test(self, request):
+    def test(self, request: Request):
         from scirius.utils import get_middleware_module
 
         fields_serializer = RuleProcessingTestSerializer(data=request.data)
@@ -513,7 +537,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         return Response(capabilities)
 
     @action(detail=False, methods=["post"])
-    def test_actions(self, request):
+    def test_actions(self, request: Request):
         from scirius.utils import get_middleware_module
 
         fields_serializer = RuleProcessingTestActionsSerializer(data=request.data)
@@ -524,7 +548,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         return Response({"actions": capabilities})
 
     @action(detail=False, methods=["post"])
-    def intersect(self, request):
+    def intersect(self, request: Request):
         fields_serializer = RuleProcessingFilterIntersectSerializer(data=request.data)
         fields_serializer.is_valid(raise_exception=True)
         index = fields_serializer.validated_data.get("index", None)
