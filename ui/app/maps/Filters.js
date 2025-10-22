@@ -10,17 +10,29 @@ export const FilterCategory = {
 };
 
 export const FilterType = {
+  STAMUS_ASSET: 'ASSET',
   IP: 'IP',
   PORT: 'PORT',
-  MITRE: 'MITRE',
+  MITRE_TECHNIQUE_NAME: 'MITRE_TECHNIQUE_NAME',
+  MITRE_TECHNIQUE_ID: 'MITRE_TECHNIQUE_ID',
+  MITRE_TACTIC_NAME: 'MITRE_TACTIC_NAME',
+  MITRE_TACTIC_ID: 'MITRE_TACTIC_ID',
   USERNAME: 'USERNAME',
   HOSTNAME: 'HOSTNAME',
+  DOMAIN: 'DOMAIN',
+  EMAIL: 'EMAIL',
   ROLE: 'ROLE',
   NETWORK_INFO: 'NETWORK_INFO',
-  STAMUS_ASSET: 'STAMUS_ASSET',
   SHA256: 'SHA256',
+  SIGNATURE: 'SIGNATURE',
+  PROTO: 'PROTO',
+  APP_PROTO: 'APP_PROTO',
+  USER_AGENT: 'USER_AGENT',
   COMMUNITY_ID: 'COMMUNITY_ID',
-  FLOW_ID: 'FLOW_ID',
+  CIPHER: 'CIPHER',
+  ASNUMBER: 'ASNUMBER',
+  FILE_HASH: 'FILE_HASH',
+  MACADDRESS: 'MACADDRESS',
 };
 
 export const FiltersList = [
@@ -58,6 +70,7 @@ export const FiltersList = [
       wildcard: true,
     },
     force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
+    type: FilterType.SIGNATURE,
   },
   {
     title: 'Message',
@@ -158,6 +171,7 @@ export const FiltersList = [
     id: 'alert.signature',
     category: FilterCategory.EVENT,
     force: [EVENT_TYPES.ALERT, EVENT_TYPES.STAMUS],
+    type: FilterType.SIGNATURE,
   },
   {
     title: 'Method ID',
@@ -191,6 +205,7 @@ export const FiltersList = [
     title: 'X-Forwarded-For',
     id: 'alert.xff',
     category: FilterCategory.EVENT,
+    type: FilterType.IP,
   },
   {
     title: 'Source Net',
@@ -250,17 +265,20 @@ export const FiltersList = [
     id: 'proto',
     category: FilterCategory.EVENT,
     convertible: 'host_id.services.proto',
+    type: FilterType.PROTO,
   },
   {
     title: 'App protocol',
     id: 'app_proto',
     category: FilterCategory.EVENT,
     convertible: 'host_id.services.values.app_proto',
+    type: FilterType.APP_PROTO,
   },
   {
     title: 'Original application protocol',
     id: 'app_proto_orig',
     category: FilterCategory.EVENT,
+    type: FilterType.APP_PROTO,
   },
   {
     title: 'Probe',
@@ -451,6 +469,7 @@ export const FiltersList = [
     id: 'geoip.provider.autonomous_system_number',
     wildcardable: false,
     category: FilterCategory.EVENT,
+    type: FilterType.ASNUMBER,
   },
   {
     title: 'AS Organization',
@@ -486,6 +505,7 @@ export const FiltersList = [
     id: 'http.http_user_agent',
     category: FilterCategory.EVENT,
     convertible: 'host_id.http.user_agent.agent',
+    type: FilterType.USER_AGENT,
   },
   {
     title: 'Referrer',
@@ -595,6 +615,7 @@ export const FiltersList = [
     title: 'Cipher Suite',
     id: 'tls.cipher_suite',
     category: FilterCategory.EVENT,
+    type: FilterType.CIPHER,
   },
   {
     title: 'Cipher Security',
@@ -644,11 +665,13 @@ export const FiltersList = [
     title: 'Source MAC',
     id: 'ether.src_mac',
     category: FilterCategory.EVENT,
+    type: FilterType.MACADDRESS,
   },
   {
     title: 'Destination MAC',
     id: 'ether.dest_mac',
     category: FilterCategory.EVENT,
+    type: FilterType.MACADDRESS,
   },
   {
     title: 'Asset',
@@ -729,28 +752,28 @@ export const FiltersList = [
     title: 'Mitre Tactic ID',
     id: 'alert.metadata.mitre_tactic_id',
     category: FilterCategory.EVENT,
-    type: FilterType.MITRE,
+    type: FilterType.MITRE_TACTIC_NAME,
     format: value => value?.replaceAll('_', '') || null,
   },
   {
     title: 'Mitre Technique ID',
     id: 'alert.metadata.mitre_technique_id',
     category: FilterCategory.EVENT,
-    type: FilterType.MITRE,
+    type: FilterType.MITRE_TECHNIQUE_ID,
     format: value => value?.replaceAll('_', '') || null,
   },
   {
     title: 'Mitre Tactic Name',
     id: 'alert.metadata.mitre_tactic_name',
     category: FilterCategory.EVENT,
-    type: FilterType.MITRE,
+    type: FilterType.MITRE_TACTIC_NAME,
     format: value => value?.replaceAll('_', '') || null,
   },
   {
     title: 'Mitre Technique Name',
     id: 'alert.metadata.mitre_technique_name',
     category: FilterCategory.EVENT,
-    type: FilterType.MITRE,
+    type: FilterType.MITRE_TECHNIQUE_NAME,
     format: value => value?.replaceAll('_', '') || null,
   },
   {
@@ -777,7 +800,7 @@ export const FiltersList = [
     title: 'Host Domain',
     id: 'hostname_info.domain',
     category: FilterCategory.EVENT,
-    type: FilterType.HOSTNAME,
+    type: FilterType.DOMAIN,
   },
   {
     title: 'Host Subdomain',
@@ -798,13 +821,13 @@ export const FiltersList = [
     title: 'HTTP Refer Domain',
     id: 'http.http_refer_info.domain',
     category: FilterCategory.EVENT,
-    type: FilterType.HOSTNAME,
+    type: FilterType.DOMAIN,
   },
   {
     title: 'HTTP Refer Subdomain',
     id: 'http.http_refer_info.subdomain',
     category: FilterCategory.EVENT,
-    type: FilterType.HOSTNAME,
+    type: FilterType.DOMAIN,
   },
   {
     title: 'Referrer TLD',
@@ -825,6 +848,7 @@ export const FiltersList = [
     title: 'HTTP Refer Domain Without TLD',
     id: 'http.http_refer_info.domain_without_tld',
     category: FilterCategory.EVENT,
+    type: FilterType.DOMAIN,
   },
   {
     title: 'TLS SNI',

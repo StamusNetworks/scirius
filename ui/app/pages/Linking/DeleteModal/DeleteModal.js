@@ -8,7 +8,7 @@ import API from 'ui/services/API';
 
 import * as Style from './style';
 
-export const DeleteModal = ({ pk, onSuccess }) => {
+export const DeleteModal = ({ pk, onSuccess, disabled }) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
     setOpen(true);
@@ -28,7 +28,13 @@ export const DeleteModal = ({ pk, onSuccess }) => {
 
   return (
     <>
-      <Button onClick={handleOpen} icon={<DeleteOutlined />} danger />
+      <Button
+        onClick={handleOpen}
+        icon={<DeleteOutlined />}
+        danger
+        disabled={disabled}
+        title={disabled ? 'Cannot delete deeplinks created by Stamus' : ''}
+      />
       <Modal
         open={open}
         title="Delete this template"
@@ -50,4 +56,5 @@ export const DeleteModal = ({ pk, onSuccess }) => {
 DeleteModal.propTypes = {
   pk: PropTypes.number.isRequired,
   onSuccess: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
 };
