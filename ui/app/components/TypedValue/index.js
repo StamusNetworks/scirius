@@ -8,7 +8,6 @@ import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 
 import typedOptions from 'ui/components/TypedValue/options';
-import isIP from 'ui/helpers/isIP';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
 
@@ -38,7 +37,7 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
   let listOfLinks = additionalLinks || [];
 
   const customLinks = commonStore.linkTemplates
-    .filter(l => l.all || l.entities?.map(entity => entity.name).includes(filter.type))
+    .filter(l => l.enabled && (l.all || l.entities?.map(entity => entity.name).includes(filter.type)))
     .map(l => ({
       key: `typedValue${l.name}`,
       label: (
@@ -60,11 +59,6 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
       <RobotOutlined /> <span>Filter on Role{location && `, go to ${_.capitalize(location)}`}</span>
     </div>
   );
-
-  if (filter.type === 'HOSTNAME' || filter.type === 'NAME') {
-    const type = isIP(filter.value) ? 'ip-address' : 'domain';
-    listOfLinks = [...listOfLinks, typedOptions.EXTERNAL_INFO(type, filter.value)];
-  }
 
   if (filter.type === 'USERNAME') {
     listOfLinks = [
@@ -111,16 +105,7 @@ const TypedValue = ({ filter, additionalLinks, children, filterOnClick = true })
         filter.negated = true;
         commonStore.addFilter(filter);
       }),
-      typedOptions.EXTERNAL_INFO('ip-address', filter.value),
     ];
-  }
-
-  if (filter.type === 'PORT') {
-    listOfLinks = [...listOfLinks, typedOptions.EXTERNAL_INFO_PORT(filter.displayValue)];
-  }
-
-  if (filter.type === 'SHA256') {
-    listOfLinks = [...listOfLinks, typedOptions.EXTERNAL_INFO('file', filter.displayValue)];
   }
 
   // additionalLinks apply to all fields - ip, port, hostname, username
