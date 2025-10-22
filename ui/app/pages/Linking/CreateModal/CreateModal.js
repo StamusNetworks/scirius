@@ -30,7 +30,7 @@ const filterTypeOptions = Object.values(FilterType)
   .sort()
   .map(type => ({ value: type }));
 
-export const CreateModal = ({ initialValues, onSuccess }) => {
+export const CreateModal = ({ initialValues, onSuccess, disabled }) => {
   const isCreate = initialValues === undefined;
   const action = isCreate ? 'create' : 'update';
   const [form] = Form.useForm();
@@ -76,7 +76,7 @@ export const CreateModal = ({ initialValues, onSuccess }) => {
           Create Template
         </Button>
       ) : (
-        <Button onClick={handleOpen} icon={<EditOutlined />} />
+        <Button onClick={handleOpen} icon={<EditOutlined />} disabled={disabled} title={disabled ? 'Cannot edit deeplinks created by Stamus' : ''} />
       )}
       <Modal
         open={open}
@@ -115,4 +115,5 @@ CreateModal.propTypes = {
     template: PropTypes.string.isRequired,
     all: PropTypes.bool.isRequired,
   }),
+  disabled: PropTypes.bool,
 };
