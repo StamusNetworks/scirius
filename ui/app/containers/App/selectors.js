@@ -25,8 +25,8 @@ const makeSelectUpdatePushRuleset = () => createSelector(selectGlobal, subState 
 
 const makeSelectStartDate = () =>
   createSelector(selectGlobal, subState => {
-    if (subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
-      return subState.timespan.startDate;
+    if (subState.timespan.timePicker === 'absolute' || subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
+      return moment.unix(subState.timespan.startDate);
     }
     const { minTimestamp } = subState.timespan;
     if (subState.timespan.duration === 'All') {
@@ -41,8 +41,8 @@ const makeSelectStartDate = () =>
 
 const makeSelectEndDate = () =>
   createSelector(selectGlobal, subState => {
-    if (subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
-      return subState.timespan.endDate;
+    if (subState.timespan.timePicker === 'absolute' || subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
+      return moment.unix(subState.timespan.endDate);
     }
     const { maxTimestamp } = subState.timespan;
     if (subState.timespan.duration === 'Auto') {
