@@ -113,7 +113,7 @@ const DateRangePicker = ({ selectedFromDate, selectedToDate }) => {
               placement: 'topLeft',
             });
           } else {
-            dispatch(actions.setTimeSpan(startDate, endDate));
+            dispatch(actions.setTimeSpan(startDate.unix(), endDate.unix()));
             commonStore.setAbsoluteTimeRange(startDate.unix(), endDate.unix());
           }
         }}
