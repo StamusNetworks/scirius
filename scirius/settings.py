@@ -570,14 +570,6 @@ DJANGO_MCP_OUTPUT_RENDERER_CLASSES = [
     "rest_framework.renderers.JSONRenderer"
 ]
 
-try:
-    from .local_settings import *  # noqa: F403, F401
-except:
-    pass
-
-if KIBANA_PROXY:
-    INSTALLED_APPS += ('revproxy',)
-
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Clear NDR',
     'DESCRIPTION': 'Clear NDR API',
@@ -591,3 +583,13 @@ SPECTACULAR_SETTINGS = {
     'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
     'COMPONENT_SPLIT_REQUEST': True,
 }
+
+try:
+    from .local_settings import *  # noqa: F403, F401
+except:
+    pass
+
+if KIBANA_PROXY:
+    INSTALLED_APPS += ('revproxy',)
+
+# do not put anything after: we should not have anything after the try to import local_settings and the revproxy
