@@ -262,36 +262,31 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             get_middleware_module("common").validate_rule_postprocessing(data, self.partial, self)
         return data
 
-    @transaction.atomic
-    def _set_filters(self, instance: RuleProcessingFilter, filters: list[dict[str, Any]]):
-        current_filters: dict[int, RuleProcessingFilterDef] = {f.pk: f for f in instance.filter_defs.all()}
-        filters_to_keep_pk: set[int] = set()
+    def _set_filters(self, instance, filters):
+        current_filters = instance.filter_defs.all()
+        filters_pk = []
 
-        for _i, filter_data in enumerate(filters):
-            filter_data["proc_filter_id"] = instance.pk
-            pk = filter_data.get("pk")
+        for f in filters:
+            f["proc_filter"] = instance
+            serializer = RuleProcessingFilterDefSerializer(data=f)
+            try:
+                serializer.is_valid(raise_exception=True)
+            except serializers.ValidationError as e:
+                raise serializers.ValidationError({"filter_defs": [e.detail]})
 
-            if pk is not None and pk in current_filters:
-                f_obj = current_filters[pk]
-                serializer = RuleProcessingFilterDefSerializer(instance=f_obj, data=filter_data)
-                try:
-                    serializer.is_valid(raise_exception=True)
-                    f_obj = serializer.update(f_obj, filter_data)
-                    filters_to_keep_pk.add(f_obj.pk)
-                except serializers.ValidationError as e:
-                    raise serializers.ValidationError({"filter_defs": [e.detail]})
+            # Update existing, create new ones
+            if f.get("pk"):
+                f_obj = current_filters.get(pk=f["pk"])
+                f_obj = serializer.update(f_obj, f)
+                filters_pk.append(f_obj.pk)
             else:
-                serializer = RuleProcessingFilterDefSerializer(data=filter_data)
-                try:
-                    serializer.is_valid(raise_exception=True)
-                    f_obj = serializer.create(filter_data)
-                    filters_to_keep_pk.add(f_obj.pk)
-                except serializers.ValidationError as e:
-                    raise serializers.ValidationError({"filter_defs": [e.detail]})
+                f_obj = serializer.create(f)
+                filters_pk.append(f_obj.pk)
 
-        pks_to_delete = set(current_filters.keys()) - filters_to_keep_pk
-        if pks_to_delete:
-            instance.filter_defs.filter(pk__in=pks_to_delete).delete()
+        # Remove deleted filters
+        for f_obj in current_filters:
+            if f_obj.pk not in filters_pk:
+                f_obj.delete()
 
     def _reorder(self, instance: RuleProcessingFilter, previous_index: int | None, new_index: int):
         if new_index is previous_index:
