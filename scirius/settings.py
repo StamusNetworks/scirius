@@ -26,7 +26,7 @@ PRODUCT_SHORT_NAME = os.getenv('PRODUCT_SHORT_NAME', 'Clear NDR')
 PRODUCT_MEDIUM_NAME = os.getenv('PRODUCT_MEDIUM_NAME', 'Clear NDR CE')
 LOGO = os.getenv('LOGO', 'rules/selks.png')
 
-SCIRIUS_VERSION = "42.0.0"
+SCIRIUS_VERSION = "42.1.0"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
