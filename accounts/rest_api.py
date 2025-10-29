@@ -23,7 +23,7 @@ from rules.api.permissions import has_group_permission
 from scirius.utils import get_middleware_module
 
 import pytz
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 TIMEZONES = [(x, x) for x in pytz.all_timezones]
 
@@ -550,7 +550,8 @@ class AccountViewSet(viewsets.ModelViewSet):
 
         disconnect = timeout >= cookie_age * 3600
         if session_cookie_age > 0 and 'session_start' in request.session:
-            disconnect |= request.session['session_start'] + timedelta(hours=session_cookie_age) < timezone.now()
+            session_start = datetime.fromisoformat(request.session['session_start'])
+            disconnect |= session_start + timedelta(hours=session_cookie_age) < timezone.now()
 
         if disconnect:
             logout(request)

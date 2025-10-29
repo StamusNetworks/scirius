@@ -69,7 +69,7 @@ def loginview(request, target):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                request.session['session_start'] = timezone.now()
+                request.session['session_start'] = timezone.now().isoformat()
                 try:
                     sciriususer = SciriusUser.objects.get(user=user)
                     sciriususer.sciriususerapp
