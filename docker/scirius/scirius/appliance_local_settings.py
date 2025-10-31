@@ -338,11 +338,11 @@ BOOTSTRAP3 = {
     'field_renderers': {
         'default': 'bootstrap3.renderers.FieldRenderer',
         'inline': 'bootstrap3.renderers.InlineFieldRenderer',
-        'template': 'appliances.templates.TemplateFieldRenderer'
+        'template': 'appliances.views.templates.TemplateFieldRenderer'
     }
 }
 
 try:
     from .authentication import *  # type: ignore # noqa: F403, F401
-except:  # noqa: E722
+except Exception:
     pass
