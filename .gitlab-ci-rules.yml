@@ -72,4 +72,4 @@ test-dlint:
     script:
         - python -m flake8 --select=DUO rules
         - python -m flake8 --select=DUO suricata
-        - python -m flake8 --ignore=E501,E722,W504 --exclude=rules/migrations,rules/south_migrations,tests/docker/,accounts/south_migrations,suricata/south_migrations,suricata/migrations rules suricata accounts scirius
+        - python -m flake8 --ignore=E501,E722,W503,W504 --exclude=rules/migrations,rules/south_migrations,tests/docker/,accounts/south_migrations,suricata/south_migrations,suricata/migrations rules suricata accounts scirius
