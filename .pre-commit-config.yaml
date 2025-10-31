@@ -1,0 +1,33 @@
+exclude: "^(appliances/migrations/|appliances/south_migrations/|node_modules/|rules/migrations/|rules/south_migrations/|tests/docker/|accounts/south_migrations/|suricata/south_migrations/|suricata/migrations/|tests/)"
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+      - id: check-added-large-files
+        args: ["--maxkb=8192"]
+      - id: check-merge-conflict
+      - id: detect-private-key
+  # # linter for django templates
+  # - repo: https://github.com/Riverside-Healthcare/djLint
+  #   rev: v1.36.4
+  #   hooks:
+  #     - id: djlint-django
+  # linter and code formatter as a replacement of flake8, isort, black, pyupgrade, ...
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.14.3
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: ["--fix", "ignore=E501,E722,W504"]
+      # Run the formatter.
+      - id: ruff-format
+      # # isort: sort imports
+      # - id: ruff
+      #   args: [--fix, ignore=I]
