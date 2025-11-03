@@ -26,13 +26,16 @@ from importlib import import_module
 from pathlib import Path
 from time import time
 import httpx
+import json
 import os
 
 from django.shortcuts import render
 from django.conf import settings
+from django.core.signing import JSONSerializer as DjangoJSONSerializer
 from django.utils import timezone
 from django.contrib import messages
 from django.db.models.query import QuerySet
+from django.utils.timezone import is_aware, make_naive
 
 import django_tables2 as tables
 
@@ -374,3 +377,25 @@ def get_folder_size(folder):
 
 def is_ajax(request):
     return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+
+class ExtendedJSONEncoder(json.JSONEncoder):
+    """Custom JSONEncoder that handles datetime objects."""
+
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            # Convert datetime object to ISO 8601 string
+            if is_aware(obj):
+                obj = make_naive(obj)
+            return obj.isoformat()
+        # default behaviour for remaining stuff
+        return super().default(obj)
+
+
+class ExtendedJSONSerializer(DjangoJSONSerializer):
+    """
+    Extended JSONSerializer that uses a custom encoder to handle datetime objects.
+    """
+
+    def dumps(self, obj):
+        return json.dumps(obj, separators=(",", ":"), cls=ExtendedJSONEncoder).encode("latin-1")

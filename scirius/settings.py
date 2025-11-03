@@ -312,7 +312,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
+SESSION_SERIALIZER = "scirius.utils.ExtendedJSONSerializer"
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
