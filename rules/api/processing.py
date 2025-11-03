@@ -333,6 +333,8 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             instance = super().create(validated_data)
             user_action = "create"
 
+            # handle Stamus proprietary filter action that can store data in another table instead of the options field
+            # so there is no data in RuleProcessingFilter.options
             if self.option_serializer and hasattr(self.option_serializer.Meta.model, "action"):
                 self.option_serializer.save(action=instance)
                 if hasattr(self.option_serializer, "extra_actions"):
@@ -351,7 +353,17 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 elif new_index > index_max + 1:
                     raise serializers.ValidationError({"index": ["Invalid index value (too high)."]})
 
-            instance = super(RuleProcessingFilterSerializer, self).update(instance, validated_data)
+            # handle proprietary Stamus filter action that can store data in another table instead of the options field
+            # so there is no data in RuleProcessingFilter.options
+            if self.option_serializer and hasattr(self.option_serializer.Meta.model, "action"):
+                klass = self.option_serializer.Meta.model
+                action = klass.objects.filter(action_id=instance.pk).first()
+                self.option_serializer.instance = action
+                self.option_serializer.save()
+                if hasattr(self.option_serializer, "extra_actions"):
+                    self.option_serializer.extra_actions()
+
+            instance = super().update(instance, validated_data)
             user_action = "edit"
 
             if rulesets is None:
