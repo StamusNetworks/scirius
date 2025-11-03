@@ -1,9 +1,11 @@
 import datetime
 import pytest
 
+from zoneinfo import ZoneInfo
+
 from freezegun import freeze_time
 
-from scirius.utils import convert_datetime_to_timestamp, merge_dict_deeply, sizeof_fmt
+from scirius.utils import ExtendedJSONSerializer, convert_datetime_to_timestamp, merge_dict_deeply, sizeof_fmt
 
 
 @freeze_time("2025-08-26 10:16:50 UTC")
@@ -34,3 +36,18 @@ def test_sizeof_fmt():
     assert sizeof_fmt(2000) == "2.0 KB"
     assert sizeof_fmt(1800000) == "1.7 MB"
     assert sizeof_fmt(1222333444) == "1.1 GB"
+
+
+def test_extended_json_serializer():
+    serializer = ExtendedJSONSerializer()
+
+    dt = datetime.datetime(2025, 8, 26, 10, 16, 50, 123456, tzinfo=datetime.UTC)
+    res = serializer.dumps({"dt": dt})
+    assert res.decode() == '{"dt":"2025-08-26T10:16:50.123456"}'
+
+    dt = datetime.datetime(2025, 8, 26, 10, 16, 50, 123456, tzinfo=ZoneInfo("Europe/Paris"))
+    res = serializer.dumps([dt])
+    assert res.decode() == '["2025-08-26T08:16:50.123456"]'
+
+    res = serializer.dumps({"a": 1, "b": "string", "c": [1, 2, 3], "d": {"key": "val", "t": dt}})
+    assert res.decode() == '{"a":1,"b":"string","c":[1,2,3],"d":{"key":"val","t":"2025-08-26T08:16:50.123456"}}'
