@@ -281,7 +281,7 @@ def merge_dict_deeply(src, dest):
     return dest
 
 
-def read_in_chunks(file_, chunk_size=1024):
+def read_in_chunks(file_, chunk_size: int = 1024):
     while True:
         data = file_.read(chunk_size)
         if not data:
@@ -346,7 +346,7 @@ class RequestsWrapper:
 def convert_to_utc(time, user):
     try:
         tz = pytz.timezone(user.sciriususer.timezone)
-    except:
+    except Exception:
         return time
     return tz.normalize(tz.localize(time.replace(tzinfo=None))).astimezone(pytz.utc)
 
@@ -354,7 +354,7 @@ def convert_to_utc(time, user):
 def convert_to_local(time, user):
     try:
         tz = pytz.timezone(user.sciriususer.timezone)
-    except:
+    except Exception:
         return time
     return pytz.utc.normalize(pytz.utc.localize(time.replace(tzinfo=None))).astimezone(tz)
 
@@ -367,7 +367,7 @@ def sizeof_fmt(num: int | float) -> str:
         if abs(num) < 1024.0:
             return f"{num:3.1f} {unit}B"
         num /= 1024.0
-    return f"{num:.1f}YB"
+    return f"{num:.1f} YB"
 
 
 def get_folder_size(folder):
