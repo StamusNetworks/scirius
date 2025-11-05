@@ -331,6 +331,10 @@ omit = [
     "*/settings/*",
     "*/wsgi.py",
     "*/asgi.py",
+    "*/south_migrations/*.py",
+    "*/func_tests.py",
+    "*/settings.py",
+    "*/local_settings.py"
 ]
 # concurrency = "multiprocessing"
 # concurrency = "gevent"
