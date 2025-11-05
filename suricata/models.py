@@ -110,7 +110,7 @@ def get_probe_hostnames(limit=10):
         return [socket.gethostname()]
 
     suricata = Suricata.objects.all()
-    if suricata is not None:
+    if suricata.count() > 0:
         return [suricata[0].name]
 
     return None
