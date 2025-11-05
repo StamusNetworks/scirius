@@ -114,10 +114,13 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-mock",
     "pytest-asyncio",
     "pytest-django",
     "pytest-timeout",
     "pytest-freezegun",
+    "pytest-cov",
+    "pytest-xdist",
     "ruff",           # Code linter/formatter
     "mypy",           # Type checker
     "pre-commit",
