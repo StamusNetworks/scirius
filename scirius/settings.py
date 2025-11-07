@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import structlog
 from distutils.version import LooseVersion
 from django import get_version
+from opentelemetry import trace
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -46,6 +48,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_structlog',
     'django_tables2',
     'bootstrap3',
     'dbbackup',
@@ -81,7 +84,8 @@ MIDDLEWARE = [
     'scirius.utils.TimezoneMiddleware',
     'csp.middleware.CSPMiddleware',
     'scirius.utils.CustomCSPMiddleware',
-    'django_cprofile_middleware.middleware.ProfilerMiddleware'
+    'django_cprofile_middleware.middleware.ProfilerMiddleware',
+    'django_structlog.middlewares.RequestMiddleware',
 ]
 
 TEMPLATES = [
@@ -157,6 +161,7 @@ CACHES = {
     }
 }
 
+DJANGO_STRUCTLOG_CELERY_ENABLED = True
 
 LOGGING = {
     'version': 1,
@@ -173,7 +178,40 @@ LOGGING = {
         },
         'celeryformat': {
             'format': '%(asctime)s %(processName)s %(levelname)s %(message)s'
-        }
+        },
+        # structlog formatters
+        'json_formatter': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.JSONRenderer(),
+            'foreign_pre_chain': [
+                structlog.stdlib.add_logger_name,
+                structlog.stdlib.add_log_level,
+                structlog.stdlib.PositionalArgumentsFormatter(),
+                structlog.processors.StackInfoRenderer(),
+                structlog.dev.set_exc_info,
+                structlog.processors.format_exc_info,
+                structlog.processors.TimeStamper(fmt="iso"),
+                structlog.processors.UnicodeDecoder(),
+            ],
+        },
+        'plain_console': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.dev.ConsoleRenderer(),
+            'foreign_pre_chain': [
+                structlog.stdlib.add_logger_name,
+                structlog.stdlib.add_log_level,
+                structlog.stdlib.PositionalArgumentsFormatter(),
+                structlog.processors.StackInfoRenderer(),
+                structlog.dev.set_exc_info,
+                structlog.processors.format_exc_info,
+                structlog.processors.TimeStamper(fmt="iso"),
+                structlog.processors.UnicodeDecoder(),
+            ],
+        },
+        'key_value': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.KeyValueRenderer(key_order=['timestamp', 'level', 'event', 'logger']),
+        },
     },
     'handlers': {
         'file_log': {
@@ -234,55 +272,142 @@ LOGGING = {
             'filename': '/var/log/celery/elasticsearch.log',
             'formatter': 'raw',
         },
+        # structlog handlers
+        'auth_structlog': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/auth.log',
+            'formatter': 'json_formatter',
+        },
+        'async': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/async.log',
+            'formatter': 'json_formatter',
+        },
+        'scirius': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/scirius.log',
+            'formatter': 'json_formatter',
+        },
+        'queries': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/queries.log',
+            'formatter': 'json_formatter',
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "plain_console" if DEBUG else "json_formatter",
+        },
+        'requests': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/requests.log',
+            'formatter': 'json_formatter',
+        },
     },
     'loggers': {
+        # default logger, log everything
+        # "": {
+        #     "handlers": ["console", "scirius"],
+        #     "level": "INFO",
+        #     "propagate": True,
+        # },
         'django.db.backends': {
-            'handlers': ['sql_log'],
+            'handlers': ['sql_log', 'queries'],
             'level': 'ERROR',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['error_log'],
+            'handlers': ['error_log', 'scirius'],
             'level': 'DEBUG',
             'propagate': False,
         },
         'django_auth_ldap': {
-            'handlers': ['auth_log'],
+            'handlers': ['auth_log', 'auth_structlog'],
             'level': 'DEBUG',
             'propagate': False,
         },
         'djangosaml2': {
-            'handlers': ['auth_log'],
+            'handlers': ['auth_log', 'auth_structlog'],
             'level': 'DEBUG',
             'propagate': False,
         },
         'authentication': {
-            'handlers': ['auth_log'],
+            'handlers': ['auth_log', 'auth_structlog'],
             'level': 'DEBUG',
             'propagate': False,
         },
         'ansible': {
-            'handlers': ['ansible_log'],
+            'handlers': ['ansible_log', 'async'],
             'level': 'DEBUG',
             'propagate': False,
         },
         'celery_tasks': {
-            'handlers': ['celery_tasks'],
+            'handlers': ['celery_tasks', 'async'],
             'level': 'DEBUG',
             'propagate': False,
         },
         'user_actions': {
-            'handlers': ['user_actions'],
+            'handlers': ['user_actions', 'scirius'],
             'level': 'INFO',
             'propagate': False,
         },
         'elasticsearch': {
-            'handlers': ['elasticsearch'],
+            'handlers': ['elasticsearch', 'queries'],
             'level': 'INFO',
             'propagate': False,
         },
+        'django_structlog.middlewares.request': {
+            'handlers': ['requests'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        "django": {
+            "handlers": ["scirius"],
+            "level": "INFO",
+            "propagate": False,  # Important to avoid double logging with parent loggers
+        },
+        "django_structlog": {
+            "handlers": ["scirius"],
+            "level": "INFO",
+            "propagate": False,  # Important to avoid double logging with parent loggers
+        },
     }
 }
+
+structlog.configure(
+    processors=[
+        # Basic filtering and metadata
+        structlog.stdlib.filter_by_level,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.StackInfoRenderer(),
+
+        # exception processors
+        structlog.dev.set_exc_info,
+        # structlog.tracebacks.ExceptionDictTransformer(),
+        structlog.processors.format_exc_info,
+
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.UnicodeDecoder(),
+
+        # opentelemetry
+        lambda _, __, event_dict: {
+            **event_dict,
+            "trace_id": trace.get_current_span().get_span_context().trace_id,
+            "span_id": trace.get_current_span().get_span_context().span_id,
+        },
+
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],
+    wrapper_class=structlog.stdlib.BoundLogger,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    cache_logger_on_first_use=True,
+)
 
 # Broker for celery
 CELERY_BROKER = 'amqp://guest@localhost//'
