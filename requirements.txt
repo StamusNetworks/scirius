@@ -24,6 +24,7 @@ django-mcp-server
 djangorestframework
 django-revproxy>=0.11.0
 djangosaml2
+django-structlog[celery]
 django-tables2
 django-webpack-loader
 drf-spectacular[sidecar]
@@ -44,6 +45,9 @@ markdown
 MarkupSafe
 medusa
 opensearch-py>=2.8.0,<3.0.0
+opentelemetry-instrumentation-django
+opentelemetry-api
+opentelemetry-sdk
 paramiko
 psutil
 psycopg2-binary

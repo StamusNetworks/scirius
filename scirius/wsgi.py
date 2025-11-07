@@ -7,9 +7,10 @@ For more information on this file, see
 https://docs.djangoproject.com/en/1.6/howto/deployment/wsgi/
 """
 
-
 import os
 from django.core.wsgi import get_wsgi_application
+from scirius.instrumentation import initialize_tracer
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "scirius.settings")
+initialize_tracer()
 application = get_wsgi_application()
