@@ -18,9 +18,15 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
+import structlog
 
 from celery import Celery
+from celery.signals import setup_logging
+from django.dispatch import receiver
+from django_structlog.celery import signals
+from django_structlog.celery.steps import DjangoStructLogInitStep
 
 from django.conf import settings
 
@@ -32,6 +38,7 @@ from django.conf import settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'scirius.settings')
 
 app = Celery('scirius', broker=settings.CELERY_BROKER)
+app.steps['worker'].add(DjangoStructLogInitStep)
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
@@ -60,3 +67,33 @@ app.conf.update(
 @app.task(bind=True)
 def debug_task(self):
     print(('Request: {0!r}'.format(self.request)))
+
+
+@setup_logging.connect
+def receiver_setup_logging(loglevel, logfile, format, colorize, **kwargs):  # pragma: no cover  # noqa: A002
+    logging.config.dictConfig(settings.LOGGING)
+
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            structlog.stdlib.filter_by_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.stdlib.add_logger_name,
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.UnicodeDecoder(),
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        ],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        cache_logger_on_first_use=True,
+    )
+
+
+@receiver(signals.modify_context_before_task_publish)
+def receiver_modify_context_before_task_publish(sender, signal, context, task_routing_key=None, task_properties=None, **kwargs):
+    keys_to_keep = {"request_id", "parent_task_id"}
+    new_dict = {key_to_keep: context[key_to_keep] for key_to_keep in keys_to_keep if key_to_keep in context}
+    context.clear()
+    context.update(new_dict)
