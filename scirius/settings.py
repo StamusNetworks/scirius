@@ -14,7 +14,9 @@ import os
 import structlog
 from distutils.version import LooseVersion
 from django import get_version
-from opentelemetry import trace
+
+from scirius.instrumentation import STRUCTLOG_FOREIGN_PRE_CHAIN, configure_structlog
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -161,7 +163,11 @@ CACHES = {
     }
 }
 
+
 DJANGO_STRUCTLOG_CELERY_ENABLED = True
+OTEL_PYTHON_DJANGO_INSTRUMENT = True
+
+configure_structlog()
 
 LOGGING = {
     'version': 1,
@@ -183,30 +189,12 @@ LOGGING = {
         'json_formatter': {
             '()': structlog.stdlib.ProcessorFormatter,
             'processor': structlog.processors.JSONRenderer(),
-            'foreign_pre_chain': [
-                structlog.stdlib.add_logger_name,
-                structlog.stdlib.add_log_level,
-                structlog.stdlib.PositionalArgumentsFormatter(),
-                structlog.processors.StackInfoRenderer(),
-                structlog.dev.set_exc_info,
-                structlog.processors.format_exc_info,
-                structlog.processors.TimeStamper(fmt="iso"),
-                structlog.processors.UnicodeDecoder(),
-            ],
+            'foreign_pre_chain': STRUCTLOG_FOREIGN_PRE_CHAIN,
         },
         'plain_console': {
             '()': structlog.stdlib.ProcessorFormatter,
             'processor': structlog.dev.ConsoleRenderer(),
-            'foreign_pre_chain': [
-                structlog.stdlib.add_logger_name,
-                structlog.stdlib.add_log_level,
-                structlog.stdlib.PositionalArgumentsFormatter(),
-                structlog.processors.StackInfoRenderer(),
-                structlog.dev.set_exc_info,
-                structlog.processors.format_exc_info,
-                structlog.processors.TimeStamper(fmt="iso"),
-                structlog.processors.UnicodeDecoder(),
-            ],
+            'foreign_pre_chain': STRUCTLOG_FOREIGN_PRE_CHAIN,
         },
         'key_value': {
             '()': structlog.stdlib.ProcessorFormatter,
@@ -377,37 +365,6 @@ LOGGING = {
         },
     }
 }
-
-structlog.configure(
-    processors=[
-        # Basic filtering and metadata
-        structlog.stdlib.filter_by_level,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.StackInfoRenderer(),
-
-        # exception processors
-        structlog.dev.set_exc_info,
-        # structlog.tracebacks.ExceptionDictTransformer(),
-        structlog.processors.format_exc_info,
-
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.UnicodeDecoder(),
-
-        # opentelemetry
-        lambda _, __, event_dict: {
-            **event_dict,
-            "trace_id": trace.get_current_span().get_span_context().trace_id,
-            "span_id": trace.get_current_span().get_span_context().span_id,
-        },
-
-        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
-    ],
-    wrapper_class=structlog.stdlib.BoundLogger,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    cache_logger_on_first_use=True,
-)
 
 # Broker for celery
 CELERY_BROKER = 'amqp://guest@localhost//'
