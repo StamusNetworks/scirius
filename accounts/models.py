@@ -18,12 +18,16 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import structlog
 
 from django.db import models
 from django.contrib.auth.models import User, Group as DjangoGroup
 from rest_framework.authtoken.models import Token
 import pytz
 import django_auth_ldap.backend
+
+
+logger = structlog.get_logger("authentication")
 
 
 def get_next_priority():
@@ -231,6 +235,8 @@ class SciriusUser(models.Model):
     @staticmethod
     def create_full(user: User, data: dict) -> User:
         from scirius.utils import get_middleware_module
+
+        logger.info("Creating user", username=user.username)
 
         if "timezone" not in data:
             data["timezone"] = "UTC"

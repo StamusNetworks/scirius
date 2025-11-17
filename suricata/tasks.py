@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import json
+import structlog
 from functools import wraps
 from datetime import timedelta
 
@@ -44,6 +45,7 @@ MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
 
 
 logger = get_task_logger('celery_tasks')
+slogger = structlog.get_logger("celery_tasks")
 
 
 class TaskFailure(Exception):
@@ -179,6 +181,7 @@ class SciriusTask:
     @task_check_decorator
     @task_exceptions_decorator
     def run(self):
+        slogger.info("Strating task", title=self.TITLE)
         self._run(**self.task_options)
 
     def _create_chain_step(self, seq):
