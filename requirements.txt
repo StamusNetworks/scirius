@@ -45,7 +45,9 @@ markdown
 MarkupSafe
 medusa
 opensearch-py>=2.8.0,<3.0.0
+opentelemetry-instrumentation-celery
 opentelemetry-instrumentation-django
+opentelemetry-instrumentation-logging
 opentelemetry-api
 opentelemetry-sdk
 paramiko
