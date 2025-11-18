@@ -294,8 +294,9 @@ class RequestsWrapper:
         self, method: str | None = None, client: httpx.Client | None = None, verify: bool = True, use_proxy: bool = True
     ):
         self.method = method
-        extra: dict[str, Any] = {'mounts': self._get_proxies()} if use_proxy else {}
+        extra: dict[str, Any] = {'mounts': self._get_proxies(verify)} if use_proxy else {}
         self.verify = verify
+        extra["verify"] = verify
         self._client = client if client else httpx.Client(
             timeout=30,
             **extra
@@ -335,11 +336,11 @@ class RequestsWrapper:
             raise OSError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
         return resp
 
-    def _get_proxies(self):
+    def _get_proxies(self, verify: bool = True):
         proxy_params = get_system_settings().get_proxy_params()
         return {
-            "http://": httpx.HTTPTransport(proxy=proxy_params["http"]),
-            "https://": httpx.HTTPTransport(proxy=proxy_params["https"]),
+            "http://": httpx.HTTPTransport(proxy=proxy_params["http"], verify=verify),
+            "https://": httpx.HTTPTransport(proxy=proxy_params["https"], verify=verify),
         } if proxy_params else None
 
 
