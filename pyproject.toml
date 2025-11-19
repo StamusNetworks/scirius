@@ -146,6 +146,7 @@ appliances = [
     "cx_Freeze==8.1.0",
     "decorator==5.1.1",
     "defusedxml==0.7.1",
+    "django-model-utils==5.0.0",
     "elementpath==4.4.0",
     "Events==0.5",
     "executing==2.0.1",
