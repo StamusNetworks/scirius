@@ -28,6 +28,7 @@ from time import time
 import httpx
 import json
 import os
+import ssl
 
 from django.shortcuts import render
 from django.conf import settings
@@ -290,58 +291,115 @@ def read_in_chunks(file_, chunk_size: int = 1024):
 
 
 class RequestsWrapper:
-    def __init__(
-        self, method: str | None = None, client: httpx.Client | None = None, verify: bool = True, use_proxy: bool = True
-    ):
-        self.method = method
-        extra: dict[str, Any] = {'mounts': self._get_proxies(verify)} if use_proxy else {}
-        self.verify = verify
-        extra["verify"] = verify
-        self._client = client if client else httpx.Client(
-            timeout=30,
-            **extra
-        )
+    def __init__(self, verify: bool = True, use_proxy: bool = True):
+        self._verify = verify
+        self.use_proxy = use_proxy
 
-    def __getattr__(self, attr: str):
-        return RequestsWrapper(getattr(self._client, attr), client=self._client)
+    def _initialize_client(self, use_proxy: bool, scheme: str = "https") -> httpx.Client:
+        """
+        Initialize HTTPX client with all the related configuraation
+        """
+        client_kwargs: dict[str, Any] = {
+            'timeout': 30,
+            'verify': self._verify,
+            'headers': self._get_default_headers()
+        }
 
-    def __call__(self, *args, **kwargs):
-        if 'headers' not in kwargs:
-            agent = f'scirius/{settings.SCIRIUS_VERSION}'
-            if os.getenv('STAMUSCTL_SEED'):
-                seed = os.getenv('STAMUSCTL_SEED').strip('"')
-                agent = f'scirius/{settings.SCIRIUS_VERSION} ({seed})'
+        if use_proxy:
+            proxy = self._get_proxy(scheme)
+            if proxy:
+                client_kwargs['proxy'] = proxy
 
-            kwargs.update({'headers': {'User-Agent': agent}})
+        return httpx.Client(**client_kwargs)
 
-            if not self.verify:
-                kwargs["verify"] = False
+    def _get_default_headers(self) -> dict[str, str]:
+        agent = f'scirius/{settings.SCIRIUS_VERSION}'
+        seed = os.getenv('STAMUSCTL_SEED')
+        if seed:
+            seed = seed.strip().strip('"')
+            agent = f'scirius/{settings.SCIRIUS_VERSION} ({seed})'
+        return {'User-Agent': agent}
+
+    def request(self, method: str, url: str, **kwargs) -> httpx.Response:
+        """
+        Perform the HTTP request and manage errors.
+        """
+        client = self._initialize_client(self.use_proxy, url.split("://")[0])
 
         try:
-            resp = self.method(*args, **kwargs)
+            resp = client.request(method, url, **kwargs)
             resp.raise_for_status()
+            return resp
+
         except httpx.ConnectError as exc:
-            if "Name or service not known" in str(exc):
+            exc_str = str(exc)
+            if "Name or service not known" in exc_str:
                 raise OSError("Connection error 'Name or service not known'")
-            if "Connection timed out" in str(exc):
+            if "Connection timed out" in exc_str:
                 raise OSError("Connection error 'Connection timed out'")
             raise OSError(f"Connection error '{exc}'")
+
         except httpx.TimeoutException:
             raise OSError("Request timeout, server may be down")
+
         except httpx.TooManyRedirects:
             raise OSError("Too many redirects, server may be broken")
-        except httpx.HTTPError:
-            if resp.status_code == 404:
-                raise OSError("URL not found on server (error 404), please check URL")
-            raise OSError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
-        return resp
 
-    def _get_proxies(self, verify: bool = True):
-        proxy_params = get_system_settings().get_proxy_params()
-        return {
-            "http://": httpx.HTTPTransport(proxy=proxy_params["http"], verify=verify),
-            "https://": httpx.HTTPTransport(proxy=proxy_params["https"], verify=verify),
-        } if proxy_params else None
+        except httpx.HTTPError as exc:
+            # Centralize HTTP errors management
+            if hasattr(exc, 'response') and exc.response.status_code == 404:
+                raise OSError("URL not found on server (error 404), please check URL")
+            if hasattr(exc, 'response'):
+                raise OSError(f"HTTP error {exc.response.status_code} sent by server, please check URL or server")
+            # HTTP error without response (ex: redirect before response)
+            raise OSError(f"An unspecified HTTP error occurred: {exc}")
+        finally:
+            client.close()
+
+    @staticmethod
+    def _get_proxy(scheme: str = "https") -> httpx.Proxy | None:
+        """
+        Get proxy if applicable depending on the scheme given by the target URL
+
+        We cannot use mounts parameter in HTTPX client because it uses httpx.HTTPTransport and we cannot set the full
+        ssl_context (see httpx sources)
+        """
+        if proxy_params := get_system_settings().get_proxy_params():
+            ssl_context = None
+            if not proxy_params["verify"]:
+                # create an SSL context that trusts EVERYTHING (Insecure)
+                ssl_context = ssl.create_default_context()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE  # noqa: DUO122
+            return httpx.Proxy(proxy_params[scheme], ssl_context=ssl_context)
+        return None
+
+    def head(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("HEAD", url, **kwargs)
+
+    def connect(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("CONNECT", url, **kwargs)
+
+    def options(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("OPTIONS", url, **kwargs)
+
+    def trace(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("TRACE", url, **kwargs)
+
+    def get(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("GET", url, **kwargs)
+
+    def post(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("POST", url, **kwargs)
+
+    def put(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("PUT", url, **kwargs)
+
+    def patch(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("PUT", url, **kwargs)
+
+    def delete(self, url: str, **kwargs) -> httpx.Response:
+        return self.request("DELETE", url, **kwargs)
 
 
 def convert_to_utc(time, user):
