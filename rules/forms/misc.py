@@ -45,6 +45,11 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
     http_proxy = forms.CharField(
         max_length=200, required=False, help_text='Proxy address of the form "http://username:password@hostname:port/"'
     )
+    ssl_proxy = forms.BooleanField(
+        label="Verify HTTP proxy certificate.",
+        help_text="For self signed certificates it must be disabled and the full TLS chain is not verified.",
+        required=False,
+    )
     elasticsearch_url = forms.CharField(
         max_length=200,
         empty_value="http://elasticsearch:9200/",

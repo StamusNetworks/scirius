@@ -119,6 +119,12 @@ class FakePermissionModel(models.Model):
         default_permissions = ()
 
 
+class WebProxySettings(TypedDict):
+    verify: bool
+    http: str
+    https: str
+
+
 class SystemSettings(models.Model):
     use_http_proxy = models.BooleanField(default=False)
     http_proxy = models.CharField(
@@ -129,6 +135,7 @@ class SystemSettings(models.Model):
         help_text='Proxy address of the form "host:port".',
     )
     https_proxy = models.CharField(max_length=200, validators=[validate_proxy], default="", blank=True)
+    ssl_proxy = models.BooleanField(default=True, help_text="Verify proxy SSL, must be disabled for self signed certificates")
     custom_elasticsearch = models.BooleanField(default=False)
     elasticsearch_url = models.CharField(
         max_length=4096,
@@ -179,9 +186,9 @@ class SystemSettings(models.Model):
     def arkime_url(self):
         return "/arkime"
 
-    def get_proxy_params(self):
+    def get_proxy_params(self) -> WebProxySettings | None:
         if self.use_http_proxy:
-            return {"http": self.http_proxy, "https": self.https_proxy}
+            return WebProxySettings(http=self.http_proxy, https=self.https_proxy, verify=self.ssl_proxy)
         return None
 
     def save(self, *args, **kwargs) -> None:
