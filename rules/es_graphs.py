@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
 import json
+import structlog
 
 from django.conf import settings
 
@@ -37,18 +38,17 @@ ES_TIMESTAMP = settings.ELASTICSEARCH_TIMESTAMP
 ES_HOSTNAME = settings.ELASTICSEARCH_HOSTNAME
 ES_KEYWORD = settings.ELASTICSEARCH_KEYWORD
 ES_HOST_FIELD = '%s.%s' % (ES_HOSTNAME, ES_KEYWORD)
+logger = structlog.get_logger("scirius")
 
 
 def extract_es_version(es_stats):
     es_version = es_stats['nodes']['versions'][0].split('.')
-    es_version = [int(v) for v in es_version]
-    return es_version
+    return [int(v) for v in es_version]
 
 
 def fetch_es_version():
     es_stats = ESStats(None).get()
-    es_version = extract_es_version(es_stats)
-    return es_version
+    return extract_es_version(es_stats)
 
 
 def get_es_major_version():
@@ -268,7 +268,7 @@ class ESFieldStats(ESManageMultipleESIndexes):
         # total number of results
         try:
             data = data['aggregations']['table']['buckets']
-        except:
+        except Exception:
             data = None
 
         if dict_format:
@@ -290,8 +290,8 @@ class ESRulesStats(ESFieldStats):
                 try:
                     sid = elt['key']
                     rule = Rule.objects.get(sid=sid)
-                except:
-                    print("Can not find rule with sid %s" % sid)
+                except Exception:
+                    print(f"Can not find rule with sid {sid}")
                     continue
                 rule.hits = elt['doc_count']
                 rules.append(rule)
@@ -357,7 +357,7 @@ class ESSidByHosts(ESManageMultipleESIndexes):
         # total number of results
         try:
             data = data['aggregations']['host']['buckets']
-        except:
+        except Exception:
             return None
 
         if dict_format:
@@ -607,7 +607,7 @@ class ESTimeline(ESManageMultipleESIndexes):
             has_others = False
             host_keys = set()
             for elt in data:
-                elt_set = set([item['key'] for item in elt.get('host', {}).get('buckets', [])])
+                elt_set = {item['key'] for item in elt.get('host', {}).get('buckets', [])}
                 host_keys = host_keys.union(elt_set)
                 if elt.get('host', {}).get('sum_other_doc_count', 0) > 0:
                     has_others = True
@@ -626,12 +626,12 @@ class ESTimeline(ESManageMultipleESIndexes):
                 for host in elt["host"]['buckets']:
                     rdata[host["key"]]['entries'].append({"time": date, "count": host["doc_count"]})
                 # Fill zero
-                elt_set = set([item['key'] for item in elt.get('host', {}).get('buckets', [])])
+                elt_set = {item['key'] for item in elt.get('host', {}).get('buckets', [])}
                 for key in host_keys.difference(elt_set):
                     rdata[key]['entries'].append({"time": date, "count": 0})
 
             data = rdata
-        except:
+        except Exception:
             data = {}
         finally:
             data['from_date'] = self._from_date()
@@ -721,7 +721,7 @@ class ESMetricsTimeline(ESQuery):
             if rdata[host]['entries'][-1]['mean'] is None:
                 del rdata[host]['entries'][-1]
             data = rdata
-        except:
+        except Exception:
             return {}
         data['from_date'] = self._from_date()
         data['interval'] = self._interval()
@@ -842,8 +842,9 @@ class ESIndices(ESQuery):
                 docs = indices['indices'][index]['total']['docs']
                 docs['name'] = index
                 docs['size'] = indices['indices'][index]['total']['store']['size_in_bytes']
-            except:
-                continue  # ES not ready yet
+            except Exception:
+                logger.info("ES not ready yet")
+                continue
             else:
                 indexes_array.append(docs)
         return indexes_array
@@ -1251,11 +1252,11 @@ class ESIppairAlerts(ESManageMultipleESIndexes):
                 group = 6
             else:
                 group = 4
-            if not src_ip['key'] in ip_list:
+            if src_ip['key'] not in ip_list:
                 nodes.append({'id': src_ip['key'], 'group': group})
                 ip_list.append(src_ip['key'])
             for dest_ip in src_ip['dest_ip']['buckets']:
-                if not dest_ip['key'] in ip_list:
+                if dest_ip['key'] not in ip_list:
                     nodes.append({'id': dest_ip['key'], 'group': group})
                     ip_list.append(dest_ip['key'])
                 links.append({'source': ip_list.index(src_ip['key']), 'target': ip_list.index(dest_ip['key']), 'value': (math.log(dest_ip['doc_count']) + 1) * 2, 'alerts': dest_ip['alerts']['buckets']})
@@ -1350,9 +1351,10 @@ class ESIppairNetworkAlerts(ESQuery):
         for src_ip in raw_data:
             try:
                 dest_obj = src_ip['net_src']['buckets'][0]
-            except:
+            except Exception:
+                logger.debug("Unreachable attribute", path="src_ip['net_src']['buckets'][0]")
                 continue
-            if not src_ip['key'] in ip_list:
+            if src_ip['key'] not in ip_list:
                 group = dest_obj['key']
                 nodes.append({'id': src_ip['key'], 'group': group, 'type': 'source'})
                 ip_list.append(src_ip['key'])
@@ -1361,10 +1363,11 @@ class ESIppairNetworkAlerts(ESQuery):
                     if node['id'] == src_ip['key']:
                         node['type'] = 'source'
             for dest_ip in dest_obj['dest_ip']['buckets']:
-                if not dest_ip['key'] in ip_list:
+                if dest_ip['key'] not in ip_list:
                     try:
                         group = dest_ip['net_dest']['buckets'][0]['key']
-                    except:
+                    except Exception:
+                        logger.debug("Unreachable attribute", path="dest_ip['net_dest']['buckets'][0]['key']")
                         continue
                     nodes.append({'id': dest_ip['key'], 'group': group, 'type': 'target'})
                     ip_list.append(dest_ip['key'])

@@ -560,13 +560,11 @@ class UserAction(models.Model):
 
                 icons.append((icon, lb))
 
-        html = format_html_join(
+        return format_html_join(
             "\n",
             '<div class="list-view-pf-additional-info-item"><span class="fa {}"></span>{}</div>',
             ((icon, klass_name) for icon, klass_name in icons),
         )
-
-        return html
 
     @staticmethod
     def get_user_actions_dict():

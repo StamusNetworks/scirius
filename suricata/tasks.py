@@ -39,6 +39,7 @@ from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.exceptions import PermissionDenied
 
 import suricata.models
+import contextlib
 
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
@@ -120,11 +121,10 @@ def check_task_perms(request, klass, task_id, raise_exception=True):
         users = [request.user.sciriususer.sciriustokenuser.parent.user, request.user]
     tasks_list = MIDDLEWARE.models.CeleryTask.get_user_tasks(request, users=users, recurrent=recurrent)
 
-    if task_id:
-        if tasks_list.filter(pk=task_id).count() == 0:
-            if raise_exception:
-                raise PermissionDenied()
-            return klass.objects.none()
+    if task_id and tasks_list.filter(pk=task_id).count() == 0:
+        if raise_exception:
+            raise PermissionDenied
+        return klass.objects.none()
 
     return tasks_list
 
@@ -219,10 +219,8 @@ class SciriusTask:
         for key, func in (('title', self._display_title),
                           ('icon', self._display_icon),
                           ('target', self._display_target)):
-            try:
+            with contextlib.suppress(Exception):
                 _display[key] = func()
-            except:
-                pass
 
         return _display
 

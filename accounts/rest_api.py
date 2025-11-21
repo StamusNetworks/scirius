@@ -326,9 +326,8 @@ class TokenUserViewSet(viewsets.ReadOnlyModelViewSet):
 
         if SciriusTokenUser.objects.filter(parent=suser).exists():
             return suser.tokenusers.all()
-        else:
-            if hasattr(suser, 'sciriustokenuser'):
-                return suser.sciriustokenuser.parent.tokenusers.all()
+        if hasattr(suser, 'sciriustokenuser'):
+            return suser.sciriustokenuser.parent.tokenusers.all()
 
         return SciriusTokenUser.objects.none()
 

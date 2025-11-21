@@ -65,7 +65,7 @@ class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
                 _type = "IP"
                 if data["operator"] == "contains":
                     _type = "network"
-                raise serializers.ValidationError({"value": ["This field requires a valid %s address." % _type]})
+                raise serializers.ValidationError({"value": [f"This field requires a valid {_type} address."]})
         return data
 
 
@@ -73,8 +73,7 @@ class JSONStringField(serializers.Field):
     def to_representation(self, data):
         if data is None:
             return None
-        data = json.loads(data)
-        return data
+        return json.loads(data)
 
     def to_internal_value(self, data):
         return json.dumps(data)
@@ -374,7 +373,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         if filters:
             try:
                 self._set_filters(instance, filters)
-            except:
+            except Exception:
                 if operation == "create":
                     instance.delete()
                 raise
