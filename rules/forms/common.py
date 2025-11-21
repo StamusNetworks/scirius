@@ -48,7 +48,7 @@ class BaseEditForm:
 
     def clean(self):
         if not self.can_edit:
-            raise PermissionDenied()
+            raise PermissionDenied
 
         return super().clean()
 

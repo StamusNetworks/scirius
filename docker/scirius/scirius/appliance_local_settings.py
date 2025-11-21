@@ -20,6 +20,7 @@
 Django settings for the Scirius project.
 """
 
+import contextlib
 import os
 
 
@@ -28,10 +29,9 @@ def strtobool(val):
     val = str(val).lower()
     if val in ('y', 'yes', 't', 'true', 'on', '1'):
         return True
-    elif val in ('n', 'no', 'f', 'false', 'off', '0'):
+    if val in ('n', 'no', 'f', 'false', 'off', '0'):
         return False
-    else:
-        raise ValueError(f"Invalid truth value: {val}")
+    raise ValueError(f"Invalid truth value: {val}")
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -264,7 +264,7 @@ class DATA_LIKE:
 USE_DATA_LIKE = DATA_LIKE.OS_2
 
 # Appliance specific settings
-GPG_SEE_PASSPHRASE = 'xG3jVHnwhEA4tPJfBqgH'
+GPG_SEE_PASSPHRASE = 'xG3jVHnwhEA4tPJfBqgH'  # noqa: S105
 GPG_SEE_MAIL = 'unique-id@stamus-networks.com'
 PASSIVE_PROBE_TIMEOUT = 20  # minutes
 UNIQUE_ID_FILE = 'SEE-unique-id.tar.gz.gpg'
@@ -342,7 +342,5 @@ BOOTSTRAP3 = {
     }
 }
 
-try:
+with contextlib.suppress(ImportError, NameError):
     from .authentication import *  # type: ignore # noqa: F403, F401
-except Exception:
-    pass

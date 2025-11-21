@@ -39,8 +39,8 @@ class Command(BaseCommand):
         nruleset = options['ruleset']
         try:
             ruleset = Ruleset.objects.filter(name=nruleset)[0]
-        except:
-            raise CommandError('No Ruleset with name "%s" found' % (nruleset))
+        except Exception:
+            raise CommandError(f'No Ruleset with name "{nruleset}" found')
 
         suricata = Suricata.objects.create(
             name=name,
@@ -49,4 +49,4 @@ class Command(BaseCommand):
             created_date=timezone.now(),
             updated_date=timezone.now()
         )
-        self.stdout.write('Successfully created suricata "%s"' % suricata.name)
+        self.stdout.write(f'Successfully created suricata "{suricata.name}"')
