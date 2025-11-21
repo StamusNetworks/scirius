@@ -52,7 +52,7 @@ class ESGetUniqueFields(ESQuery):
         for k in resp:
             fields.extend(self._walk_properties(d=resp[k].get("mappings", {}).get("properties", {})))
         return {
-            "fields": sorted(list(set(fields)))
+            "fields": sorted(set(fields))
         }
 
 
@@ -112,7 +112,7 @@ class ESFieldUniqAgg(ESAnalyticsBaseQuery):
         return self.request.GET.get("size", 1000)
 
     def _get_query(self) -> dict:
-        q = {
+        return {
             "size": 0,
             "query": self._build_query(),
             "aggs": {
@@ -124,7 +124,6 @@ class ESFieldUniqAgg(ESAnalyticsBaseQuery):
                 },
             }
         }
-        return q
 
 
 class ESGraphAgg(ESAnalyticsBaseQuery):
@@ -145,7 +144,7 @@ class ESGraphAgg(ESAnalyticsBaseQuery):
         return self.request.GET.get("event_type", "all")
 
     def _get_query(self) -> dict:
-        q = {
+        return {
             "size": 0,
             "query": self._build_query(),
             "aggs": {
@@ -175,7 +174,6 @@ class ESGraphAgg(ESAnalyticsBaseQuery):
                 }
             }
         }
-        return q
 
 
 class ESGenericSearch(ESQuery):

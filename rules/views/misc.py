@@ -217,7 +217,7 @@ def system_settings(request):
                 response = HttpResponse(content, content_type="application/x-bzip2")
                 response["Content-Disposition"] = 'attachment; filename="%s"' % tar_name
                 return response
-            elif "import" in request.POST:
+            if "import" in request.POST:
                 form = KibanaDataForm(request.POST, request.FILES)
                 if form.is_valid() and "file" in request.FILES:
                     try:
@@ -290,15 +290,15 @@ def elasticsearch(request: HttpRequest):
         PERM_CONF_AND_EVENT_VIEW = ("rules", "rule")
 
         if query in PERM_EVENT_VIEW and not request.user.has_perm("rules.events_view"):
-            raise PermissionDenied()
+            raise PermissionDenied
 
         if query in PERM_CONF_VIEW and not request.user.has_perm("rules.configuration_view"):
-            raise PermissionDenied()
+            raise PermissionDenied
 
         if (
             query in PERM_CONF_AND_EVENT_VIEW and not request.user.has_perm("rules.configuration_view") and not request.user.has_perm("rules.events_view")
         ):
-            raise PermissionDenied()
+            raise PermissionDenied
 
     if request.GET.__contains__("query"):
         query = request.GET.get("query")

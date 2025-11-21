@@ -58,10 +58,10 @@ class KibanaProxyView(PermissionRequiredMixin, ProxyView):
 
         if (path == 'api/infra/graphql' or path.startswith('api/infra/graphql/')) and \
                 not settings.KIBANA_ALLOW_GRAPHQL:
-            raise PermissionDenied()
+            raise PermissionDenied
 
         if not request.user.sciriususer.has_kibana_access():
-            raise PermissionDenied()
+            raise PermissionDenied
 
         return super().dispatch(request, path)
 
@@ -80,7 +80,7 @@ class EveboxProxyView(PermissionRequiredMixin, ProxyView):
 
     def dispatch(self, request, path):
         if not request.user.sciriususer.has_evebox_access():
-            raise PermissionDenied()
+            raise PermissionDenied
 
         return super().dispatch(request, path)
 
@@ -90,14 +90,14 @@ class MolochProxyView(ProxyView):
     add_remote_user = False
 
     def get_request_headers(self):
-        headers = super(MolochProxyView, self).get_request_headers()
+        headers = super().get_request_headers()
         headers['REMOTE_USER'] = 'moloch'
         return headers
 
 
 def static_redirect(request, static_path):
-    if (static_path.endswith('.js') or static_path.endswith('.html') or static_path.endswith('/')) and not request.user.is_authenticated:
-        raise PermissionDenied()
+    if (static_path.endswith(('.js', '.html', '/'))) and not request.user.is_authenticated:
+        raise PermissionDenied
     response = HttpResponse(status=200)
     response['Content-Type'] = ''
     response['X-Accel-Redirect'] = '/protected-static/' + static_path

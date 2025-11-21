@@ -186,7 +186,7 @@ class IoCMetaFormset(forms.BaseModelFormSet):
 
     def clean(self):
         if any(self.errors):
-            return
+            return None
 
         for form in self.forms:
             if self.can_delete and self._should_delete_form(form):

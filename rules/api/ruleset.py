@@ -51,11 +51,10 @@ class RulesetSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["created_date"] = timezone.now()
         validated_data["updated_date"] = timezone.now()
-        instance = super(RulesetSerializer, self).create(validated_data)
-        return instance
+        return super().create(validated_data)
 
     def to_representation(self, instance):
-        data = super(RulesetSerializer, self).to_representation(instance)
+        data = super().to_representation(instance)
         sources = instance.sources.all()
         data["sources"] = [source.pk for source in sources]
 
@@ -146,7 +145,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         if len(sources) == 0 and len(categories) > 0:
             msg = "No source selected or wrong selected source(s). Cannot add categories without their source."
             raise serializers.ValidationError({"sources": [msg]})
-        elif len(sources) > 0 and len(categories) > 0:
+        if len(sources) > 0 and len(categories) > 0:
             for category in categories:
                 if category.source not in sources:
                     msg = "One or more of categories is/are not in selected sources."

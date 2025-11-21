@@ -37,16 +37,16 @@ class Command(BaseCommand):
         try:
             ruleset = Ruleset.objects.filter(name=ruleset_name)
             ruleset = ruleset[0]
-        except:
-            raise CommandError("No ruleset with name '%s' is defined" % (ruleset))
+        except Exception:
+            raise CommandError(f"No ruleset with name '{ruleset}' is defined")
 
         try:
             categories = Category.objects.filter(name=catname)
-        except:
+        except Exception:
             raise CommandError("No Category is defined")
 
         for cat in categories:
             ruleset.categories.remove(cat)
 
         ruleset.save()
-        self.stdout.write('Successfully removed "%s" from ruleset "%s"' % (catname, ruleset))
+        self.stdout.write(f'Successfully removed "{catname}" from ruleset "{ruleset}"')

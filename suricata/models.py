@@ -304,22 +304,18 @@ class CeleryTaskBase(models.Model):
         if r.state == 'PENDING':
             if self.status == 'scheduled':
                 return 'RECEIVED'
-            elif self.status == 'finished':
+            if self.status == 'finished':
                 # Task is unknown to celery, so it returnns state PENDING (from an old celery version)
                 if self.celerytaskresult_set.filter(status='warning').count() == 0:
                     return 'SUCCESS'
-                else:
-                    return 'WARNING'
-            else:
-                return 'STARTED'
+                return 'WARNING'
+            return 'STARTED'
         if r.state == 'SUCCESS':
             if self.success:
                 if self.celerytaskresult_set.filter(status='warning').count() == 0:
                     return 'SUCCESS'
-                else:
-                    return 'WARNING'
-            else:
-                return 'FAILURE'
+                return 'WARNING'
+            return 'FAILURE'
         return r.state
 
     def _date_to_ms(self, date):
@@ -431,11 +427,11 @@ class RecurrentTaskBase(models.Model):
     def get_interval(self):
         if self.recurrence == 'hourly':
             return 3600
-        elif self.recurrence == 'daily':
+        if self.recurrence == 'daily':
             return 86400
-        elif self.recurrence == 'weekly':
+        if self.recurrence == 'weekly':
             return 604800
-        elif self.recurrence == 'monthly':
+        if self.recurrence == 'monthly':
             # 3600 * 24 * 365 / 12
             return 2628000
         raise Exception('Invalid interval %s' % self.recurrence)
@@ -460,7 +456,7 @@ class RecurrentTaskBase(models.Model):
     def display(self, **kwargs):
         title = self.get_task().display().get('title')
 
-        task = {
+        return {
             'pk': self.pk,
             'task_options': self.task_options,
             'created': self.created,
@@ -471,8 +467,6 @@ class RecurrentTaskBase(models.Model):
             'user': self.user.pk if self.user else 'Unknown user',
             **kwargs
         }
-
-        return task
 
 
 class RecurrentTask(RecurrentTaskBase, CeleryTask):

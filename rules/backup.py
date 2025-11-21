@@ -197,7 +197,8 @@ class SCRestore(SCOperation):
             os.makedirs(settings.GIT_SOURCES_BASE_DIRECTORY)
 
         os.chdir(settings.GIT_SOURCES_BASE_DIRECTORY)
-        ts.extractall()
+        ts.extractall()  # noqa: S202
+        ts.close()
 
     def restore_db(self):
         self.dbcommands.path = os.path.join(self.directory, 'dbbackup')
@@ -224,7 +225,7 @@ class SCRestore(SCOperation):
         ts = tarfile.open(self.dbcommands.filename, 'r', fileobj=inputfile)
         tmpdir = tempfile.mkdtemp()
         os.chdir(tmpdir)
-        ts.extractall()
+        ts.extractall()  # noqa: S202
         ts.close()
         self.directory = tmpdir
         if self.test_migration_level() is False:

@@ -1,6 +1,7 @@
 import json
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -136,8 +137,7 @@ class RuleHitsOrderingFilter(OrderingFilter, ESManageMultipleESIndexesViewSet):
                     values = [int(x) for x in value.split(",")]
                     if param == "hits_min":
                         return max(values)
-                    else:
-                        return min(values)
+                    return min(values)
 
                 value = int(value)
             except ValueError:
@@ -155,8 +155,7 @@ class RuleHitsOrderingFilter(OrderingFilter, ESManageMultipleESIndexesViewSet):
             )
             return queryset.values_list("sid", "hits")
 
-        result = [(x["key"], x["doc_count"]) for x in result]
-        return result
+        return [(x["key"], x["doc_count"]) for x in result]
 
     def _filter_min_max(self, request, queryset, hits_order):
         hits_by_sid = dict(hits_order)
@@ -172,9 +171,9 @@ class RuleHitsOrderingFilter(OrderingFilter, ESManageMultipleESIndexesViewSet):
                     for sid in sids
                     if hits_by_sid.get(sid, 0) >= min_hits and hits_by_sid.get(sid, max_hits + 1) <= max_hits
                 ]
-            elif min_hits is not None and max_hits is None:
+            if min_hits is not None and max_hits is None:
                 return [sid for sid in sids if hits_by_sid.get(sid, 0) >= min_hits]
-            elif min_hits is None and max_hits is not None:
+            if min_hits is None and max_hits is not None:
                 return [sid for sid in sids if hits_by_sid.get(sid, max_hits + 1) <= max_hits]
 
         return list(queryset.values_list("sid", flat=True))
@@ -645,11 +644,12 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
         # Perform the lookup filtering.
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
 
-        assert lookup_url_kwarg in self.kwargs, (
-            f"Expected view {self.__class__.__name__} to be called with a URL keyword argument "
-            f'named "{lookup_url_kwarg}". Fix your URL conf, or set the `.lookup_field` '
-            "attribute on the view correctly."
-        )
+        if lookup_url_kwarg not in self.kwargs:
+            raise ValidationError(
+                f"Expected view {self.__class__.__name__} to be called with a URL keyword argument "
+                f'named "{lookup_url_kwarg}". Fix your URL conf, or set the `.lookup_field` '
+                "attribute on the view correctly."
+            )
 
         filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
         obj = get_object_or_404(queryset, **filter_kwargs)

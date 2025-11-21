@@ -91,7 +91,7 @@ def task(request: HttpRequest, task_id):
     t = get_object_or_404(MIDDLEWARE.models.CeleryTask, pk=task_id)
 
     if request.method == "POST":
-        raise PermissionDenied()
+        raise PermissionDenied
 
     context = {"task": t.display()}
     return scirius_render(request, "rules/task.html", context)
@@ -102,7 +102,7 @@ def revoke_task(request: HttpRequest, task_id):
     t = get_object_or_404(MIDDLEWARE.models.CeleryTask, pk=task_id)
 
     if request.method == "GET":
-        raise PermissionDenied()
+        raise PermissionDenied
 
     t.revoke()
     context = {"success": "Revocation succeeded", "task": t.display()}
@@ -135,9 +135,8 @@ def delete_scheduledtask(request: HttpRequest, task_id: int):
         stask.delete()
         page = MIDDLEWARE.common.get_redirect_for_stask(stask.task)
         return redirect(page)
-    else:
-        context = {"scheduledtask": stask, "task": stask.get_task().display(), "mode": "deletion"}
-        return scirius_render(request, "rules/scheduledtask.html", context)
+    context = {"scheduledtask": stask, "task": stask.get_task().display(), "mode": "deletion"}
+    return scirius_render(request, "rules/scheduledtask.html", context)
 
 
 @permission_required("rules.configuration_edit", raise_exception=True)
@@ -167,14 +166,13 @@ def edit_scheduledtask(request: HttpRequest, task_id: int):
         if form.is_valid():
             form.save()
             return redirect(MIDDLEWARE.common.stask_redirection(stask.task))
-        else:
-            context.update(
-                {
-                    "error": f"Invalid form: {form.errors.as_text()}",
-                    "recurrence_param": form.cleaned_data["recurrence"],
-                    "schedule_param": convert_to_local(form.cleaned_data["scheduled"], request.user).strftime(
-                        "%Y/%m/%d %H:%M"
-                    ),
-                }
-            )
+        context.update(
+            {
+                "error": f"Invalid form: {form.errors.as_text()}",
+                "recurrence_param": form.cleaned_data["recurrence"],
+                "schedule_param": convert_to_local(form.cleaned_data["scheduled"], request.user).strftime(
+                    "%Y/%m/%d %H:%M"
+                ),
+            }
+        )
     return scirius_render(request, "rules/scheduledtask.html", context)
