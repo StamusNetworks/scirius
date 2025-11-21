@@ -239,9 +239,8 @@ def add_ruleset(request: HttpRequest):
 
             messages.success(request, msg)
             return redirect(ruleset)
-        else:
-            if form.errors:
-                context["error"] = repr(form.errors)
+        if form.errors:
+            context["error"] = repr(form.errors)
 
         if extra_form.data.get("ruleset", False):
             Ruleset.objects.filter(pk=extra_form.data["ruleset"]).delete()
@@ -289,7 +288,7 @@ def changelog_ruleset(request: HttpRequest, ruleset_id: int):
 def edit_ruleset(request: HttpRequest, ruleset_id: int):
     user = request.user
     if not user.has_perm("rules.ruleset_policy_edit") and not user.has_perm("rules.source_edit"):
-        raise PermissionDenied()
+        raise PermissionDenied
 
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
@@ -302,7 +301,7 @@ def edit_ruleset(request: HttpRequest, ruleset_id: int):
 
         if "category" in request.POST:
             if not user.has_perm("rules.ruleset_policy_edit"):
-                raise PermissionDenied()
+                raise PermissionDenied
 
             category_selection = [int(x) for x in request.POST.getlist("category_selection")]
             # clean ruleset
@@ -318,7 +317,7 @@ def edit_ruleset(request: HttpRequest, ruleset_id: int):
 
         elif "rules" in request.POST:
             if not user.has_perm("rules.ruleset_policy_edit"):
-                raise PermissionDenied()
+                raise PermissionDenied
 
             for rule in request.POST.getlist("rule_selection"):
                 rule_object = get_object_or_404(Rule, pk=rule)
@@ -331,7 +330,7 @@ def edit_ruleset(request: HttpRequest, ruleset_id: int):
 
         elif "sources" in request.POST:
             if not user.has_perm("rules.source_edit"):
-                raise PermissionDenied()
+                raise PermissionDenied
 
             source_selection = [int(x) for x in request.POST.getlist("source_selection")]
             # clean ruleset
@@ -383,98 +382,97 @@ def edit_ruleset(request: HttpRequest, ruleset_id: int):
         messages.success(request, msg)
 
         return redirect(ruleset)
+    mode = request.GET.get("mode", None)
+
+    if mode == "sources":
+        if not user.has_perm("rules.source_edit"):
+            raise PermissionDenied
+    elif mode in ("categories", "rules") and not user.has_perm("rules.ruleset_policy_edit"):
+        raise PermissionDenied
+
+    cats_selection = []
+    categories_list = {}
+    sources = ruleset.sources.all()
+    ruleset_cats = ruleset.categories.all()
+    for source in sources:
+        src_cats = Category.objects.filter(source=source)
+        for pcats in src_cats:
+            if pcats in ruleset_cats:
+                cats_selection.append(str(pcats.id))
+
+        cats = EditCategoryTable(src_cats)
+        tables.RequestConfig(request, paginate=False).configure(cats)
+        categories_list[source.name] = cats
+
+    rules_pk = (
+        SuppressedRuleAtVersion.objects.filter(ruleset=ruleset).values("rule_at_version__rule__pk").distinct()
+    )
+    rules = EditRuleTable(Rule.objects.filter(pk__in=rules_pk))
+    tables.RequestConfig(request, paginate=False).configure(rules)
+
+    context = {
+        "ruleset": ruleset,
+        "categories_list": categories_list,
+        "sources": sources,
+        "rules": rules,
+        "cats_selection": ", ".join(cats_selection),
+        "extra_links": get_middleware_module("common").get_edit_ruleset_links(ruleset_id),
+        "object_path": [ruleset],
+    }
+
+    if "mode" in request.GET:
+        context["mode"] = mode
+        context["form"] = CommentForm()
+        if context["mode"] == "sources":
+            all_sources = Source.objects.all()
+
+            sources_selection = [source_.pk for source_ in sources]
+
+            sources_list = EditSourceTable(all_sources)
+            tables.RequestConfig(request, paginate=False).configure(sources_list)
+            context["sources_list"] = sources_list
+            context["sources_selection"] = sources_selection
     else:
-        mode = request.GET.get("mode", None)
-
-        if mode == "sources":
-            if not user.has_perm("rules.source_edit"):
-                raise PermissionDenied()
-        elif mode in ("categories", "rules") and not user.has_perm("rules.ruleset_policy_edit"):
-            raise PermissionDenied()
-
-        cats_selection = []
-        categories_list = {}
-        sources = ruleset.sources.all()
-        ruleset_cats = ruleset.categories.all()
-        for source in sources:
-            src_cats = Category.objects.filter(source=source)
-            for pcats in src_cats:
-                if pcats in ruleset_cats:
-                    cats_selection.append(str(pcats.id))
-
-            cats = EditCategoryTable(src_cats)
-            tables.RequestConfig(request, paginate=False).configure(cats)
-            categories_list[source.name] = cats
-
-        rules_pk = (
-            SuppressedRuleAtVersion.objects.filter(ruleset=ruleset).values("rule_at_version__rule__pk").distinct()
-        )
-        rules = EditRuleTable(Rule.objects.filter(pk__in=rules_pk))
-        tables.RequestConfig(request, paginate=False).configure(rules)
-
-        context = {
-            "ruleset": ruleset,
-            "categories_list": categories_list,
-            "sources": sources,
-            "rules": rules,
-            "cats_selection": ", ".join(cats_selection),
-            "extra_links": get_middleware_module("common").get_edit_ruleset_links(ruleset_id),
-            "object_path": [ruleset],
+        initial = {
+            "action": Transformation.A_NONE.value,
+            "lateral": Transformation.L_NO.value,
+            "target": Transformation.T_NONE.value,
         }
+        trans_action = RulesetTransformation.objects.filter(
+            key=Transformation.ACTION.value, ruleset_transformation=ruleset
+        )
 
-        if "mode" in request.GET:
-            context["mode"] = mode
-            context["form"] = CommentForm()
-            if context["mode"] == "sources":
-                all_sources = Source.objects.all()
+        if trans_action.count() > 0:
+            initial["action"] = trans_action[0].value
 
-                sources_selection = [source_.pk for source_ in sources]
+        trans_lateral = RulesetTransformation.objects.filter(
+            key=Transformation.LATERAL.value, ruleset_transformation=ruleset
+        )
 
-                sources_list = EditSourceTable(all_sources)
-                tables.RequestConfig(request, paginate=False).configure(sources_list)
-                context["sources_list"] = sources_list
-                context["sources_selection"] = sources_selection
-        else:
-            initial = {
-                "action": Transformation.A_NONE.value,
-                "lateral": Transformation.L_NO.value,
-                "target": Transformation.T_NONE.value,
-            }
-            trans_action = RulesetTransformation.objects.filter(
-                key=Transformation.ACTION.value, ruleset_transformation=ruleset
-            )
+        if trans_lateral.count() > 0:
+            initial["lateral"] = trans_lateral[0].value
 
-            if trans_action.count() > 0:
-                initial["action"] = trans_action[0].value
+        trans_target = RulesetTransformation.objects.filter(
+            key=Transformation.TARGET.value, ruleset_transformation=ruleset
+        )
 
-            trans_lateral = RulesetTransformation.objects.filter(
-                key=Transformation.LATERAL.value, ruleset_transformation=ruleset
-            )
+        if trans_target.count() > 0:
+            initial["target"] = trans_target[0].value
 
-            if trans_lateral.count() > 0:
-                initial["lateral"] = trans_lateral[0].value
+        # trans_action = CategoryTransformation.objects.filter(key=Transformation.ACTION.value, ruleset=ruleset)
+        # if len(trans_action) > 0:
+        #     initial['action'] = trans_action[0].value
 
-            trans_target = RulesetTransformation.objects.filter(
-                key=Transformation.TARGET.value, ruleset_transformation=ruleset
-            )
+        # trans_lateral = CategoryTransformation.objects.filter(key=Transformation.LATERAL.value, ruleset=ruleset)
+        # if len(trans_lateral) > 0:
+        #     initial['lateral'] = trans_lateral[0].value
 
-            if trans_target.count() > 0:
-                initial["target"] = trans_target[0].value
+        # trans_target = CategoryTransformation.objects.filter(key=Transformation.TARGET.value, ruleset=ruleset)
+        # if len(trans_action) > 0:
+        #     initial['target'] = trans_target[0].value
 
-            # trans_action = CategoryTransformation.objects.filter(key=Transformation.ACTION.value, ruleset=ruleset)
-            # if len(trans_action) > 0:
-            #     initial['action'] = trans_action[0].value
-
-            # trans_lateral = CategoryTransformation.objects.filter(key=Transformation.LATERAL.value, ruleset=ruleset)
-            # if len(trans_lateral) > 0:
-            #     initial['lateral'] = trans_lateral[0].value
-
-            # trans_target = CategoryTransformation.objects.filter(key=Transformation.TARGET.value, ruleset=ruleset)
-            # if len(trans_action) > 0:
-            #     initial['target'] = trans_target[0].value
-
-            context["form"] = RulesetEditForm(instance=ruleset, initial=initial, request=request)
-        return scirius_render(request, "rules/edit_ruleset.html", context)
+        context["form"] = RulesetEditForm(instance=ruleset, initial=initial, request=request)
+    return scirius_render(request, "rules/edit_ruleset.html", context)
 
 
 @permission_required("rules.ruleset_policy_edit", raise_exception=True)
@@ -489,7 +487,7 @@ def ruleset_add_supprule(request: HttpRequest, ruleset_id: int):
             tables.RequestConfig(request).configure(rules)
             context = {"ruleset": ruleset, "rules": rules, "form": CommentForm()}
             return scirius_render(request, "rules/search_rule.html", context)
-        elif "rule_selection" in request.POST:
+        if "rule_selection" in request.POST:
             form = CommentForm(request.POST)
             if not form.is_valid():
                 return redirect(ruleset)

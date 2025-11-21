@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import contextlib
 import os
 import structlog
 from distutils.version import LooseVersion
@@ -36,7 +37,7 @@ SCIRIUS_VERSION = "42.1.0"
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'p8o5%vq))8h2li08c%k3id(wwo*u(^dbdmx2tv#t(tb2pr9@n-'
+SECRET_KEY = 'p8o5%vq))8h2li08c%k3id(wwo*u(^dbdmx2tv#t(tb2pr9@n-'  # noqa: S105
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -584,10 +585,8 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
 }
 
-try:
-    from .local_settings import *  # noqa: F403, F401
-except:
-    pass
+with contextlib.suppress(ImportError, NameError):
+    from .local_settings import *  # noqa: F401, F403
 
 if KIBANA_PROXY:
     INSTALLED_APPS += ('revproxy',)

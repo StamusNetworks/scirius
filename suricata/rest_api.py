@@ -76,7 +76,7 @@ class PcapFilestoreViewSet(viewsets.ViewSet):
         'WRITE': ('rules.events_view',),
     }
 
-    FILESTORE_SRC = '/tmp'
+    FILESTORE_SRC = '/tmp'  # noqa: S108
     CMD_EXTRACT = 'gopherCap extract --event /tmp/{}.json --dump-pcap /tmp/{}.pcap --file-format log-%t-%n.pcap'
     CMD_RM = '/bin/rm %s'
 
@@ -95,7 +95,7 @@ class PcapFilestoreViewSet(viewsets.ViewSet):
         json_file = json.loads(content.decode())
         filename = json_file['_id']
         json_file = json_file.get('_source', json_file)
-        src_path = os.path.join('/tmp', '%s.json' % filename)
+        src_path = os.path.join('/tmp', '%s.json' % filename)  # noqa: S108
 
         with open(src_path, 'w') as f:
             f.write(json.dumps(json_file))
@@ -108,12 +108,12 @@ class PcapFilestoreViewSet(viewsets.ViewSet):
 
         cmd = self.CMD_EXTRACT.format(filename, filename)
         cmd = cmd.split(' ')
-        subprocess.run(cmd, stderr=subprocess.STDOUT, check=True, env=env)
+        subprocess.run(cmd, stderr=subprocess.STDOUT, check=True, env=env)  # noqa: S603
 
-        file_path = os.path.join('/tmp', '%s.json' % filename)
+        file_path = os.path.join('/tmp', '%s.json' % filename)  # noqa: S108
         cmd = self.CMD_RM % file_path
         cmd = cmd.split(' ')
-        subprocess.run(cmd, stderr=subprocess.STDOUT, check=True)
+        subprocess.run(cmd, stderr=subprocess.STDOUT, check=True)  # noqa: S603
 
         return Response({'extraction': 'done', 'filename': filename})
 
@@ -174,8 +174,7 @@ class FilestoreViewSet(viewsets.ViewSet):
 
     def _build_src_filestore_path(self, sha256):
         dir_name = sha256[:2]
-        path = os.path.join(settings.FILESTORE_SRC, dir_name, sha256)
-        return path
+        return os.path.join(settings.FILESTORE_SRC, dir_name, sha256)
 
     @action(detail=True, methods=['get'])
     def status(self, request, sha256):
@@ -208,7 +207,7 @@ class FilestoreViewSet(viewsets.ViewSet):
 
 
 def get_custom_urls():
-    urls = [
+    return [
         path("rules/ruleset/<int:pk>/update_generate/", SuricataRulesetCeleryTaskViewSet.as_view()),
         re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/status/$', FilestoreViewSet.as_view({'get': 'status'}), name='filestore_status'),
         re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/retrieve/$', FilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_retrieve'),
@@ -220,7 +219,6 @@ def get_custom_urls():
         re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/retrieve/$', PcapFilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_pcap_retrieve'),
         re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/download/$', PcapFilestoreViewSet.as_view({'get': 'download'}), name='filestore_pcap_download')
     ]
-    return urls
 
 
 router = DefaultRouter()

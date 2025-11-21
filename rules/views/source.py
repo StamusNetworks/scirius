@@ -139,20 +139,18 @@ def add_source(request: HttpRequest):
             )
 
             return redirect("status")
-        else:
-            errors = [error for error in ioc_meta_formset.errors if error]
-            context = {
-                "form": form,
-                "ioc_meta_formset": ioc_meta_formset,
-                "rules": Source.ioc_rules(highlight=True),
-            }
-            # if we don't have IoC error, we have the error twice (below the field and on the top red bar)
-            if errors:
-                context["error"] = f"form is not valid: {errors}"
-            return scirius_render(request, "rules/add_source.html", context)
-    else:
-        form = AddSourceForm()  # An unbound form
-        ioc_meta_formset = IoCMetaFormset(queryset=IoCMeta.objects.none())
+        errors = [error for error in ioc_meta_formset.errors if error]
+        context = {
+            "form": form,
+            "ioc_meta_formset": ioc_meta_formset,
+            "rules": Source.ioc_rules(highlight=True),
+        }
+        # if we don't have IoC error, we have the error twice (below the field and on the top red bar)
+        if errors:
+            context["error"] = f"form is not valid: {errors}"
+        return scirius_render(request, "rules/add_source.html", context)
+    form = AddSourceForm()  # An unbound form
+    ioc_meta_formset = IoCMetaFormset(queryset=IoCMeta.objects.none())
 
     return scirius_render(
         request,
@@ -368,9 +366,8 @@ def delete_source(request: HttpRequest, source_id: int):
             )
             source.delete()
         return redirect("/rules/source/")
-    else:
-        context = {"object": source, "delfn": "delete_source", "form": CommentForm()}
-        return scirius_render(request, "rules/delete.html", context)
+    context = {"object": source, "delfn": "delete_source", "form": CommentForm()}
+    return scirius_render(request, "rules/delete.html", context)
 
 
 @permission_required("rules.source_edit", raise_exception=True)

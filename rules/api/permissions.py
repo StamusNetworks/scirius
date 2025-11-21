@@ -24,7 +24,7 @@ def has_group_permission(perms, owner_allowed=False):
                     return func(self, request, *args, **kwargs)
 
             if not HasGroupPermission.check_perms(request, self, perms):
-                raise PermissionDenied()
+                raise PermissionDenied
             return func(self, request, *args, **kwargs)
         return view
     return decorator
@@ -35,7 +35,7 @@ def edit_rule_permission():
         @wraps(func)
         def view(self, request, pk, *args, **kwargs):
             if int(pk) in Rule.READ_ONLY_SIDS:
-                raise PermissionDenied()
+                raise PermissionDenied
             return func(self, request, pk, *args, **kwargs)
         return view
     return decorator

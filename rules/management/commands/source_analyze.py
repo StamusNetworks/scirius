@@ -1,3 +1,4 @@
+import contextlib
 from django.core.management.base import BaseCommand
 from rules.models.model import Source, TestRules
 from rules.models.model import RuleAtVersion
@@ -10,14 +11,14 @@ class Command(BaseCommand):
         parser.add_argument('source', help='Source name. All sources if no flag.', default=None, nargs='?')
 
     def handle(self, *args, **options):
-        source_name = options.get('source', None)
+        source_name = options.get('source')
 
         sources = Source.objects.filter(datatype__in=['sig', 'sigs', 'threat'])
         if source_name:
             sources = sources.filter(name=source_name)
 
         for source in sources:
-            try:
+            with contextlib.suppress(Exception):
                 testor = TestRules()
                 related_files, cats_content, iprep_content = source.prepare_tests_files()
 
@@ -37,5 +38,3 @@ class Command(BaseCommand):
                             iprep_content=iprep_content
                         )
                         RuleAtVersion.write_analyse(content, version)
-            except:
-                continue

@@ -100,7 +100,7 @@ class FilterSetViewSet(viewsets.ModelViewSet):
         data = request.data.copy()
 
         if data.get("share", False) and not request.user.has_perm("rules.events_edit"):
-            raise PermissionDenied()
+            raise PermissionDenied
 
         serializer = FilterSetSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -111,15 +111,15 @@ class FilterSetViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         if request.data.get("share", False) and not request.user.has_perm("rules.events_edit"):
-            raise PermissionDenied()
+            raise PermissionDenied
         return super().update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
         if request.data.get("share", False) and not request.user.has_perm("rules.events_edit"):
-            raise PermissionDenied()
+            raise PermissionDenied
         return super().update(request, partial=True, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         if request.data.get("share", False) and not request.user.has_perm("rules.events_edit"):
-            raise PermissionDenied()
+            raise PermissionDenied
         return super().destroy(request, *args, **kwargs)

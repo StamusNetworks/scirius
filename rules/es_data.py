@@ -22,6 +22,7 @@ import base64
 import logging
 import json
 import os
+import structlog
 import tarfile
 import tempfile
 from shutil import rmtree
@@ -45,6 +46,7 @@ else:
 # Avoid logging every request
 ES_LOGGER = logging.getLogger('elasticsearch')
 ES_LOGGER.setLevel(logging.INFO)
+logger = structlog.get_logger("scirius")
 
 
 # Mapping
@@ -320,1367 +322,1366 @@ def get_kibana_mappings():
                 }
             }
         }
-    else:
-        return {
-            "dynamic": "true",
-            "properties": {
-                "action": {
-                    "properties": {
-                        "actionTypeId": {
-                            "type": "keyword"
-                        },
-                        "config": {
-                            "type": "object",
-                            "enabled": False
-                        },
-                        "name": {
-                            "type": "text"
-                        },
-                        "secrets": {
-                            "type": "binary"
-                        }
+    return {
+        "dynamic": "true",
+        "properties": {
+            "action": {
+                "properties": {
+                    "actionTypeId": {
+                        "type": "keyword"
+                    },
+                    "config": {
+                        "type": "object",
+                        "enabled": False
+                    },
+                    "name": {
+                        "type": "text"
+                    },
+                    "secrets": {
+                        "type": "binary"
                     }
-                },
-                "action_task_params": {
-                    "properties": {
-                        "actionId": {
-                            "type": "keyword"
-                        },
-                        "apiKey": {
-                            "type": "binary"
-                        },
-                        "params": {
-                            "type": "object",
-                            "enabled": False
-                        }
+                }
+            },
+            "action_task_params": {
+                "properties": {
+                    "actionId": {
+                        "type": "keyword"
+                    },
+                    "apiKey": {
+                        "type": "binary"
+                    },
+                    "params": {
+                        "type": "object",
+                        "enabled": False
                     }
-                },
-                "alert": {
-                    "properties": {
-                        "actions": {
-                            "type": "nested",
-                            "properties": {
-                                "actionRef": {
-                                    "type": "keyword"
-                                },
-                                "actionTypeId": {
-                                    "type": "keyword"
-                                },
-                                "group": {
-                                    "type": "keyword"
-                                },
-                                "params": {
-                                    "type": "object",
-                                    "enabled": False
-                                }
+                }
+            },
+            "alert": {
+                "properties": {
+                    "actions": {
+                        "type": "nested",
+                        "properties": {
+                            "actionRef": {
+                                "type": "keyword"
+                            },
+                            "actionTypeId": {
+                                "type": "keyword"
+                            },
+                            "group": {
+                                "type": "keyword"
+                            },
+                            "params": {
+                                "type": "object",
+                                "enabled": False
                             }
-                        },
-                        "alertTypeId": {
-                            "type": "keyword"
-                        },
-                        "apiKey": {
-                            "type": "binary"
-                        },
-                        "apiKeyOwner": {
-                            "type": "keyword"
-                        },
-                        "consumer": {
-                            "type": "keyword"
-                        },
-                        "createdAt": {
-                            "type": "date"
-                        },
-                        "createdBy": {
-                            "type": "keyword"
-                        },
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "muteAll": {
-                            "type": "boolean"
-                        },
-                        "mutedInstanceIds": {
-                            "type": "keyword"
-                        },
-                        "name": {
-                            "type": "text"
-                        },
-                        "params": {
-                            "type": "object",
-                            "enabled": False
-                        },
-                        "schedule": {
-                            "properties": {
-                                "interval": {
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "scheduledTaskId": {
-                            "type": "keyword"
-                        },
-                        "tags": {
-                            "type": "keyword"
-                        },
-                        "throttle": {
-                            "type": "keyword"
-                        },
-                        "updatedBy": {
-                            "type": "keyword"
                         }
+                    },
+                    "alertTypeId": {
+                        "type": "keyword"
+                    },
+                    "apiKey": {
+                        "type": "binary"
+                    },
+                    "apiKeyOwner": {
+                        "type": "keyword"
+                    },
+                    "consumer": {
+                        "type": "keyword"
+                    },
+                    "createdAt": {
+                        "type": "date"
+                    },
+                    "createdBy": {
+                        "type": "keyword"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "muteAll": {
+                        "type": "boolean"
+                    },
+                    "mutedInstanceIds": {
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "text"
+                    },
+                    "params": {
+                        "type": "object",
+                        "enabled": False
+                    },
+                    "schedule": {
+                        "properties": {
+                            "interval": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "scheduledTaskId": {
+                        "type": "keyword"
+                    },
+                    "tags": {
+                        "type": "keyword"
+                    },
+                    "throttle": {
+                        "type": "keyword"
+                    },
+                    "updatedBy": {
+                        "type": "keyword"
                     }
-                },
-                "apm-indices": {
-                    "properties": {
-                        "apm_oss": {
-                            "properties": {
-                                "errorIndices": {
-                                    "type": "keyword"
-                                },
-                                "metricsIndices": {
-                                    "type": "keyword"
-                                },
-                                "onboardingIndices": {
-                                    "type": "keyword"
-                                },
-                                "sourcemapIndices": {
-                                    "type": "keyword"
-                                },
-                                "spanIndices": {
-                                    "type": "keyword"
-                                },
-                                "transactionIndices": {
-                                    "type": "keyword"
-                                }
+                }
+            },
+            "apm-indices": {
+                "properties": {
+                    "apm_oss": {
+                        "properties": {
+                            "errorIndices": {
+                                "type": "keyword"
+                            },
+                            "metricsIndices": {
+                                "type": "keyword"
+                            },
+                            "onboardingIndices": {
+                                "type": "keyword"
+                            },
+                            "sourcemapIndices": {
+                                "type": "keyword"
+                            },
+                            "spanIndices": {
+                                "type": "keyword"
+                            },
+                            "transactionIndices": {
+                                "type": "keyword"
                             }
                         }
                     }
-                },
-                "apm-services-telemetry": {
-                    "properties": {
-                        "has_any_services": {
-                            "type": "boolean"
-                        },
-                        "services_per_agent": {
-                            "properties": {
-                                "dotnet": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "go": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "java": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "js-base": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "nodejs": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "python": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "ruby": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "rum-js": {
-                                    "type": "long",
-                                    "null_value": 0
-                                }
+                }
+            },
+            "apm-services-telemetry": {
+                "properties": {
+                    "has_any_services": {
+                        "type": "boolean"
+                    },
+                    "services_per_agent": {
+                        "properties": {
+                            "dotnet": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "go": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "java": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "js-base": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "nodejs": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "python": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "ruby": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "rum-js": {
+                                "type": "long",
+                                "null_value": 0
                             }
                         }
                     }
-                },
-                "canvas-element": {
-                    "dynamic": "true",
-                    "properties": {
-                        "@created": {
-                            "type": "date"
-                        },
-                        "@timestamp": {
-                            "type": "date"
-                        },
-                        "content": {
-                            "type": "text"
-                        },
-                        "help": {
-                            "type": "text"
-                        },
-                        "image": {
-                            "type": "text"
-                        },
-                        "name": {
-                            "type": "text",
-                            "fields": {
-                                "keyword": {
-                                    "type": "keyword"
-                                }
-                            }
-                        }
-                    }
-                },
-                "canvas-workpad": {
-                    "dynamic": "true",
-                    "properties": {
-                        "@created": {
-                            "type": "date"
-                        },
-                        "@timestamp": {
-                            "type": "date"
-                        },
-                        "name": {
-                            "type": "text",
-                            "fields": {
-                                "keyword": {
-                                    "type": "keyword"
-                                }
-                            }
-                        }
-                    }
-                },
-                "config": {
-                    "dynamic": "true",
-                    "properties": {
-                        "buildNum": {
-                            "type": "keyword"
-                        }
-                    }
-                },
-                "dashboard": {
-                    "properties": {
-                        "description": {
-                            "type": "text"
-                        },
-                        "hits": {
-                            "type": "integer"
-                        },
-                        "kibanaSavedObjectMeta": {
-                            "properties": {
-                                "searchSourceJSON": {
-                                    "type": "text"
-                                }
-                            }
-                        },
-                        "optionsJSON": {
-                            "type": "text"
-                        },
-                        "panelsJSON": {
-                            "type": "text"
-                        },
-                        "refreshInterval": {
-                            "properties": {
-                                "display": {
-                                    "type": "keyword"
-                                },
-                                "pause": {
-                                    "type": "boolean"
-                                },
-                                "section": {
-                                    "type": "integer"
-                                },
-                                "value": {
-                                    "type": "integer"
-                                }
-                            }
-                        },
-                        "timeFrom": {
-                            "type": "keyword"
-                        },
-                        "timeRestore": {
-                            "type": "boolean"
-                        },
-                        "timeTo": {
-                            "type": "keyword"
-                        },
-                        "title": {
-                            "type": "text"
-                        },
-                        "version": {
-                            "type": "integer"
-                        }
-                    }
-                },
-                "file-upload-telemetry": {
-                    "properties": {
-                        "filesUploadedTotalCount": {
-                            "type": "long"
-                        }
-                    }
-                },
-                "graph-workspace": {
-                    "properties": {
-                        "description": {
-                            "type": "text"
-                        },
-                        "kibanaSavedObjectMeta": {
-                            "properties": {
-                                "searchSourceJSON": {
-                                    "type": "text"
-                                }
-                            }
-                        },
-                        "numLinks": {
-                            "type": "integer"
-                        },
-                        "numVertices": {
-                            "type": "integer"
-                        },
-                        "title": {
-                            "type": "text"
-                        },
-                        "version": {
-                            "type": "integer"
-                        },
-                        "wsState": {
-                            "type": "text"
-                        }
-                    }
-                },
-                "index-pattern": {
-                    "properties": {
-                        "fieldFormatMap": {
-                            "type": "text"
-                        },
+                }
+            },
+            "canvas-element": {
+                "dynamic": "true",
+                "properties": {
+                    "@created": {
+                        "type": "date"
+                    },
+                    "@timestamp": {
+                        "type": "date"
+                    },
+                    "content": {
+                        "type": "text"
+                    },
+                    "help": {
+                        "type": "text"
+                    },
+                    "image": {
+                        "type": "text"
+                    },
+                    "name": {
+                        "type": "text",
                         "fields": {
-                            "type": "text"
-                        },
-                        "intervalName": {
-                            "type": "keyword"
-                        },
-                        "notExpandable": {
-                            "type": "boolean"
-                        },
-                        "sourceFilters": {
-                            "type": "text"
-                        },
-                        "timeFieldName": {
-                            "type": "keyword"
-                        },
-                        "title": {
-                            "type": "text"
-                        },
-                        "type": {
-                            "type": "keyword"
-                        },
-                        "typeMeta": {
-                            "type": "keyword"
+                            "keyword": {
+                                "type": "keyword"
+                            }
                         }
                     }
-                },
-                "infrastructure-ui-source": {
-                    "properties": {
-                        "description": {
-                            "type": "text"
-                        },
+                }
+            },
+            "canvas-workpad": {
+                "dynamic": "true",
+                "properties": {
+                    "@created": {
+                        "type": "date"
+                    },
+                    "@timestamp": {
+                        "type": "date"
+                    },
+                    "name": {
+                        "type": "text",
                         "fields": {
-                            "properties": {
-                                "container": {
-                                    "type": "keyword"
-                                },
-                                "host": {
-                                    "type": "keyword"
-                                },
-                                "pod": {
-                                    "type": "keyword"
-                                },
-                                "tiebreaker": {
-                                    "type": "keyword"
-                                },
-                                "timestamp": {
-                                    "type": "keyword"
-                                }
+                            "keyword": {
+                                "type": "keyword"
                             }
-                        },
-                        "logAlias": {
-                            "type": "keyword"
-                        },
-                        "logColumns": {
-                            "type": "nested",
-                            "properties": {
-                                "fieldColumn": {
-                                    "properties": {
-                                        "field": {
-                                            "type": "keyword"
-                                        },
-                                        "id": {
-                                            "type": "keyword"
-                                        }
-                                    }
-                                },
-                                "messageColumn": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "keyword"
-                                        }
-                                    }
-                                },
-                                "timestampColumn": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "keyword"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        "metricAlias": {
-                            "type": "keyword"
-                        },
-                        "name": {
-                            "type": "text"
                         }
                     }
-                },
-                "inventory-view": {
-                    "properties": {
-                        "autoBounds": {
-                            "type": "boolean"
-                        },
-                        "autoReload": {
-                            "type": "boolean"
-                        },
-                        "boundsOverride": {
-                            "properties": {
-                                "max": {
-                                    "type": "integer"
-                                },
-                                "min": {
-                                    "type": "integer"
-                                }
-                            }
-                        },
-                        "customOptions": {
-                            "type": "nested",
-                            "properties": {
-                                "field": {
-                                    "type": "keyword"
-                                },
-                                "text": {
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "filterQuery": {
-                            "properties": {
-                                "expression": {
-                                    "type": "keyword"
-                                },
-                                "kind": {
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "groupBy": {
-                            "type": "nested",
-                            "properties": {
-                                "field": {
-                                    "type": "keyword"
-                                },
-                                "label": {
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "metric": {
-                            "properties": {
-                                "type": {
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "name": {
-                            "type": "keyword"
-                        },
-                        "nodeType": {
-                            "type": "keyword"
-                        },
-                        "time": {
-                            "type": "integer"
-                        },
-                        "view": {
-                            "type": "keyword"
-                        }
+                }
+            },
+            "config": {
+                "dynamic": "true",
+                "properties": {
+                    "buildNum": {
+                        "type": "keyword"
                     }
-                },
-                "kql-telemetry": {
-                    "properties": {
-                        "optInCount": {
-                            "type": "long"
-                        },
-                        "optOutCount": {
-                            "type": "long"
+                }
+            },
+            "dashboard": {
+                "properties": {
+                    "description": {
+                        "type": "text"
+                    },
+                    "hits": {
+                        "type": "integer"
+                    },
+                    "kibanaSavedObjectMeta": {
+                        "properties": {
+                            "searchSourceJSON": {
+                                "type": "text"
+                            }
                         }
-                    }
-                },
-                "lens": {
-                    "properties": {
-                        "expression": {
-                            "type": "keyword",
-                            "index": False
-                        },
-                        # "state": {
-                        #     "type": "flattened"
-                        # },
-                        "title": {
-                            "type": "text"
-                        },
-                        "visualizationType": {
-                            "type": "keyword"
+                    },
+                    "optionsJSON": {
+                        "type": "text"
+                    },
+                    "panelsJSON": {
+                        "type": "text"
+                    },
+                    "refreshInterval": {
+                        "properties": {
+                            "display": {
+                                "type": "keyword"
+                            },
+                            "pause": {
+                                "type": "boolean"
+                            },
+                            "section": {
+                                "type": "integer"
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
                         }
+                    },
+                    "timeFrom": {
+                        "type": "keyword"
+                    },
+                    "timeRestore": {
+                        "type": "boolean"
+                    },
+                    "timeTo": {
+                        "type": "keyword"
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "version": {
+                        "type": "integer"
                     }
-                },
-                "lens-ui-telemetry": {
-                    "properties": {
-                        "count": {
-                            "type": "integer"
-                        },
-                        "date": {
-                            "type": "date"
-                        },
-                        "name": {
-                            "type": "keyword"
-                        },
-                        "type": {
-                            "type": "keyword"
+                }
+            },
+            "file-upload-telemetry": {
+                "properties": {
+                    "filesUploadedTotalCount": {
+                        "type": "long"
+                    }
+                }
+            },
+            "graph-workspace": {
+                "properties": {
+                    "description": {
+                        "type": "text"
+                    },
+                    "kibanaSavedObjectMeta": {
+                        "properties": {
+                            "searchSourceJSON": {
+                                "type": "text"
+                            }
                         }
+                    },
+                    "numLinks": {
+                        "type": "integer"
+                    },
+                    "numVertices": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "version": {
+                        "type": "integer"
+                    },
+                    "wsState": {
+                        "type": "text"
                     }
-                },
-                "map": {
-                    "properties": {
-                        "bounds": {
-                            "type": "geo_shape"
-                        },
-                        "description": {
-                            "type": "text"
-                        },
-                        "layerListJSON": {
-                            "type": "text"
-                        },
-                        "mapStateJSON": {
-                            "type": "text"
-                        },
-                        "title": {
-                            "type": "text"
-                        },
-                        "uiStateJSON": {
-                            "type": "text"
-                        },
-                        "version": {
-                            "type": "integer"
+                }
+            },
+            "index-pattern": {
+                "properties": {
+                    "fieldFormatMap": {
+                        "type": "text"
+                    },
+                    "fields": {
+                        "type": "text"
+                    },
+                    "intervalName": {
+                        "type": "keyword"
+                    },
+                    "notExpandable": {
+                        "type": "boolean"
+                    },
+                    "sourceFilters": {
+                        "type": "text"
+                    },
+                    "timeFieldName": {
+                        "type": "keyword"
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "type": {
+                        "type": "keyword"
+                    },
+                    "typeMeta": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "infrastructure-ui-source": {
+                "properties": {
+                    "description": {
+                        "type": "text"
+                    },
+                    "fields": {
+                        "properties": {
+                            "container": {
+                                "type": "keyword"
+                            },
+                            "host": {
+                                "type": "keyword"
+                            },
+                            "pod": {
+                                "type": "keyword"
+                            },
+                            "tiebreaker": {
+                                "type": "keyword"
+                            },
+                            "timestamp": {
+                                "type": "keyword"
+                            }
                         }
-                    }
-                },
-                "maps-telemetry": {
-                    "properties": {
-                        "attributesPerMap": {
-                            "properties": {
-                                "dataSourcesCount": {
-                                    "properties": {
-                                        "avg": {
-                                            "type": "long"
-                                        },
-                                        "max": {
-                                            "type": "long"
-                                        },
-                                        "min": {
-                                            "type": "long"
-                                        }
-                                    }
-                                },
-                                "emsVectorLayersCount": {
-                                    "type": "object",
-                                    "dynamic": "true"
-                                },
-                                "layerTypesCount": {
-                                    "type": "object",
-                                    "dynamic": "true"
-                                },
-                                "layersCount": {
-                                    "properties": {
-                                        "avg": {
-                                            "type": "long"
-                                        },
-                                        "max": {
-                                            "type": "long"
-                                        },
-                                        "min": {
-                                            "type": "long"
-                                        }
+                    },
+                    "logAlias": {
+                        "type": "keyword"
+                    },
+                    "logColumns": {
+                        "type": "nested",
+                        "properties": {
+                            "fieldColumn": {
+                                "properties": {
+                                    "field": {
+                                        "type": "keyword"
+                                    },
+                                    "id": {
+                                        "type": "keyword"
                                     }
                                 }
-                            }
-                        },
-                        "indexPatternsWithGeoFieldCount": {
-                            "type": "long"
-                        },
-                        "mapsTotalCount": {
-                            "type": "long"
-                        },
-                        "settings": {
-                            "properties": {
-                                "showMapVisualizationTypes": {
-                                    "type": "boolean"
+                            },
+                            "messageColumn": {
+                                "properties": {
+                                    "id": {
+                                        "type": "keyword"
+                                    }
                                 }
-                            }
-                        },
-                        "timeCaptured": {
-                            "type": "date"
-                        }
-                    }
-                },
-                "metrics-explorer-view": {
-                    "properties": {
-                        "chartOptions": {
-                            "properties": {
-                                "stack": {
-                                    "type": "boolean"
-                                },
-                                "type": {
-                                    "type": "keyword"
-                                },
-                                "yAxisMode": {
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "currentTimerange": {
-                            "properties": {
-                                "from": {
-                                    "type": "keyword"
-                                },
-                                "interval": {
-                                    "type": "keyword"
-                                },
-                                "to": {
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "name": {
-                            "type": "keyword"
-                        },
-                        "options": {
-                            "properties": {
-                                "aggregation": {
-                                    "type": "keyword"
-                                },
-                                "filterQuery": {
-                                    "type": "keyword"
-                                },
-                                "groupBy": {
-                                    "type": "keyword"
-                                },
-                                "limit": {
-                                    "type": "integer"
-                                },
-                                "metrics": {
-                                    "type": "nested",
-                                    "properties": {
-                                        "aggregation": {
-                                            "type": "keyword"
-                                        },
-                                        "color": {
-                                            "type": "keyword"
-                                        },
-                                        "field": {
-                                            "type": "keyword"
-                                        },
-                                        "label": {
-                                            "type": "keyword"
-                                        }
+                            },
+                            "timestampColumn": {
+                                "properties": {
+                                    "id": {
+                                        "type": "keyword"
                                     }
                                 }
                             }
                         }
+                    },
+                    "metricAlias": {
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "text"
                     }
-                },
-                "migrationVersion": {
-                    "dynamic": "true",
-                    "properties": {
-                        "space": {
-                            "type": "text",
-                            "fields": {
-                                "keyword": {
-                                    "type": "keyword",
-                                    "ignore_above": 256
+                }
+            },
+            "inventory-view": {
+                "properties": {
+                    "autoBounds": {
+                        "type": "boolean"
+                    },
+                    "autoReload": {
+                        "type": "boolean"
+                    },
+                    "boundsOverride": {
+                        "properties": {
+                            "max": {
+                                "type": "integer"
+                            },
+                            "min": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "customOptions": {
+                        "type": "nested",
+                        "properties": {
+                            "field": {
+                                "type": "keyword"
+                            },
+                            "text": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "filterQuery": {
+                        "properties": {
+                            "expression": {
+                                "type": "keyword"
+                            },
+                            "kind": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "groupBy": {
+                        "type": "nested",
+                        "properties": {
+                            "field": {
+                                "type": "keyword"
+                            },
+                            "label": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "metric": {
+                        "properties": {
+                            "type": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "nodeType": {
+                        "type": "keyword"
+                    },
+                    "time": {
+                        "type": "integer"
+                    },
+                    "view": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "kql-telemetry": {
+                "properties": {
+                    "optInCount": {
+                        "type": "long"
+                    },
+                    "optOutCount": {
+                        "type": "long"
+                    }
+                }
+            },
+            "lens": {
+                "properties": {
+                    "expression": {
+                        "type": "keyword",
+                        "index": False
+                    },
+                    # "state": {
+                    #     "type": "flattened"
+                    # },
+                    "title": {
+                        "type": "text"
+                    },
+                    "visualizationType": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "lens-ui-telemetry": {
+                "properties": {
+                    "count": {
+                        "type": "integer"
+                    },
+                    "date": {
+                        "type": "date"
+                    },
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "type": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "map": {
+                "properties": {
+                    "bounds": {
+                        "type": "geo_shape"
+                    },
+                    "description": {
+                        "type": "text"
+                    },
+                    "layerListJSON": {
+                        "type": "text"
+                    },
+                    "mapStateJSON": {
+                        "type": "text"
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "uiStateJSON": {
+                        "type": "text"
+                    },
+                    "version": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "maps-telemetry": {
+                "properties": {
+                    "attributesPerMap": {
+                        "properties": {
+                            "dataSourcesCount": {
+                                "properties": {
+                                    "avg": {
+                                        "type": "long"
+                                    },
+                                    "max": {
+                                        "type": "long"
+                                    },
+                                    "min": {
+                                        "type": "long"
+                                    }
+                                }
+                            },
+                            "emsVectorLayersCount": {
+                                "type": "object",
+                                "dynamic": "true"
+                            },
+                            "layerTypesCount": {
+                                "type": "object",
+                                "dynamic": "true"
+                            },
+                            "layersCount": {
+                                "properties": {
+                                    "avg": {
+                                        "type": "long"
+                                    },
+                                    "max": {
+                                        "type": "long"
+                                    },
+                                    "min": {
+                                        "type": "long"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "indexPatternsWithGeoFieldCount": {
+                        "type": "long"
+                    },
+                    "mapsTotalCount": {
+                        "type": "long"
+                    },
+                    "settings": {
+                        "properties": {
+                            "showMapVisualizationTypes": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "timeCaptured": {
+                        "type": "date"
+                    }
+                }
+            },
+            "metrics-explorer-view": {
+                "properties": {
+                    "chartOptions": {
+                        "properties": {
+                            "stack": {
+                                "type": "boolean"
+                            },
+                            "type": {
+                                "type": "keyword"
+                            },
+                            "yAxisMode": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "currentTimerange": {
+                        "properties": {
+                            "from": {
+                                "type": "keyword"
+                            },
+                            "interval": {
+                                "type": "keyword"
+                            },
+                            "to": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "options": {
+                        "properties": {
+                            "aggregation": {
+                                "type": "keyword"
+                            },
+                            "filterQuery": {
+                                "type": "keyword"
+                            },
+                            "groupBy": {
+                                "type": "keyword"
+                            },
+                            "limit": {
+                                "type": "integer"
+                            },
+                            "metrics": {
+                                "type": "nested",
+                                "properties": {
+                                    "aggregation": {
+                                        "type": "keyword"
+                                    },
+                                    "color": {
+                                        "type": "keyword"
+                                    },
+                                    "field": {
+                                        "type": "keyword"
+                                    },
+                                    "label": {
+                                        "type": "keyword"
+                                    }
                                 }
                             }
                         }
                     }
-                },
-                "ml-telemetry": {
-                    "properties": {
-                        "file_data_visualizer": {
-                            "properties": {
-                                "index_creation_count": {
-                                    "type": "long"
-                                }
+                }
+            },
+            "migrationVersion": {
+                "dynamic": "true",
+                "properties": {
+                    "space": {
+                        "type": "text",
+                        "fields": {
+                            "keyword": {
+                                "type": "keyword",
+                                "ignore_above": 256
                             }
                         }
                     }
-                },
-                "namespace": {
-                    "type": "keyword"
-                },
-                "query": {
-                    "properties": {
-                        "description": {
-                            "type": "text"
-                        },
-                        "filters": {
-                            "type": "object",
-                            "enabled": False
-                        },
-                        "query": {
-                            "properties": {
-                                "language": {
-                                    "type": "keyword"
-                                },
-                                "query": {
-                                    "type": "keyword",
-                                    "index": False
-                                }
+                }
+            },
+            "ml-telemetry": {
+                "properties": {
+                    "file_data_visualizer": {
+                        "properties": {
+                            "index_creation_count": {
+                                "type": "long"
                             }
-                        },
-                        "timefilter": {
-                            "type": "object",
-                            "enabled": False
-                        },
-                        "title": {
-                            "type": "text"
                         }
                     }
-                },
-                "references": {
-                    "type": "nested",
-                    "properties": {
-                        "id": {
-                            "type": "keyword"
-                        },
-                        "name": {
-                            "type": "keyword"
-                        },
-                        "type": {
-                            "type": "keyword"
-                        }
-                    }
-                },
-                "sample-data-telemetry": {
-                    "properties": {
-                        "installCount": {
-                            "type": "long"
-                        },
-                        "unInstallCount": {
-                            "type": "long"
-                        }
-                    }
-                },
-                "search": {
-                    "properties": {
-                        "columns": {
-                            "type": "keyword"
-                        },
-                        "description": {
-                            "type": "text"
-                        },
-                        "hits": {
-                            "type": "integer"
-                        },
-                        "kibanaSavedObjectMeta": {
-                            "properties": {
-                                "searchSourceJSON": {
-                                    "type": "text"
-                                }
+                }
+            },
+            "namespace": {
+                "type": "keyword"
+            },
+            "query": {
+                "properties": {
+                    "description": {
+                        "type": "text"
+                    },
+                    "filters": {
+                        "type": "object",
+                        "enabled": False
+                    },
+                    "query": {
+                        "properties": {
+                            "language": {
+                                "type": "keyword"
+                            },
+                            "query": {
+                                "type": "keyword",
+                                "index": False
                             }
-                        },
-                        "sort": {
-                            "type": "keyword"
-                        },
-                        "title": {
-                            "type": "text"
-                        },
-                        "version": {
-                            "type": "integer"
                         }
+                    },
+                    "timefilter": {
+                        "type": "object",
+                        "enabled": False
+                    },
+                    "title": {
+                        "type": "text"
                     }
-                },
-                "server": {
-                    "properties": {
-                        "uuid": {
-                            "type": "keyword"
-                        }
+                }
+            },
+            "references": {
+                "type": "nested",
+                "properties": {
+                    "id": {
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "type": {
+                        "type": "keyword"
                     }
-                },
-                "siem-detection-engine-rule-status": {
-                    "properties": {
-                        "alertId": {
-                            "type": "keyword"
-                        },
-                        "lastFailureAt": {
-                            "type": "date"
-                        },
-                        "lastFailureMessage": {
-                            "type": "text"
-                        },
-                        "lastSuccessAt": {
-                            "type": "date"
-                        },
-                        "lastSuccessMessage": {
-                            "type": "text"
-                        },
-                        "status": {
-                            "type": "keyword"
-                        },
-                        "statusDate": {
-                            "type": "date"
-                        }
+                }
+            },
+            "sample-data-telemetry": {
+                "properties": {
+                    "installCount": {
+                        "type": "long"
+                    },
+                    "unInstallCount": {
+                        "type": "long"
                     }
-                },
-                "siem-ui-timeline": {
-                    "properties": {
-                        "columns": {
-                            "properties": {
-                                "aggregatable": {
-                                    "type": "boolean"
-                                },
-                                "category": {
-                                    "type": "keyword"
-                                },
-                                "columnHeaderType": {
-                                    "type": "keyword"
-                                },
-                                "description": {
-                                    "type": "text"
-                                },
-                                "example": {
-                                    "type": "text"
-                                },
-                                "id": {
-                                    "type": "keyword"
-                                },
-                                "indexes": {
-                                    "type": "keyword"
-                                },
-                                "name": {
-                                    "type": "text"
-                                },
-                                "placeholder": {
-                                    "type": "text"
-                                },
-                                "searchable": {
-                                    "type": "boolean"
-                                },
-                                "type": {
-                                    "type": "keyword"
-                                }
+                }
+            },
+            "search": {
+                "properties": {
+                    "columns": {
+                        "type": "keyword"
+                    },
+                    "description": {
+                        "type": "text"
+                    },
+                    "hits": {
+                        "type": "integer"
+                    },
+                    "kibanaSavedObjectMeta": {
+                        "properties": {
+                            "searchSourceJSON": {
+                                "type": "text"
                             }
-                        },
-                        "created": {
-                            "type": "date"
-                        },
-                        "createdBy": {
-                            "type": "text"
-                        },
-                        "dataProviders": {
-                            "properties": {
-                                "and": {
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean"
-                                        },
-                                        "excluded": {
-                                            "type": "boolean"
-                                        },
-                                        "id": {
-                                            "type": "keyword"
-                                        },
-                                        "kqlQuery": {
-                                            "type": "text"
-                                        },
-                                        "name": {
-                                            "type": "text"
-                                        },
-                                        "queryMatch": {
-                                            "properties": {
-                                                "displayField": {
-                                                    "type": "text"
-                                                },
-                                                "displayValue": {
-                                                    "type": "text"
-                                                },
-                                                "field": {
-                                                    "type": "text"
-                                                },
-                                                "operator": {
-                                                    "type": "text"
-                                                },
-                                                "value": {
-                                                    "type": "text"
-                                                }
+                        }
+                    },
+                    "sort": {
+                        "type": "keyword"
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "version": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "server": {
+                "properties": {
+                    "uuid": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "siem-detection-engine-rule-status": {
+                "properties": {
+                    "alertId": {
+                        "type": "keyword"
+                    },
+                    "lastFailureAt": {
+                        "type": "date"
+                    },
+                    "lastFailureMessage": {
+                        "type": "text"
+                    },
+                    "lastSuccessAt": {
+                        "type": "date"
+                    },
+                    "lastSuccessMessage": {
+                        "type": "text"
+                    },
+                    "status": {
+                        "type": "keyword"
+                    },
+                    "statusDate": {
+                        "type": "date"
+                    }
+                }
+            },
+            "siem-ui-timeline": {
+                "properties": {
+                    "columns": {
+                        "properties": {
+                            "aggregatable": {
+                                "type": "boolean"
+                            },
+                            "category": {
+                                "type": "keyword"
+                            },
+                            "columnHeaderType": {
+                                "type": "keyword"
+                            },
+                            "description": {
+                                "type": "text"
+                            },
+                            "example": {
+                                "type": "text"
+                            },
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "indexes": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "text"
+                            },
+                            "placeholder": {
+                                "type": "text"
+                            },
+                            "searchable": {
+                                "type": "boolean"
+                            },
+                            "type": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "created": {
+                        "type": "date"
+                    },
+                    "createdBy": {
+                        "type": "text"
+                    },
+                    "dataProviders": {
+                        "properties": {
+                            "and": {
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean"
+                                    },
+                                    "excluded": {
+                                        "type": "boolean"
+                                    },
+                                    "id": {
+                                        "type": "keyword"
+                                    },
+                                    "kqlQuery": {
+                                        "type": "text"
+                                    },
+                                    "name": {
+                                        "type": "text"
+                                    },
+                                    "queryMatch": {
+                                        "properties": {
+                                            "displayField": {
+                                                "type": "text"
+                                            },
+                                            "displayValue": {
+                                                "type": "text"
+                                            },
+                                            "field": {
+                                                "type": "text"
+                                            },
+                                            "operator": {
+                                                "type": "text"
+                                            },
+                                            "value": {
+                                                "type": "text"
                                             }
                                         }
                                     }
-                                },
-                                "enabled": {
-                                    "type": "boolean"
-                                },
-                                "excluded": {
-                                    "type": "boolean"
-                                },
-                                "id": {
-                                    "type": "keyword"
-                                },
-                                "kqlQuery": {
-                                    "type": "text"
-                                },
-                                "name": {
-                                    "type": "text"
-                                },
-                                "queryMatch": {
-                                    "properties": {
-                                        "displayField": {
-                                            "type": "text"
-                                        },
-                                        "displayValue": {
-                                            "type": "text"
-                                        },
-                                        "field": {
-                                            "type": "text"
-                                        },
-                                        "operator": {
-                                            "type": "text"
-                                        },
-                                        "value": {
-                                            "type": "text"
-                                        }
+                                }
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "excluded": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "kqlQuery": {
+                                "type": "text"
+                            },
+                            "name": {
+                                "type": "text"
+                            },
+                            "queryMatch": {
+                                "properties": {
+                                    "displayField": {
+                                        "type": "text"
+                                    },
+                                    "displayValue": {
+                                        "type": "text"
+                                    },
+                                    "field": {
+                                        "type": "text"
+                                    },
+                                    "operator": {
+                                        "type": "text"
+                                    },
+                                    "value": {
+                                        "type": "text"
                                     }
                                 }
                             }
-                        },
-                        "dateRange": {
-                            "properties": {
-                                "end": {
-                                    "type": "date"
-                                },
-                                "start": {
-                                    "type": "date"
-                                }
+                        }
+                    },
+                    "dateRange": {
+                        "properties": {
+                            "end": {
+                                "type": "date"
+                            },
+                            "start": {
+                                "type": "date"
                             }
-                        },
-                        "description": {
-                            "type": "text"
-                        },
-                        "eventType": {
-                            "type": "keyword"
-                        },
-                        "favorite": {
-                            "properties": {
-                                "favoriteDate": {
-                                    "type": "date"
-                                },
-                                "fullName": {
-                                    "type": "text"
-                                },
-                                "keySearch": {
-                                    "type": "text"
-                                },
-                                "userName": {
-                                    "type": "text"
-                                }
+                        }
+                    },
+                    "description": {
+                        "type": "text"
+                    },
+                    "eventType": {
+                        "type": "keyword"
+                    },
+                    "favorite": {
+                        "properties": {
+                            "favoriteDate": {
+                                "type": "date"
+                            },
+                            "fullName": {
+                                "type": "text"
+                            },
+                            "keySearch": {
+                                "type": "text"
+                            },
+                            "userName": {
+                                "type": "text"
                             }
-                        },
-                        "filters": {
-                            "properties": {
-                                "exists": {
-                                    "type": "text"
-                                },
-                                "match_all": {
-                                    "type": "text"
-                                },
-                                "meta": {
-                                    "properties": {
-                                        "alias": {
-                                            "type": "text"
-                                        },
-                                        "controlledBy": {
-                                            "type": "text"
-                                        },
-                                        "disabled": {
-                                            "type": "boolean"
-                                        },
-                                        "field": {
-                                            "type": "text"
-                                        },
-                                        "formattedValue": {
-                                            "type": "text"
-                                        },
-                                        "index": {
-                                            "type": "keyword"
-                                        },
-                                        "key": {
-                                            "type": "keyword"
-                                        },
-                                        "negate": {
-                                            "type": "boolean"
-                                        },
-                                        "params": {
-                                            "type": "text"
-                                        },
-                                        "type": {
-                                            "type": "keyword"
-                                        },
-                                        "value": {
-                                            "type": "text"
-                                        }
+                        }
+                    },
+                    "filters": {
+                        "properties": {
+                            "exists": {
+                                "type": "text"
+                            },
+                            "match_all": {
+                                "type": "text"
+                            },
+                            "meta": {
+                                "properties": {
+                                    "alias": {
+                                        "type": "text"
+                                    },
+                                    "controlledBy": {
+                                        "type": "text"
+                                    },
+                                    "disabled": {
+                                        "type": "boolean"
+                                    },
+                                    "field": {
+                                        "type": "text"
+                                    },
+                                    "formattedValue": {
+                                        "type": "text"
+                                    },
+                                    "index": {
+                                        "type": "keyword"
+                                    },
+                                    "key": {
+                                        "type": "keyword"
+                                    },
+                                    "negate": {
+                                        "type": "boolean"
+                                    },
+                                    "params": {
+                                        "type": "text"
+                                    },
+                                    "type": {
+                                        "type": "keyword"
+                                    },
+                                    "value": {
+                                        "type": "text"
                                     }
-                                },
-                                "missing": {
-                                    "type": "text"
-                                },
-                                "query": {
-                                    "type": "text"
-                                },
-                                "range": {
-                                    "type": "text"
-                                },
-                                "script": {
-                                    "type": "text"
                                 }
+                            },
+                            "missing": {
+                                "type": "text"
+                            },
+                            "query": {
+                                "type": "text"
+                            },
+                            "range": {
+                                "type": "text"
+                            },
+                            "script": {
+                                "type": "text"
                             }
-                        },
-                        "kqlMode": {
-                            "type": "keyword"
-                        },
-                        "kqlQuery": {
-                            "properties": {
-                                "filterQuery": {
-                                    "properties": {
-                                        "kuery": {
-                                            "properties": {
-                                                "expression": {
-                                                    "type": "text"
-                                                },
-                                                "kind": {
-                                                    "type": "keyword"
-                                                }
+                        }
+                    },
+                    "kqlMode": {
+                        "type": "keyword"
+                    },
+                    "kqlQuery": {
+                        "properties": {
+                            "filterQuery": {
+                                "properties": {
+                                    "kuery": {
+                                        "properties": {
+                                            "expression": {
+                                                "type": "text"
+                                            },
+                                            "kind": {
+                                                "type": "keyword"
                                             }
-                                        },
-                                        "serializedQuery": {
-                                            "type": "text"
                                         }
+                                    },
+                                    "serializedQuery": {
+                                        "type": "text"
                                     }
                                 }
                             }
-                        },
-                        "savedQueryId": {
-                            "type": "keyword"
-                        },
-                        "sort": {
-                            "properties": {
-                                "columnId": {
-                                    "type": "keyword"
-                                },
-                                "sortDirection": {
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "title": {
-                            "type": "text"
-                        },
-                        "updated": {
-                            "type": "date"
-                        },
-                        "updatedBy": {
-                            "type": "text"
                         }
-                    }
-                },
-                "siem-ui-timeline-note": {
-                    "properties": {
-                        "created": {
-                            "type": "date"
-                        },
-                        "createdBy": {
-                            "type": "text"
-                        },
-                        "eventId": {
-                            "type": "keyword"
-                        },
-                        "note": {
-                            "type": "text"
-                        },
-                        "timelineId": {
-                            "type": "keyword"
-                        },
-                        "updated": {
-                            "type": "date"
-                        },
-                        "updatedBy": {
-                            "type": "text"
-                        }
-                    }
-                },
-                "siem-ui-timeline-pinned-event": {
-                    "properties": {
-                        "created": {
-                            "type": "date"
-                        },
-                        "createdBy": {
-                            "type": "text"
-                        },
-                        "eventId": {
-                            "type": "keyword"
-                        },
-                        "timelineId": {
-                            "type": "keyword"
-                        },
-                        "updated": {
-                            "type": "date"
-                        },
-                        "updatedBy": {
-                            "type": "text"
-                        }
-                    }
-                },
-                "space": {
-                    "properties": {
-                        "_reserved": {
-                            "type": "boolean"
-                        },
-                        "color": {
-                            "type": "keyword"
-                        },
-                        "description": {
-                            "type": "text"
-                        },
-                        "disabledFeatures": {
-                            "type": "keyword"
-                        },
-                        "imageUrl": {
-                            "type": "text",
-                            "index": False
-                        },
-                        "initials": {
-                            "type": "keyword"
-                        },
-                        "name": {
-                            "type": "text",
-                            "fields": {
-                                "keyword": {
-                                    "type": "keyword",
-                                    "ignore_above": 2048
-                                }
+                    },
+                    "savedQueryId": {
+                        "type": "keyword"
+                    },
+                    "sort": {
+                        "properties": {
+                            "columnId": {
+                                "type": "keyword"
+                            },
+                            "sortDirection": {
+                                "type": "keyword"
                             }
                         }
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "updated": {
+                        "type": "date"
+                    },
+                    "updatedBy": {
+                        "type": "text"
                     }
-                },
-                "telemetry": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "lastReported": {
-                            "type": "date"
-                        },
-                        "lastVersionChecked": {
-                            "type": "keyword",
-                            "ignore_above": 256
-                        },
-                        "sendUsageFrom": {
-                            "type": "keyword",
-                            "ignore_above": 256
-                        },
-                        "userHasSeenNotice": {
-                            "type": "boolean"
-                        }
+                }
+            },
+            "siem-ui-timeline-note": {
+                "properties": {
+                    "created": {
+                        "type": "date"
+                    },
+                    "createdBy": {
+                        "type": "text"
+                    },
+                    "eventId": {
+                        "type": "keyword"
+                    },
+                    "note": {
+                        "type": "text"
+                    },
+                    "timelineId": {
+                        "type": "keyword"
+                    },
+                    "updated": {
+                        "type": "date"
+                    },
+                    "updatedBy": {
+                        "type": "text"
                     }
-                },
-                "timelion-sheet": {
-                    "properties": {
-                        "description": {
-                            "type": "text"
-                        },
-                        "hits": {
-                            "type": "integer"
-                        },
-                        "kibanaSavedObjectMeta": {
-                            "properties": {
-                                "searchSourceJSON": {
-                                    "type": "text"
-                                }
+                }
+            },
+            "siem-ui-timeline-pinned-event": {
+                "properties": {
+                    "created": {
+                        "type": "date"
+                    },
+                    "createdBy": {
+                        "type": "text"
+                    },
+                    "eventId": {
+                        "type": "keyword"
+                    },
+                    "timelineId": {
+                        "type": "keyword"
+                    },
+                    "updated": {
+                        "type": "date"
+                    },
+                    "updatedBy": {
+                        "type": "text"
+                    }
+                }
+            },
+            "space": {
+                "properties": {
+                    "_reserved": {
+                        "type": "boolean"
+                    },
+                    "color": {
+                        "type": "keyword"
+                    },
+                    "description": {
+                        "type": "text"
+                    },
+                    "disabledFeatures": {
+                        "type": "keyword"
+                    },
+                    "imageUrl": {
+                        "type": "text",
+                        "index": False
+                    },
+                    "initials": {
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "text",
+                        "fields": {
+                            "keyword": {
+                                "type": "keyword",
+                                "ignore_above": 2048
                             }
-                        },
-                        "timelion_chart_height": {
-                            "type": "integer"
-                        },
-                        "timelion_columns": {
-                            "type": "integer"
-                        },
-                        "timelion_interval": {
-                            "type": "keyword"
-                        },
-                        "timelion_other_interval": {
-                            "type": "keyword"
-                        },
-                        "timelion_rows": {
-                            "type": "integer"
-                        },
-                        "timelion_sheet": {
-                            "type": "text"
-                        },
-                        "title": {
-                            "type": "text"
-                        },
-                        "version": {
-                            "type": "integer"
                         }
                     }
-                },
-                "tsvb-validation-telemetry": {
-                    "properties": {
-                        "failedRequests": {
-                            "type": "long"
-                        }
+                }
+            },
+            "telemetry": {
+                "properties": {
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "lastReported": {
+                        "type": "date"
+                    },
+                    "lastVersionChecked": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    },
+                    "sendUsageFrom": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    },
+                    "userHasSeenNotice": {
+                        "type": "boolean"
                     }
-                },
-                "type": {
-                    "type": "keyword"
-                },
-                "ui-metric": {
-                    "properties": {
-                        "count": {
-                            "type": "integer"
+                }
+            },
+            "timelion-sheet": {
+                "properties": {
+                    "description": {
+                        "type": "text"
+                    },
+                    "hits": {
+                        "type": "integer"
+                    },
+                    "kibanaSavedObjectMeta": {
+                        "properties": {
+                            "searchSourceJSON": {
+                                "type": "text"
+                            }
                         }
+                    },
+                    "timelion_chart_height": {
+                        "type": "integer"
+                    },
+                    "timelion_columns": {
+                        "type": "integer"
+                    },
+                    "timelion_interval": {
+                        "type": "keyword"
+                    },
+                    "timelion_other_interval": {
+                        "type": "keyword"
+                    },
+                    "timelion_rows": {
+                        "type": "integer"
+                    },
+                    "timelion_sheet": {
+                        "type": "text"
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "version": {
+                        "type": "integer"
                     }
-                },
-                "updated_at": {
-                    "type": "date"
-                },
-                "upgrade-assistant-reindex-operation": {
-                    "dynamic": "true",
-                    "properties": {
-                        "indexName": {
-                            "type": "keyword"
-                        },
-                        "status": {
-                            "type": "integer"
-                        }
+                }
+            },
+            "tsvb-validation-telemetry": {
+                "properties": {
+                    "failedRequests": {
+                        "type": "long"
                     }
-                },
-                "upgrade-assistant-telemetry": {
-                    "properties": {
-                        "features": {
-                            "properties": {
-                                "deprecation_logging": {
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean",
-                                            "null_value": True
-                                        }
+                }
+            },
+            "type": {
+                "type": "keyword"
+            },
+            "ui-metric": {
+                "properties": {
+                    "count": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "updated_at": {
+                "type": "date"
+            },
+            "upgrade-assistant-reindex-operation": {
+                "dynamic": "true",
+                "properties": {
+                    "indexName": {
+                        "type": "keyword"
+                    },
+                    "status": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "upgrade-assistant-telemetry": {
+                "properties": {
+                    "features": {
+                        "properties": {
+                            "deprecation_logging": {
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "null_value": True
                                     }
                                 }
                             }
-                        },
-                        "ui_open": {
-                            "properties": {
-                                "cluster": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "indices": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "overview": {
-                                    "type": "long",
-                                    "null_value": 0
-                                }
+                        }
+                    },
+                    "ui_open": {
+                        "properties": {
+                            "cluster": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "indices": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "overview": {
+                                "type": "long",
+                                "null_value": 0
                             }
-                        },
-                        "ui_reindex": {
-                            "properties": {
-                                "close": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "open": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "start": {
-                                    "type": "long",
-                                    "null_value": 0
-                                },
-                                "stop": {
-                                    "type": "long",
-                                    "null_value": 0
-                                }
+                        }
+                    },
+                    "ui_reindex": {
+                        "properties": {
+                            "close": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "open": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "start": {
+                                "type": "long",
+                                "null_value": 0
+                            },
+                            "stop": {
+                                "type": "long",
+                                "null_value": 0
                             }
                         }
                     }
-                },
-                "url": {
-                    "properties": {
-                        "accessCount": {
-                            "type": "long"
-                        },
-                        "accessDate": {
-                            "type": "date"
-                        },
-                        "createDate": {
-                            "type": "date"
-                        },
-                        "url": {
-                            "type": "text",
-                            "fields": {
-                                "keyword": {
-                                    "type": "keyword",
-                                    "ignore_above": 2048
-                                }
+                }
+            },
+            "url": {
+                "properties": {
+                    "accessCount": {
+                        "type": "long"
+                    },
+                    "accessDate": {
+                        "type": "date"
+                    },
+                    "createDate": {
+                        "type": "date"
+                    },
+                    "url": {
+                        "type": "text",
+                        "fields": {
+                            "keyword": {
+                                "type": "keyword",
+                                "ignore_above": 2048
                             }
                         }
                     }
-                },
-                "visualization": {
-                    "properties": {
-                        "description": {
-                            "type": "text"
-                        },
-                        "kibanaSavedObjectMeta": {
-                            "properties": {
-                                "searchSourceJSON": {
-                                    "type": "text"
-                                }
+                }
+            },
+            "visualization": {
+                "properties": {
+                    "description": {
+                        "type": "text"
+                    },
+                    "kibanaSavedObjectMeta": {
+                        "properties": {
+                            "searchSourceJSON": {
+                                "type": "text"
                             }
-                        },
-                        "savedSearchRefName": {
-                            "type": "keyword"
-                        },
-                        "title": {
-                            "type": "text"
-                        },
-                        "uiStateJSON": {
-                            "type": "text"
-                        },
-                        "version": {
-                            "type": "integer"
-                        },
-                        "visState": {
-                            "type": "text"
                         }
+                    },
+                    "savedSearchRefName": {
+                        "type": "keyword"
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "uiStateJSON": {
+                        "type": "text"
+                    },
+                    "version": {
+                        "type": "integer"
+                    },
+                    "visState": {
+                        "type": "text"
                     }
                 }
             }
         }
+    }
 
 
 KIBANA6_NAMESPACE = {
@@ -1722,8 +1723,8 @@ class ESData(ESQuery):
             headers['authorization'] = b'Basic %s' % base64.b64encode(f'{gsettings.elasticsearch_user}:{gsettings.elasticsearch_pass}'.encode('utf-8'))
         data = json.dumps(data)
         kibana_url = settings.KIBANA_URL + url
-        req = urllib.request.Request(kibana_url, data.encode('utf8'), headers=headers, method=method)
-        urllib.request.urlopen(req)
+        req = urllib.request.Request(kibana_url, data.encode('utf8'), headers=headers, method=method)  # noqa: S310
+        urllib.request.urlopen(req)  # noqa: S310
         return req
 
     def _kibana_remove(self, _type, body):
@@ -1812,8 +1813,8 @@ class ESData(ESQuery):
         if get_system_settings(static=True).use_opensearch_2():
             try:
                 self.es.indices.delete(index='.kibana_1')
-            except:
-                pass
+            except Exception:
+                logger.debug("Cannot delet index", index=".kibana_1")
             self.es.indices.create(index='.kibana_1', body={"mappings": get_kibana_mappings()})
             self.es.indices.put_alias(index='.kibana_1', name='.kibana')
             self.es.indices.refresh(index='.kibana_1')
@@ -1896,7 +1897,7 @@ class ESData(ESQuery):
     def kibana_import_fileobj(self, fileobj):
         tar = tarfile.open(mode='r:bz2', fileobj=fileobj)
         tmpdir = tempfile.mkdtemp()
-        tar.extractall(tmpdir)
+        tar.extractall(tmpdir)  # noqa: S202
         tar.close()
 
         subdirs = os.listdir(tmpdir)

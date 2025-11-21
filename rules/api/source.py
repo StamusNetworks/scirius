@@ -298,9 +298,7 @@ class PublicSourceSerializer(BaseSourceSerializer):
         validated_data["datatype"] = public_sources["sources"][source_name]["datatype"]
         validated_data["method"] = "http"
         validated_data["public_source"] = source_name
-        instance = super(PublicSourceSerializer, self).create(validated_data)
-
-        return instance
+        return super().create(validated_data)
 
 
 class PublicSourceViewSet(BaseSourceViewSet):
@@ -379,20 +377,19 @@ class SourceSerializer(BaseSourceSerializer):
 
     class Meta(BaseSourceSerializer.Meta):
         model = BaseSourceSerializer.Meta.model
-        fields = BaseSourceSerializer.Meta.fields + ("method", "uri", "authkey", "comment", "remove_original_sids")
+        fields = (*BaseSourceSerializer.Meta.fields, "method", "uri", "authkey", "comment", "remove_original_sids")
         read_only_fields = BaseSourceSerializer.Meta.read_only_fields
 
     def validate_datatype(self, value):
         extra_types = get_middleware_module("common").update_source_content_type()
         datatypes = [ct[0] for ct in Source.CONTENT_TYPE + extra_types]
         if value not in datatypes:
-            raise serializers.ValidationError("Data type must be one of: %s" % (",".join(datatypes)))
+            raise serializers.ValidationError("Data type must be one of: {}".format(",".join(datatypes)))
         return value
 
     def create(self, validated_data):
         validated_data["public_source"] = None
-        instance = super(SourceSerializer, self).create(validated_data)
-        return instance
+        return super().create(validated_data)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

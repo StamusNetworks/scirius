@@ -65,13 +65,12 @@ def index(request, error=None):
         context['rules'] = True
 
         return scirius_render(request, 'suricata/index.html', context)
-    else:
-        form = SuricataForm()
-        context = {'creation': True, 'form': form}
-        missing = dependencies_check(Suricata)
-        if missing:
-            context['missing'] = missing
-        return scirius_render(request, 'suricata/edit.html', context)
+    form = SuricataForm()
+    context = {'creation': True, 'form': form}
+    missing = dependencies_check(Suricata)
+    if missing:
+        context['missing'] = missing
+    return scirius_render(request, 'suricata/edit.html', context)
 
 
 @permission_required('rules.configuration_edit', raise_exception=True)
@@ -91,14 +90,12 @@ def edit(request):
             )
             return redirect(index)
 
-        else:
-            return scirius_render(
-                request,
-                'suricata/edit.html',
-                {'form': form, 'error': 'Invalid form'}
-            )
-    else:
-        form = SuricataForm(instance=suri)
+        return scirius_render(
+            request,
+            'suricata/edit.html',
+            {'form': form, 'error': 'Invalid form'}
+        )
+    form = SuricataForm(instance=suri)
     missing = dependencies_check(Suricata)
 
     return scirius_render(request, 'suricata/edit.html', {'form': form, 'missing': missing})
@@ -140,11 +137,10 @@ def update(request):
             suricata=suri
         )
         return redirect('status' if not task.is_recurrent else 'view_stasks')
-    else:
-        form = SuricataUpdateForm()
-        context.update({'form': form})
-        return scirius_render(
-            request,
-            'suricata/update.html',
-            context
-        )
+    form = SuricataUpdateForm()
+    context.update({'form': form})
+    return scirius_render(
+        request,
+        'suricata/update.html',
+        context
+    )

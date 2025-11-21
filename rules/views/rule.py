@@ -188,7 +188,7 @@ def build_rule_context(request: HttpRequest, rule: Rule):
     versions = MIDDLEWARE.common.rules_version()
     added = []
     for version in versions:
-        real_version = Rule.get_last_real_version(version, **{"pk": rule.pk})
+        real_version = Rule.get_last_real_version(version, pk=rule.pk)
 
         if real_version not in added:
             added.append(real_version)
@@ -550,12 +550,11 @@ def delete_alerts(request, rule_id):
                 action_type="delete_alerts", comment=form.cleaned_data["comment"], request=request, rule=rule_object
             )
         return redirect(rule_object)
-    else:
-        context = {"object": rule_object}
-        context["comment_form"] = CommentForm()
-        with contextlib.suppress(builtins.BaseException):
-            context["probes"] = ['"' + x + '"' for x in MIDDLEWARE.models.get_probe_hostnames()]
-        return scirius_render(request, "rules/delete_alerts.html", context)
+    context = {"object": rule_object}
+    context["comment_form"] = CommentForm()
+    with contextlib.suppress(builtins.BaseException):
+        context["probes"] = ['"' + x + '"' for x in MIDDLEWARE.models.get_probe_hostnames()]
+    return scirius_render(request, "rules/delete_alerts.html", context)
 
 
 @permission_required("rules.ruleset_policy_edit", raise_exception=True)

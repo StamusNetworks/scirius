@@ -94,20 +94,17 @@ def loginview(request, target):
                 if target:
                     return redirect("/" + target)
                 return redirect(get_middleware_module('common').login_redirection_url(request))
-            else:
-                form = LoginForm()
-                context.update({'form': form, 'error_login': 'Disabled account', 'banner': banner})
-                logger.error("Invalid login attempt for disabled account '%s' from '%s'", user=username, ip=ip)
-                return scirius_render(request, 'accounts/login.html', context)
-        else:
             form = LoginForm()
-            context.update({'form': form, 'error_login': 'Invalid login', 'banner': banner})
-            logger.error("Invalid login attempt for '%s' from '%s'", user=username, ip=ip)
+            context.update({'form': form, 'error_login': 'Disabled account', 'banner': banner})
+            logger.error("Invalid login attempt for disabled account '%s' from '%s'", user=username, ip=ip)
             return scirius_render(request, 'accounts/login.html', context)
-    else:
         form = LoginForm()
-        context.update({'form': form, 'banner': banner, 'saml': get_middleware_module('common').has_saml_auth()})
+        context.update({'form': form, 'error_login': 'Invalid login', 'banner': banner})
+        logger.error("Invalid login attempt for '%s' from '%s'", user=username, ip=ip)
         return scirius_render(request, 'accounts/login.html', context)
+    form = LoginForm()
+    context.update({'form': form, 'banner': banner, 'saml': get_middleware_module('common').has_saml_auth()})
+    return scirius_render(request, 'accounts/login.html', context)
 
 
 def editview(request, action):
@@ -183,7 +180,7 @@ def editview(request, action):
                     try:
                         sciriususer = ruser.sciriususer
                         sciriususer.timezone = form.cleaned_data['timezone']
-                    except:
+                    except Exception:
                         sciriususer = SciriusUser.objects.create(
                             user=ruser,
                             timezone=form.cleaned_data['timezone']
@@ -200,6 +197,7 @@ def editview(request, action):
 
         context.update({'is_from_ldap': request.user.sciriususer.is_from_ldap()})
         return scirius_render(request, 'accounts/edit.html', context)
+    return None
 
 
 @permission_required('rules.configuration_auth', raise_exception=True)
@@ -343,7 +341,7 @@ def token_edit(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     token_user = SciriusTokenUser.objects.filter(user=user).first()
     if not token_user or token_user.parent.user != request.user:
-        raise PermissionDenied()
+        raise PermissionDenied
 
     context = {}
     if request.method == 'POST':
@@ -611,9 +609,8 @@ def edit_password(request, user_id):
                 other_user=user
             )
             return redirect('list_accounts')
-        else:
-            context['error'] = 'Password form is not valid'
-            context['form'] = form
+        context['error'] = 'Password form is not valid'
+        context['form'] = form
 
         return scirius_render(request, 'accounts/user.html', context)
 
