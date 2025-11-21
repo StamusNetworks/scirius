@@ -31,7 +31,7 @@ from django.conf import settings
 if settings.SURICATA_UNIX_SOCKET:
     try:
         import suricata.sc as suricatasc
-    except:
+    except Exception:
         settings.SURICATA_UNIX_SOCKET = None
 
 
@@ -42,7 +42,7 @@ class Info():
             sc = suricatasc.SuricataSC(settings.SURICATA_UNIX_SOCKET)
             try:
                 sc.connect()
-            except:
+            except Exception:
                 return {'probe': 'danger'}
             res = sc.send_command('uptime', None)
             if res['return'] == 'OK':
@@ -160,8 +160,8 @@ def validate_rule_postprocessing(data, partial, serializer):
     serializer.validate_rule_postprocessing(data, partial)
 
 
-PROCESSING_FILTER_FIELDS = set(('src_ip', 'dest_ip', 'alert.signature_id', 'alert.target.ip', 'alert.source.ip', 'msg', 'alert.signature', 'content'))
-PROCESSING_THRESHOLD_FIELDS = set(('alert.signature_id', 'msg', 'alert.signature', 'content'))
+PROCESSING_FILTER_FIELDS = {'src_ip', 'dest_ip', 'alert.signature_id', 'alert.target.ip', 'alert.source.ip', 'msg', 'alert.signature', 'content'}
+PROCESSING_THRESHOLD_FIELDS = {'alert.signature_id', 'msg', 'alert.signature', 'content'}
 
 
 def get_processing_actions_capabilities(fields):
@@ -171,13 +171,13 @@ def get_processing_actions_capabilities(fields):
 def get_processing_filter_capabilities(fields, action):
     if action == 'suppress':
         return {
-            'fields': sorted(list(PROCESSING_FILTER_FIELDS & set(fields))),
+            'fields': sorted(PROCESSING_FILTER_FIELDS & set(fields)),
             'operators': ['equal'],
             'supported_fields': ', '.join(PROCESSING_FILTER_FIELDS)
         }
-    elif action == 'threshold':
+    if action == 'threshold':
         return {
-            'fields': sorted(list(PROCESSING_THRESHOLD_FIELDS & set(fields))),
+            'fields': sorted(PROCESSING_THRESHOLD_FIELDS & set(fields)),
             'operators': ['equal'],
             'supported_fields': ', '.join(PROCESSING_THRESHOLD_FIELDS)
         }
@@ -193,7 +193,7 @@ def update_processing_filter_action_options(rule_processing):
 
 
 def get_homepage_context():
-    context = {
+    return {
         'title': settings.APP_LONG_NAME,
         'short_title': settings.APP_SHORT_NAME,
         'common_long_name': settings.APP_LONG_NAME,
@@ -207,7 +207,6 @@ def get_homepage_context():
         'icon': False,
         'nb_probes': 1
     }
-    return context
 
 
 def get_default_filter_sets():
@@ -248,7 +247,7 @@ def update_context(_):
 
 
 def custom_source_datatype():
-    return tuple()
+    return ()
 
 
 def update_source_content_type(source=None):

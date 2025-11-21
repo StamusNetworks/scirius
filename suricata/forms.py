@@ -58,7 +58,7 @@ class SuricataUpdateForm(CommentForm):
         if self.cleaned_data['recurrence'] and self.cleaned_data['recurrence_param']:
             recurrence = self.cleaned_data['recurrence_param']
 
-        task = CeleryTask.spawn(
+        return CeleryTask.spawn(
             'UpdateGenerateRuleset',
             user=user,
             schedule=schedule,
@@ -67,7 +67,6 @@ class SuricataUpdateForm(CommentForm):
             generate=self.cleaned_data.get('push', False),
             ruleset_pk=ruleset_pk
         )
-        return task
 
 
 class EditRecurrentTaskForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelForm, CommentForm):

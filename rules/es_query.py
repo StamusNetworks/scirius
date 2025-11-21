@@ -270,7 +270,7 @@ class ESQuery:
     def _from_date(self):
         if self.from_date:
             return self.from_date
-        elif self.request and 'from_date' in self.request.GET:
+        if self.request and 'from_date' in self.request.GET:
             from_date = int(self.request.GET['from_date'])
         elif self.request and 'start_date' in self.request.GET:
             from_date = float(self.request.GET['start_date']) * 1000
@@ -295,8 +295,7 @@ class ESQuery:
         else:
             if es_format:
                 return 'now'
-            else:
-                to_date = time() * 1000
+            to_date = time() * 1000
         return int(to_date)
 
     def _interval(self, dictionary=None):

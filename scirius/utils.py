@@ -54,8 +54,7 @@ def build_path_info(request):
         splval = splval[1:]
     if len(splval):
         return " - ".join(splval)
-    else:
-        return "home"
+    return "home"
 
 
 class TimezoneMiddleware(object):
@@ -66,7 +65,7 @@ class TimezoneMiddleware(object):
         if request.user.is_authenticated:
             try:
                 user = SciriusUser.objects.get(user=request.user)
-            except:
+            except Exception:
                 return self.get_response(request)
             if user:
                 timezone.activate(user.timezone)
@@ -418,7 +417,7 @@ def convert_to_local(time, user):
     return pytz.utc.normalize(pytz.utc.localize(time.replace(tzinfo=None))).astimezone(tz)
 
 
-def sizeof_fmt(num: int | float) -> str:
+def sizeof_fmt(num: float) -> str:
     """
     Utility function to convert bytes to a more readable format.
     """

@@ -34,11 +34,11 @@ class Command(BaseCommand):
         name = options['name']
         try:
             sources = Source.objects.all()
-        except:
+        except Exception:
             raise CommandError("No Source is defined")
         try:
             categories = Category.objects.all()
-        except:
+        except Exception:
             raise CommandError("No Category is defined")
 
         ruleset = Ruleset.objects.create(
@@ -56,4 +56,4 @@ class Command(BaseCommand):
         for cat in categories:
             ruleset.categories.add(cat)
         ruleset.save()
-        self.stdout.write('Successfully created default ruleset "%s"' % name)
+        self.stdout.write(f'Successfully created default ruleset "{name}"')

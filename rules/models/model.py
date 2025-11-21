@@ -25,6 +25,7 @@ import logging
 import os
 import re
 import shutil
+import structlog
 import tarfile
 import tempfile
 from collections import OrderedDict
@@ -57,6 +58,7 @@ from rules.tests_rules import TestRules
 from rules.validators import validate_addresses_or_networks
 
 request_logger = logging.getLogger("django.request")
+logger = structlog.get_logger("scirius")
 
 
 class UserActionItem(TypedDict):
@@ -605,13 +607,11 @@ class UserAction(models.Model):
 
                 icons.append((icon, lb))
 
-        html = format_html_join(
+        return format_html_join(
             "\n",
             '<div class="list-view-pf-additional-info-item"><span class="fa {}"></span>{}</div>',
             ((icon, klass_name) for icon, klass_name in icons),
         )
-
-        return html
 
     @staticmethod
     def get_user_actions_dict():
@@ -672,7 +672,7 @@ class Source(models.Model):
     ]
     IOC_MAPPING = IOC_MAP
 
-    TMP_DIR = "/tmp/"
+    TMP_DIR = "/tmp/"  # noqa: S108
     REFRESH_LOCK_ID = "source-lock"
     REFRESH_LOCK_EXPIRE = 60 * 10
     DATASET_PATH = "/var/log/suricata/dataset/"
@@ -1036,7 +1036,7 @@ class Source(models.Model):
             fpath = os.path.join(path, tarinfo.name)
 
             if tarinfo.isdir():
-                os.chmod(fpath, 0o755)
+                os.chmod(fpath, 0o755)  # noqa: S103
             else:
                 os.chmod(fpath, 0o644)
 
@@ -1613,10 +1613,10 @@ class Transformable:
     _SET_TARGET_REGEX = re.compile(r"\)$")
 
     def get_transformation(self, ruleset, key):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _set_target(self, rule, target="dest_ip"):
         target = f' target:{target};)'
@@ -1679,7 +1679,7 @@ class Transformable:
             if value == Transformation.L_YES:
                 rule_ids.raw = rule_ids.raw.replace("$EXTERNAL_NET", "any")
                 return rule_ids.format()
-            elif value == Transformation.L_AUTO:
+            if value == Transformation.L_AUTO:
                 if rule_ids.msg.startswith("ET POLICY"):
                     return content
                 for meta in rule_ids.metadata:
@@ -2071,7 +2071,7 @@ class Category(models.Model, Transformable, Cache):
         # parse the line with ids tools
         try:
             rule = rule_idstools.parse(line)
-        except:
+        except Exception:
             return
         if rule is None:
             return
@@ -2219,7 +2219,7 @@ class Category(models.Model, Transformable, Cache):
 
         with open(os.path.join(source_git_dir, filename)) as rfile:
             with transaction.atomic():
-                for line in rfile.readlines():
+                for line in rfile:
                     state = True
                     if line.startswith("#"):
                         # check if it is a commented signature
@@ -2691,19 +2691,17 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
         ruleset.enable_rules_at_version(self.get_dependant_rules_at_version(ruleset))
         if request:
             UserAction.create(action_type="enable_rule", comment=comment, request=request, rule=self, ruleset=ruleset)
-        return
 
     def disable(self, ruleset, request=None, comment=None):
         ruleset.disable_rules_at_version(self.get_dependant_rules_at_version(ruleset))
         if request:
             UserAction.create(action_type="disable_rule", comment=comment, request=request, rule=self, ruleset=ruleset)
-        return
 
     def test(self, ruleset):
         try:
             self.enable_cache()
             test = ruleset.test_rule_buffer(self.generate_content(ruleset))
-        except:
+        except Exception:
             return False
         finally:
             self.disable_cache()
@@ -2808,8 +2806,8 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
     def is_untrusted(self):
         try:
             return self.untrusted
-        except:
-            pass
+        except Exception:
+            logger.info("Untrusted rule", sid=self.sid)
         return self.category.source.untrusted
 
     def generate_content(self, ruleset, version=0):
@@ -3005,7 +3003,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
     def can_lateral(self):
         try:
             rule_ids = rule_idstools.parse(self.content)
-        except:
+        except Exception:
             return False
         # Workaround: ref #674
         # Cannot transform, idstools cannot parse it
@@ -3013,15 +3011,12 @@ class RuleAtVersion(RangeCheckIntegerFields):
         if rule_ids is None or "outbound" in rule_ids["msg"].lower():
             return False
 
-        if "$EXTERNAL_NET" in rule_ids.raw:
-            return True
-
-        return False
+        return "$EXTERNAL_NET" in rule_ids.raw
 
     def can_target(self):
         try:
             rule_ids = rule_idstools.parse(self.content)
-        except:
+        except Exception:
             return False
         return rule_ids is not None
 
@@ -3029,7 +3024,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
         content = self.content
 
         if self.rule.is_untrusted() and (self.match_luajit() or self.match_dataset()):
-            return "disabled_as_source_is_untrusted: %s" % content
+            return f"disabled_as_source_is_untrusted: {content}"
 
         # explicitely set prio on transformation here
         # Action
@@ -3073,12 +3068,12 @@ class RuleAtVersion(RangeCheckIntegerFields):
                 rule_flowbits = []
                 for flowinst in match:
                     # avoid flowbit duplicate
-                    if not flowinst[1] in rule_flowbits:
+                    if flowinst[1] not in rule_flowbits:
                         rule_flowbits.append(flowinst[1])
                     else:
                         continue
                     # create Flowbit if needed
-                    if not flowinst[1] in list(flowbits[ftype].keys()):
+                    if flowinst[1] not in list(flowbits[ftype].keys()):
                         elt = Flowbit(type=ftype, name=flowinst[1], source=source)
                         flowbits[ftype][flowinst[1]] = elt
                         flowbits["added"]["flowbit"].append(elt)
@@ -3109,7 +3104,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
     def parse_metadata(self):
         try:
             rule_ids = rule_idstools.parse(self.content)
-        except:
+        except Exception:
             return
         if rule_ids is None:
             return
@@ -3309,24 +3304,20 @@ class Ruleset(models.Model, Transformable):
         if key is None:
             return Category.objects.filter(categorytransformation__ruleset=self)
 
-        categories = Category.objects.filter(
+        return Category.objects.filter(
             categorytransformation__ruleset=self,
             categorytransformation__key=key.value,
             categorytransformation__value=value.value,
         )
-
-        return categories
 
     def get_transformed_rules(self, key=Transformation.ACTION, value=Transformation.A_DROP):
         # All transformed rules from this ruleset
         if key is None:
             return Rule.objects.filter(ruletransformation__ruleset=self)
 
-        rules = Rule.objects.filter(
+        return Rule.objects.filter(
             ruletransformation__ruleset=self, ruletransformation__key=key.value, ruletransformation__value=value.value
         )
-
-        return rules
 
     def get_transformation(self, key=Transformation.ACTION):
         NONE = None
@@ -3428,11 +3419,9 @@ class Ruleset(models.Model, Transformable):
     def generate_threshold(self, directory):
         thresholdfile = os.path.join(directory, "threshold.config")
         with open(thresholdfile, "w") as f:
-            for threshold in Threshold.objects.filter(ruleset=self):
-                f.write("%s\n" % (threshold))
+            f.writelines("%s\n" % (threshold) for threshold in Threshold.objects.filter(ruleset=self))
 
-            for threshold in self.get_processing_filter_thresholds():
-                f.write(threshold)
+            f.writelines(self.get_processing_filter_thresholds())
 
             if self.suppressed_sids:
                 f.write(self.suppressed_sids)
@@ -3553,8 +3542,7 @@ class Ruleset(models.Model, Transformable):
 
         self.rules_count = rules.count()
         self.save()
-        result = {"rules_count": self.rules_count}
-        return result
+        return {"rules_count": self.rules_count}
 
     def test_rule_buffer(self, rule_buffer, engine_analysis=False):
         testor = TestRules()
@@ -3771,20 +3759,21 @@ class Threshold(models.Model):
 
 def dependencies_check(obj):
     if obj == Source:
-        return
+        return None
 
     if obj == Ruleset:
         if Source.objects.count() == 0:
             return "You need first to create and update a source."
         if Rule.objects.count() == 0:
             return "You need first to update existing source."
-        return
+        return None
 
     if Source.objects.count() == 0:
         return "You need first to create a source and a ruleset."
 
     if Ruleset.objects.count() == 0:
         return "You need first to create a ruleset."
+    return None
 
 
 def export_iprep_files(target_dir, cats_content, iprep_content):
@@ -3802,8 +3791,7 @@ def export_iprep_files(target_dir, cats_content, iprep_content):
 
     with open(target_dir + "/" + "scirius-iprep.list", "w") as rfile:
         for cate in cat_map:
-            for IP in cat_map[cate].group_ips_list.split(","):
-                rfile.write("%s,%d,100\n" % (IP, cate))
+            rfile.writelines("%s,%d,100\n" % (IP, cate) for IP in cat_map[cate].group_ips_list.split(","))
         if iprep_content:
             rfile.write(iprep_content)
 

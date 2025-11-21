@@ -38,11 +38,11 @@ def has_group_permission(required_groups: Iterable[str]):
 
             # 1. Ensure the user is authenticated first
             if not IsAuthenticated().has_permission(request, self):
-                raise PermissionDenied()
+                raise PermissionDenied
 
             # 2. Check group permissions
             if not HasGroupPermission.check_perms(request, self, required_groups):
-                raise PermissionDenied()
+                raise PermissionDenied
 
             return func(self, *args, **kwargs)
 
