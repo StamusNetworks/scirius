@@ -98,7 +98,7 @@ class DeepLink(models.Model):
     enabled = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ("name", "template")
+        unique_together = ("name", "template", "user_defined")
 
 
 class DeepLinkEntity(models.Model):
