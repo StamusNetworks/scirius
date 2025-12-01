@@ -30,7 +30,7 @@ def default_links(apps, schema_editor):
         Entity(name="APP_PROTO"),
         Entity(name="USER_AGENT"),
         Entity(name="COMMUNITY_ID"),
-    ])
+    ], ignore_conflicts=True)
     entities: dict[str, Entity] = {ent.name: ent for ent in Entity.objects.all()}
 
     link = Deeplink.objects.create(user_defined=False, enabled=True, name="DShield", template="https://www.dshield.org/data/port/{{ value }}")
@@ -90,6 +90,10 @@ class Migration(migrations.Migration):
             model_name='deeplink',
             name='enabled',
             field=models.BooleanField(default=True, null=False),
+        ),
+        migrations.AlterUniqueTogether(
+            name='deeplink',
+            unique_together={('name', 'template', 'user_defined')},
         ),
 
         migrations.RunPython(default_links),
