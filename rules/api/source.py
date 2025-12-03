@@ -1,13 +1,16 @@
+import structlog
 import tempfile
+from typing import Any
 
 from django.conf import settings
+from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from rules.models.model import Source, SourceUpdate, UserAction
+from rules.models.model import IoCMeta, Source, SourceUpdate, UserAction
 from rules.views.source import fetch_public_sources, get_public_sources
 from scirius.utils import get_middleware_module
 from suricata.rest_tasks import SciriusTaskSerializer
@@ -15,6 +18,7 @@ from suricata.rest_tasks import SciriusTaskSerializer
 from .common import CommentSerializer
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
+logger = structlog.get_logger("scirius")
 
 
 class BaseSourceTaskSerializer(SciriusTaskSerializer):
@@ -77,6 +81,7 @@ class BaseSourceSerializer(serializers.ModelSerializer):
             "version",
             "use_sys_proxy",
             "untrusted",
+            "ioc_type",
         )
         read_only_fields = ("pk", "created_date", "updated_date", "method", "datatype", "cert_verif")
 
@@ -371,14 +376,66 @@ class PublicSourceViewSet(BaseSourceViewSet):
     search_fields = ("name", "method")
 
 
+class IocMetadataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IoCMeta
+        fields = ("key", "value")
+
+
 class SourceSerializer(BaseSourceSerializer):
+    """Custom source serializer"""
+
     datatype = serializers.CharField(required=True)
     method = serializers.ChoiceField(required=True, choices=Source.FETCH_METHOD)
+    ioc_type = serializers.ChoiceField(required=False, choices=Source.IOC_TYPE)
+    metadata = IocMetadataSerializer(required=False, many=True, default=[])
 
     class Meta(BaseSourceSerializer.Meta):
         model = BaseSourceSerializer.Meta.model
-        fields = (*BaseSourceSerializer.Meta.fields, "method", "uri", "authkey", "comment", "remove_original_sids")
+        fields = (
+            *BaseSourceSerializer.Meta.fields,
+            "method",
+            "uri",
+            "authkey",
+            "comment",
+            "remove_original_sids",
+            "ioc_type",
+            "metadata",
+        )
         read_only_fields = BaseSourceSerializer.Meta.read_only_fields
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        # get data after default DRF checks
+        cleaned_data = data = super().validate(data)
+
+        # get datatype, can come from posted data or on the instance in partial updates (PATCH)
+        datatype = cleaned_data.get("datatype", "")
+        if datatype == "" and self.instance is not None:
+            datatype = self.instance.datatype
+
+        # check IoC fields: values can come from posted data or on the instance in partial updates (PATCH)
+        if datatype == "ioc":
+            ioc_type = cleaned_data.get("ioc_type", "")
+            if not ioc_type and self.instance is not None:
+                ioc_type = self.instance.ioc_type
+            if ioc_type is None or not ioc_type:
+                raise serializers.ValidationError({"ioc_type": "This field is required if datatype is 'ioc'."})
+
+            # check for metadata: must not be empty
+            metadata = cleaned_data.get("metadata")
+            if metadata is not None and not metadata:
+                raise serializers.ValidationError({"metadata": "This field cannot be empty if datatype is 'ioc'."})
+
+        # prevent filling IoC fields on non IoC source
+        if datatype != "ioc":
+            if cleaned_data.get("ioc_type", ""):
+                raise serializers.ValidationError({"ioc_type": "This field is only available when datatype is 'ioc'."})
+            if cleaned_data.get("metadata", []):
+                raise serializers.ValidationError(
+                    {"metadata": "This field is only available when if datatype is 'ioc'."}
+                )
+
+        return cleaned_data
 
     def validate_datatype(self, value):
         extra_types = get_middleware_module("common").update_source_content_type()
@@ -387,14 +444,39 @@ class SourceSerializer(BaseSourceSerializer):
             raise serializers.ValidationError("Data type must be one of: {}".format(",".join(datatypes)))
         return value
 
-    def create(self, validated_data):
+    @transaction.atomic
+    def create(self, validated_data: dict[str, Any]) -> Source:
         validated_data["public_source"] = None
-        return super().create(validated_data)
+        metadata = validated_data.pop("metadata", [])
+        instance: Source = super().create(validated_data)
+
+        for data in metadata:
+            IoCMeta.objects.create(ioc_source=instance, **data)
+        logger.debug("Custom source created from serializer", source=instance.name, with_ioc=instance.ioc_type == "ioc")
+        return instance
+
+    @transaction.atomic
+    def update(self, instance: Source, validated_data: dict[str, Any]):
+        metadata = validated_data.pop("metadata", None)
+        super().update(instance, validated_data)
+
+        # metadata are in a foreign table so we need to replace metadata with the provided list of IoC
+        if metadata is not None:
+            instance.ioc_meta.all().delete()
+            for data in metadata:
+                IoCMeta.objects.create(ioc_source=instance, **data)
+        logger.debug("Custom source updated from serializer", source=instance.name, with_ioc=instance.ioc_type == "ioc")
+        return instance
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         if instance.datatype not in instance.custom_data_type:
             data.pop("remove_original_sids", None)
+
+        # fetch metadata info from the foreign data in IoCMeta
+        if instance.datatype == "ioc":
+            data["metadata"] = [{"key": meta.key, "value": meta.value} for meta in instance.ioc_meta.all()]
+
         return data
 
 
