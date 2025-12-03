@@ -9,8 +9,10 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 from shutil import rmtree
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
+from rules.api.source import SourceSerializer
 from rules.models.model import (
     Rule,
     Source,
@@ -21,6 +23,10 @@ from rules.models.model import (
 
 from rules.api.source import UploadEditSourceTaskSerializer
 from .test_misc import RestAPITestBase
+
+
+if TYPE_CHECKING:
+    from rules.models.model import IoCMeta
 
 
 ET_URL = "https://rules.emergingthreats.net/open/suricata-5.0/emerging.rules.tar.gz"
@@ -464,3 +470,132 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         unic = 'é&"_è-àç'  # ignore_utf8_check: 233 232 231 224
         response = self.http_patch(reverse("publicsource-detail", args=(self.public_source.pk,)), {"name": unic})
         self.assertEqual(response["name"], unic)
+
+
+def test_rest_serializer_bad_ioc(db):
+    source = {
+        "name": "test-rest-ioc",
+        "method": "local",
+        "datatype": "ioc",
+    }
+
+    # ioc without ioc_type
+    serializer = SourceSerializer(data=source)
+    assert not serializer.is_valid()
+
+    # ioc without metadata
+    source["ioc_type"] = "hostname"
+    serializer = SourceSerializer(data=source)
+    assert not serializer.is_valid()
+
+    # ioc with empty metadata
+    source["metadata"] = []
+    serializer = SourceSerializer(data=source)
+    assert not serializer.is_valid()
+
+    # ioc with metadata without ioc_type
+    source.pop("ioc_type")
+    serializer = SourceSerializer(data=source)
+    assert not serializer.is_valid()
+
+    # everything but empty metadata
+    source["ioc_type"] = "hostname"
+    serializer = SourceSerializer(data=source)
+    assert not serializer.is_valid()
+
+
+def test_rest_serializer_save_ioc(db):
+    source = {
+        "name": "test-rest-ioc",
+        "method": "local",
+        "datatype": "ioc",
+        "ioc_type": "hostname",
+        "metadata": [{"key": "the-key", "value": "it.works"}],
+    }
+
+    # create
+    serializer = SourceSerializer(data=source)
+    assert serializer.is_valid(raise_exception=True)
+    instance: Source = serializer.save()
+    pk = instance.pk
+    assert pk is not None
+    assert instance.name == "test-rest-ioc"
+    assert instance.method == "local"
+    assert instance.datatype == "ioc"
+    assert instance.ioc_type == "hostname"
+    assert instance.ioc_meta.count() == 1
+    ioc: IoCMeta = instance.ioc_meta.first()
+    assert ioc.key == "the-key"
+    assert ioc.value == "it.works"
+
+    # partial update
+    serializer = SourceSerializer(
+        instance=instance,
+        partial=True,
+        data={"metadata": [{"key": "k1", "value": "v1"}, {"key": "k2", "value": "v2"}]},
+    )
+    assert serializer.is_valid(raise_exception=True)
+    instance: Source = serializer.save()
+    assert instance.pk == pk
+    assert instance.name == "test-rest-ioc"
+    assert instance.method == "local"
+    assert instance.datatype == "ioc"
+    assert instance.ioc_type == "hostname"
+    assert instance.ioc_meta.count() == 2
+    ioc: IoCMeta = instance.ioc_meta.all()
+    assert ioc[0].key == "k1"
+    assert ioc[0].value == "v1"
+    assert ioc[1].key == "k2"
+    assert ioc[1].value == "v2"
+
+    # wrong partial update by emptying metadata
+    serializer = SourceSerializer(
+        instance=instance,
+        partial=True,
+        data={"metadata": []},
+    )
+    assert not serializer.is_valid()
+
+
+def test_rest_serializer_update(db):
+    source = {
+        "name": "test-rest-ioc",
+        "method": "local",
+        "datatype": "sig",
+        "ioc_type": "hostname",
+    }
+
+    serializer = SourceSerializer(data=source)
+    assert not serializer.is_valid()
+
+    source["metadata"] = [{"key": "the-key", "value": "it.works"}]
+    serializer = SourceSerializer(data=source)
+    assert not serializer.is_valid()
+
+    source.pop("ioc_type")
+    serializer = SourceSerializer(data=source)
+    assert not serializer.is_valid()
+
+    source.pop("metadata")
+    serializer = SourceSerializer(data=source)
+    assert serializer.is_valid()
+
+
+def test_rest_serializer_ioc_representation(db):
+    source = {
+        "name": "test-rest-ioc",
+        "method": "local",
+        "datatype": "ioc",
+        "ioc_type": "hostname",
+        "metadata": [{"key": "the-key", "value": "it.works"}],
+    }
+    serializer = SourceSerializer(data=source)
+    assert serializer.is_valid()
+    instance = serializer.save()
+    representation = SourceSerializer().to_representation(instance=instance)
+    assert representation["pk"] > 0
+    assert representation["name"] == source["name"]
+    assert representation["method"] == source["method"]
+    assert representation["datatype"] == source["datatype"]
+    assert representation["ioc_type"] == source["ioc_type"]
+    assert representation["metadata"] == source["metadata"]
