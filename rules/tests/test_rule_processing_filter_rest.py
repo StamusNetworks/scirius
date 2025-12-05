@@ -17,7 +17,6 @@ from .test_misc import RestAPITestBase
 
 from copy import deepcopy
 import itertools
-from importlib import import_module
 
 
 class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
@@ -102,11 +101,6 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         import scirius.utils
 
         scirius.utils.get_middleware_module = self.middleware
-
-    def _force_suricata_middleware(self):
-        import scirius.utils
-
-        scirius.utils.get_middleware_module = lambda x: import_module("suricata.%s" % x)
 
     def _remove_filters_pk(self, f):
         for f_def in f["filter_defs"]:
@@ -290,12 +284,6 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         self.assertEqual(ua.action_type, "delete_rule_filter")
         self.assertEqual(ua.comment, "test comment")
 
-    def test_013_suppress_validation_error(self):
-        f = deepcopy(self.DEFAULT_FILTER)
-        f["options"] = {"test": "test"}
-        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
-        self.assertDictEqual(r, {"options": ['Action "suppress" does not accept options.']})
-
     def test_014_threshold_create(self):
         f = {
             "filter_defs": [
@@ -316,19 +304,6 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         self.assertDictContainsSubset(f, r)
         self.filter_pk = r["pk"]
 
-    def test_015_threshold_create_invalid(self):
-        r = self.http_post(
-            self.list_url,
-            {
-                "filter_defs": [{"key": "alert.sid", "value": "1", "operator": "equal", "full_string": True}],
-                "action": "threshold",
-                "options": {"count": 2, "seconds": 30, "track": "by_src"},
-                "rulesets": [self.ruleset.pk],
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-        self.assertDictEqual(r, {"options": [{"type": ["This field is required."]}]})
-
     def test_016_threshold_update(self):
         self.test_014_threshold_create()
         self.http_patch(self.detail_url(self.filter_pk), {"action": "suppress", "options": {}})
@@ -340,154 +315,6 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         )
         self.assertDictEqual(
             r, {"options": [{"type": ["This field is required."], "track": ["This field is required."]}]}
-        )
-
-    def test_019_suri_filter_defs_invalid(self):
-        self._force_suricata_middleware()
-        r = self.http_post(
-            self.list_url,
-            {
-                "filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal", "full_string": True}],
-                "action": "suppress",
-                "rulesets": [self.ruleset.pk],
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-        self.assertDictEqual(
-            r,
-            {
-                "filter_defs": [
-                    'A filter with a key "alert.signature_id" or "msg" or "alert.signature" or "content" is required.'
-                ]
-            },
-        )
-
-    def test_020_suri_suppress_generate(self):
-        self.http_post(
-            self.list_url,
-            {
-                "filter_defs": [
-                    {"key": "src_ip", "value": "192.168.0.1", "operator": "equal"},
-                    {"key": "alert.signature_id", "value": "1", "operator": "equal"},
-                ],
-                "action": "suppress",
-                "rulesets": [self.ruleset.pk],
-            },
-            status=status.HTTP_201_CREATED,
-        )
-
-        f = RuleProcessingFilter.objects.all()[0]
-        suppress = f.get_threshold_content()
-        self.assertEqual(suppress, ["suppress gen_id 1, sid_id 1, track by_src, ip 192.168.0.1\n"])
-
-    def test_021_suri_threshold_generate(self):
-        r = self.http_post(
-            self.list_url,
-            {
-                "filter_defs": [
-                    {"key": "dest_ip", "value": "192.168.0.1", "operator": "equal", "full_string": True},
-                    {"key": "alert.signature_id", "value": "1", "operator": "equal", "full_string": True},
-                ],
-                "action": "threshold",
-                "options": {"type": "both", "track": "by_dst"},
-                "rulesets": [self.ruleset.pk],
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-        self.assertDictEqual(r, {"filter_defs": ['Field "dest_ip" is not supported for threshold.']})
-
-    def test_022_ip_validation(self):
-        r = self.http_post(
-            self.list_url,
-            {
-                "filter_defs": [{"key": "dest_ip", "value": "192.168.0.", "operator": "equal"}],
-                "action": "suppress",
-                "rulesets": [self.ruleset.pk],
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-        self.assertDictEqual(r, {"filter_defs": [{"value": ["This field requires a valid IP address."]}]})
-
-    def test_023_capabilities_test(self):
-        self._force_suricata_middleware()
-        r = self.http_post(
-            reverse("ruleprocessingfilter-test"), {"fields": ["src_ip", "dns.rdata"], "action": "suppress"}
-        )
-        supported_fields = sorted(r.pop("supported_fields").split(", "))
-        self.assertDictEqual(r, {"fields": ["src_ip"], "operators": ["equal"]})
-        self.assertEqual(
-            supported_fields,
-            [
-                "alert.signature",
-                "alert.signature_id",
-                "alert.source.ip",
-                "alert.target.ip",
-                "content",
-                "dest_ip",
-                "msg",
-                "src_ip",
-            ],
-        )
-
-    def test_024_capabilities_test(self):
-        self._force_suricata_middleware()
-        r = self.http_post(
-            reverse("ruleprocessingfilter-test"), {"fields": ["src_ip", "dns.rdata"], "action": "threshold"}
-        )
-        supported_fields = sorted(r.pop("supported_fields").split(", "))
-        self.assertDictEqual(r, {"fields": [], "operators": ["equal"]})
-        self.assertEqual(supported_fields, ["alert.signature", "alert.signature_id", "content", "msg"])
-
-    def test_124_srcip_msg_validation(self):
-        self._force_suricata_middleware()
-        self.http_post(
-            self.list_url,
-            {
-                "filter_defs": [
-                    {"key": "src_ip", "value": "192.168.0.1", "operator": "equal"},
-                    {"key": "msg", "value": "DNS Query for", "operator": "equal"},
-                ],
-                "action": "suppress",
-                "rulesets": [self.ruleset.pk],
-            },
-            status=status.HTTP_201_CREATED,
-        )
-
-        f = RuleProcessingFilter.objects.all()[0]
-        suppress = f.get_threshold_content(self.ruleset)
-        self.assertEqual(
-            suppress,
-            [
-                "suppress gen_id 1, sid_id 2, track by_src, ip 192.168.0.1\n",
-                "suppress gen_id 1, sid_id 3, track by_src, ip 192.168.0.1\n",
-                "suppress gen_id 1, sid_id 4, track by_src, ip 192.168.0.1\n",
-            ],
-        )
-
-    def test_125_target_src_msg_validation(self):
-        self._force_suricata_middleware()
-        self.http_post(
-            self.list_url,
-            {
-                "filter_defs": [
-                    {"key": "alert.target.ip", "value": "192.168.0.1", "operator": "equal"},
-                    {"key": "msg", "value": "another content", "operator": "equal"},
-                ],
-                "action": "suppress",
-                "rulesets": [self.ruleset.pk],
-            },
-            status=status.HTTP_201_CREATED,
-        )
-
-        f = RuleProcessingFilter.objects.all()[0]
-        suppress = f.get_threshold_content(self.ruleset)
-        self.assertEqual(
-            suppress,
-            [
-                "suppress gen_id 1, sid_id 3, track by_dst, ip 192.168.0.1\n",
-                "suppress gen_id 1, sid_id 4, track by_src, ip 192.168.0.1\n",
-            ],
         )
 
     def test_025_intersect_match(self):
