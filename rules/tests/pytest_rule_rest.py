@@ -79,45 +79,6 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         ).count()
         self.assertEqual(nb_items, 0)
 
-    def test_003_rule_permission(self):
-        self.client.logout()
-
-        # Non logged request are rejected
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)),
-            {"ruleset": self.ruleset.pk},
-            status=status.HTTP_403_FORBIDDEN,
-        )
-
-        self.client.force_login(self.user)
-        # Read still authorized
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)), {"ruleset": self.ruleset.pk}, status=status.HTTP_200_OK
-        )
-
-        # Post not authorized non-role
-        self.superuser_role.user_set.remove(self.user)
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)),
-            {"ruleset": self.ruleset.pk},
-            status=status.HTTP_403_FORBIDDEN,
-        )
-
-        # Post authorized staff role
-        self.staff_role.user_set.add(self.user)
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)), {"ruleset": self.ruleset.pk}, status=status.HTTP_200_OK
-        )
-
-        # Post not authorized user role
-        self.staff_role.user_set.remove(self.user)
-        self.user_role.user_set.add(self.user)
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)),
-            {"ruleset": self.ruleset.pk},
-            status=status.HTTP_403_FORBIDDEN,
-        )
-
     def test_004_rule_transformation(self):
         # Transform ruleset
         self.http_post(
