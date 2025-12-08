@@ -58,7 +58,7 @@ from rules.tests_rules import TestRules
 from rules.validators import validate_addresses_or_networks
 
 request_logger = logging.getLogger("django.request")
-logger = structlog.get_logger("scirius")
+logger = structlog.get_logger("django_structlog")
 
 
 class UserActionItem(TypedDict):
