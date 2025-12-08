@@ -38,7 +38,7 @@ ES_TIMESTAMP = settings.ELASTICSEARCH_TIMESTAMP
 ES_HOSTNAME = settings.ELASTICSEARCH_HOSTNAME
 ES_KEYWORD = settings.ELASTICSEARCH_KEYWORD
 ES_HOST_FIELD = '%s.%s' % (ES_HOSTNAME, ES_KEYWORD)
-logger = structlog.get_logger("scirius")
+logger = structlog.get_logger("django_structlog")
 
 
 def extract_es_version(es_stats):

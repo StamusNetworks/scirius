@@ -46,7 +46,7 @@ else:
 # Avoid logging every request
 ES_LOGGER = logging.getLogger('elasticsearch')
 ES_LOGGER.setLevel(logging.INFO)
-logger = structlog.get_logger("scirius")
+logger = structlog.get_logger("django_structlog")
 
 
 # Mapping
