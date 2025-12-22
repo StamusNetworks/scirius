@@ -59,6 +59,7 @@ create_db() {
     python manage.py disablecategory "Default ruleset" stream-events
     python manage.py addsuricata suricata "Suricata" "Default ruleset"
     python manage.py updatesuricata
+    python manage.py addrefresh "Default ruleset"
     python manage.py collectstatic --noinput
     touch /data/scirius.data
 }
