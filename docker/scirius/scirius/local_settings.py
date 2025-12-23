@@ -176,17 +176,17 @@ LOGGING = {
         },
         'django.request': {
             'handlers': ['error_log', 'scirius'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'authentication': {
             'handlers': ['auth_log', 'auth_structlog'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'celery_tasks': {
             'handlers': ['celery_tasks', 'async'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'user_actions': {
