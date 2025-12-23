@@ -2807,7 +2807,7 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
         try:
             return self.untrusted
         except Exception:
-            logger.info("Untrusted rule", sid=self.sid)
+            logger.debug("Untrusted rule", sid=self.sid)
         return self.category.source.untrusted
 
     def generate_content(self, ruleset, version=0):
