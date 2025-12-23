@@ -7,6 +7,7 @@ from opentelemetry.sdk.resources import Resource
 
 # from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+import json
 from opentelemetry.instrumentation.django import DjangoInstrumentor
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 
@@ -41,8 +42,15 @@ def initialize_tracer():
     tracer_provider = TracerProvider(resource=resource)
     trace.set_tracer_provider(tracer_provider)
 
-    # send traces
-    tracer_provider.add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+    # send traces with compact JSON formatting
+    class CompactConsoleSpanExporter(ConsoleSpanExporter):
+        def export(self, spans):
+            for span in spans:
+                span_dict = span.to_json()
+                print(json.dumps(json.loads(span_dict), separators=(',', ':')))
+            return True
+
+    tracer_provider.add_span_processor(BatchSpanProcessor(CompactConsoleSpanExporter()))
 
     DjangoInstrumentor().instrument()
     LoggingInstrumentor().instrument(set_logging_format=True)
