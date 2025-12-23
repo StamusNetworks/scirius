@@ -108,12 +108,6 @@ LOGGING = {
             'filename': '/logs/django-auth.log',
             'formatter': 'fileformat',
         },
-        'ansible_log': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/logs/ansible.log',
-            'formatter': 'fileformat',
-        },
         'celery_tasks': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
@@ -185,23 +179,8 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-        'django_auth_ldap': {
-            'handlers': ['auth_log', 'auth_structlog'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'djangosaml2': {
-            'handlers': ['auth_log', 'auth_structlog'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
         'authentication': {
             'handlers': ['auth_log', 'auth_structlog'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'ansible': {
-            'handlers': ['ansible_log', 'async'],
             'level': 'DEBUG',
             'propagate': False,
         },
