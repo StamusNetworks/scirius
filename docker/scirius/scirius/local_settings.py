@@ -21,7 +21,10 @@ Django settings for the Scirius project.
 """
 
 import os
+import structlog
 from distutils.util import strtobool
+
+from scirius.instrumentation import STRUCTLOG_FOREIGN_PRE_CHAIN, configure_structlog
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -36,7 +39,8 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1 [::1]').split(' 
 if '127.0.0.1' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('127.0.0.1')
 
-# Logging
+configure_structlog()
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -47,69 +51,190 @@ LOGGING = {
         'raw': {
             'format': '%(asctime)s %(message)s'
         },
+        'jsonformat': {
+            'format': '%(message)s'
+        },
         'celeryformat': {
             'format': '%(asctime)s %(processName)s %(levelname)s %(message)s'
-        }
+        },
+        # structlog formatters
+        'json_formatter': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.JSONRenderer(),
+            'foreign_pre_chain': STRUCTLOG_FOREIGN_PRE_CHAIN,
+        },
+        'plain_console': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.dev.ConsoleRenderer(),
+            'foreign_pre_chain': STRUCTLOG_FOREIGN_PRE_CHAIN,
+        },
+        'key_value': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.KeyValueRenderer(key_order=['timestamp', 'level', 'event', 'logger']),
+        },
     },
     'handlers': {
-        'elasticsearch': {
-            'level': 'INFO',
+        'file_log': {
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/logs/elasticsearch.log',
-            'formatter': 'raw',
+            'filename': '/var/log/celery/django.log',
+            'formatter': 'fileformat',
         },
-        'task_error': {
-            'level': 'INFO',
+        'null_log': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'sql_log': {
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/logs/worker-error.log',
-            'formatter': 'raw',
+            'filename': '/var/log/celery/django-sql.log',
+            'formatter': 'fileformat',
         },
         'error_log': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/logs/django-error.log',
+            'filename': '/var/log/celery/django-error.log',
+            'formatter': 'fileformat',
+        },
+        'security_log': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/django-security.log',
             'formatter': 'fileformat',
         },
         'auth_log': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/logs/django-auth.log',
+            'filename': '/var/log/celery/django-auth.log',
+            'formatter': 'fileformat',
+        },
+        'ansible_log': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/ansible.log',
             'formatter': 'fileformat',
         },
         'celery_tasks': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/logs/celery_tasks.log',
+            'filename': '/var/log/celery/celery_tasks.log',
             'formatter': 'celeryformat',
+        },
+        'user_actions': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/user_actions.log',
+            'formatter': 'jsonformat',
+        },
+        'elasticsearch': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/elasticsearch.log',
+            'formatter': 'raw',
+        },
+        # structlog hanglers
+        'auth_structlog': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/auth.log',
+            'formatter': 'json_formatter',
+        },
+        'async': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/async.log',
+            'formatter': 'json_formatter',
+        },
+        'scirius': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/scirius.log',
+            'formatter': 'json_formatter',
+        },
+        'queries': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/queries.log',
+            'formatter': 'json_formatter',
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "plain_console" if DEBUG else "json_formatter",
+        },
+        'requests': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/requests.log',
+            'formatter': 'json_formatter',
         },
     },
     'loggers': {
-        'elasticsearch': {
-            'handlers': ['elasticsearch'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'task_logger': {
-            'handlers': ['task_error'],
-            'level': 'INFO',
-            'propagate': True,
+        # default logger, log everything
+        # "": {
+        #     "handlers": ["console", "scirius"],
+        #     "level": "INFO",
+        #     "propagate": True,
+        # },
+        'django.db.backends': {
+            'handlers': ['sql_log', 'queries'],
+            'level': 'ERROR',
+            'propagate': False,
         },
         'django.request': {
-            'handlers': ['error_log'],
+            'handlers': ['error_log', 'scirius'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
+        },
+        'django_auth_ldap': {
+            'handlers': ['auth_log', 'auth_structlog'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'djangosaml2': {
+            'handlers': ['auth_log', 'auth_structlog'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
         'authentication': {
-            'handlers': ['auth_log'],
+            'handlers': ['auth_log', 'auth_structlog'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
+        },
+        'ansible': {
+            'handlers': ['ansible_log', 'async'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
         'celery_tasks': {
-            'handlers': ['celery_tasks'],
+            'handlers': ['celery_tasks', 'async'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
-
+        'user_actions': {
+            'handlers': ['user_actions', 'scirius'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'elasticsearch': {
+            'handlers': ['elasticsearch', 'queries'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django_structlog.middlewares.request': {
+            'handlers': ['requests'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        "django": {
+            "handlers": ["scirius"],
+            "level": "INFO",
+            "propagate": False,  # Important to avoid double logging
+        },
+        "django_structlog": {
+            "handlers": ["scirius"],
+            "level": "INFO",
+            "propagate": False,  # Important to avoid double logging
+        },
     }
 }
 
