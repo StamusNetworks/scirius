@@ -22,7 +22,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django import forms
 from django.conf import settings
 from scirius.utils import convert_to_utc
-from suricata.models import CeleryTask, Suricata, RecurrentTask
+from suricata.models import Suricata
+from suricata.task_models import CeleryTask, RecurrentTask
 from rules.forms.common import CommentForm, BaseEditForm
 from rules.forms.misc import ConfigurationEditPermForm
 

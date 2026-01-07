@@ -44,7 +44,7 @@ def status(request: HttpRequest):
         qlength = int(request.GET.get("length", 20))
 
     if is_ajax(request) or request.GET.__contains__("ajax"):
-        tasks_list = MIDDLEWARE.models.CeleryTask.get_user_tasks(request)
+        tasks_list = MIDDLEWARE.task_models.CeleryTask.get_user_tasks(request)
 
         if not request.GET.__contains__("show_hidden"):
             tasks_list = tasks_list.filter(hidden=False)
@@ -73,7 +73,7 @@ def status(request: HttpRequest):
     return scirius_render(request, "rules/status.html", context)
 
 
-@tasks_permission_required(MIDDLEWARE.models.RecurrentTask)
+@tasks_permission_required(MIDDLEWARE.task_models.RecurrentTask)
 def stasks(request: HttpRequest, reccurent_task_qs):
     assocfn = {
         "Recurrent Task": {"table": MIDDLEWARE.tables.RecurrentTaskTable, "manage_links": {}, "action_links": {}}
@@ -86,9 +86,9 @@ def stasks(request: HttpRequest, reccurent_task_qs):
     return scirius_listing(request, reccurent_task_qs.exclude(task="NotebookGenerationTask"), assocfn, **extra_params)
 
 
-@tasks_permission_required(MIDDLEWARE.models.CeleryTask)
+@tasks_permission_required(MIDDLEWARE.task_models.CeleryTask)
 def task(request: HttpRequest, task_id):
-    t = get_object_or_404(MIDDLEWARE.models.CeleryTask, pk=task_id)
+    t = get_object_or_404(MIDDLEWARE.task_models.CeleryTask, pk=task_id)
 
     if request.method == "POST":
         raise PermissionDenied
@@ -97,9 +97,9 @@ def task(request: HttpRequest, task_id):
     return scirius_render(request, "rules/task.html", context)
 
 
-@tasks_permission_required(MIDDLEWARE.models.CeleryTask)
+@tasks_permission_required(MIDDLEWARE.task_models.CeleryTask)
 def revoke_task(request: HttpRequest, task_id):
-    t = get_object_or_404(MIDDLEWARE.models.CeleryTask, pk=task_id)
+    t = get_object_or_404(MIDDLEWARE.task_models.CeleryTask, pk=task_id)
 
     if request.method == "GET":
         raise PermissionDenied
@@ -111,16 +111,16 @@ def revoke_task(request: HttpRequest, task_id):
 
 
 @permission_required("rules.configuration_view", raise_exception=True)
-@tasks_permission_required(MIDDLEWARE.models.RecurrentTask)
+@tasks_permission_required(MIDDLEWARE.task_models.RecurrentTask)
 def scheduledtask(request: HttpRequest, task_id: int):
-    stask = get_object_or_404(MIDDLEWARE.models.RecurrentTask, pk=task_id)
+    stask = get_object_or_404(MIDDLEWARE.task_models.RecurrentTask, pk=task_id)
     task = stask.get_task()
     details = task.display_details()
     task_options = task.task_options
     task_options.pop("overrided_params", None)
 
     can_edit = check_task_perms(
-        request, MIDDLEWARE.models.RecurrentTask, stask.pk, raise_exception=False
+        request, MIDDLEWARE.task_models.RecurrentTask, stask.pk, raise_exception=False
     ).exists() and request.user.has_perm("rules.configuration_edit")
 
     context = {"scheduledtask": stask, "task": details, "can_edit": can_edit, "task_options": task_options}
@@ -128,9 +128,9 @@ def scheduledtask(request: HttpRequest, task_id: int):
 
 
 @permission_required("rules.configuration_edit", raise_exception=True)
-@tasks_permission_required(MIDDLEWARE.models.RecurrentTask)
+@tasks_permission_required(MIDDLEWARE.task_models.RecurrentTask)
 def delete_scheduledtask(request: HttpRequest, task_id: int):
-    stask = get_object_or_404(MIDDLEWARE.models.RecurrentTask, pk=task_id)
+    stask = get_object_or_404(MIDDLEWARE.task_models.RecurrentTask, pk=task_id)
     if request.method == "POST":
         stask.delete()
         page = MIDDLEWARE.common.get_redirect_for_stask(stask.task)
@@ -140,9 +140,9 @@ def delete_scheduledtask(request: HttpRequest, task_id: int):
 
 
 @permission_required("rules.configuration_edit", raise_exception=True)
-@tasks_permission_required(MIDDLEWARE.models.RecurrentTask)
+@tasks_permission_required(MIDDLEWARE.task_models.RecurrentTask)
 def edit_scheduledtask(request: HttpRequest, task_id: int):
-    stask = get_object_or_404(MIDDLEWARE.models.RecurrentTask, pk=task_id)
+    stask = get_object_or_404(MIDDLEWARE.task_models.RecurrentTask, pk=task_id)
     form = MIDDLEWARE.forms.EditRecurrentTaskForm(
         request.POST if request.method == "POST" else None, instance=stask, request=request
     )

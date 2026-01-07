@@ -19,7 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
-from suricata.models import RecurrentTask
+from suricata.task_models import RecurrentTask
 from scirius.utils import SciriusTable
 from rules.tables import DefaultMeta
 

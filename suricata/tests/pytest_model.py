@@ -9,7 +9,8 @@ from django.utils import timezone
 from freezegun import freeze_time
 
 
-from suricata.models import validate_hostname, Suricata, get_probe_hostnames, CeleryTask, RecurrentTask
+from suricata.models import validate_hostname, Suricata, get_probe_hostnames
+from suricata.task_models import CeleryTask, RecurrentTask
 
 # --- Utility Function Tests ---
 
@@ -102,7 +103,7 @@ def test_celerytask_str(mock_celery_task):
 def test_celerytask_set_finished_success(mock_celery_task, mocker):
     """Test set_finished when there is at least one successful result."""
     mocker.patch(
-        "suricata.models.CeleryTaskResult.objects.filter",
+        "suricata.task_models.CeleryTaskResult.objects.filter",
         MagicMock(return_value=MagicMock(count=MagicMock(return_value=1))),
     )
 
@@ -116,7 +117,7 @@ def test_celerytask_set_finished_success(mock_celery_task, mocker):
 def test_celerytask_set_finished_failure(mock_celery_task, mocker):
     """Test set_finished when there are no successful results."""
     mocker.patch(
-        "suricata.models.CeleryTaskResult.objects.filter",
+        "suricata.task_models.CeleryTaskResult.objects.filter",
         MagicMock(return_value=MagicMock(count=MagicMock(return_value=0))),
     )
 
@@ -222,7 +223,7 @@ def test_recurrent_task_schedule_run(db, mock_user, mocker):
         task_options=json.dumps({"option_a": 1, "option_b": 2}),
     )
 
-    mock_celery_spawn = mocker.patch("suricata.models.CeleryTask.spawn")
+    mock_celery_spawn = mocker.patch("suricata.task_models.CeleryTask.spawn")
 
     rtask.schedule_run(eta=datetime(2025, 1, 2, 10, 0, 0))
 
