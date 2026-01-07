@@ -39,7 +39,6 @@ from celery import result
 from celery.utils.log import get_task_logger
 
 
-MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
 celery_logger = get_task_logger("task_logger")
 
 
@@ -99,6 +98,7 @@ class CeleryTaskBase(models.Model):
         if users is None:
             users = [request.user]
         tasks_name = tasks.get_tasks(request)
+        MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
         klass = MIDDLEWARE.task_models.CeleryTask if not recurrent else MIDDLEWARE.task_models.RecurrentTask
         tasks_list = klass.objects.filter(is_recurrent=recurrent, task__in=tasks_name)
         tasks_list |= klass.objects.filter(is_recurrent=recurrent, user__in=users)
@@ -106,6 +106,7 @@ class CeleryTaskBase(models.Model):
 
     @classmethod
     def _create(cls, task, **kwargs):
+        MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
         _kwargs = deepcopy(kwargs)
         recurrence = _kwargs.pop("recurrence", None)
         schedule = _kwargs.pop("schedule", None)
@@ -134,6 +135,7 @@ class CeleryTaskBase(models.Model):
 
     @staticmethod
     def new(task, **kwargs):
+        MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
         t, run_now = MIDDLEWARE.task_models.CeleryTask._create(task, **kwargs)
         if run_now:
             t.schedule_run()
@@ -155,6 +157,7 @@ class CeleryTaskBase(models.Model):
         self.get_task().run()
 
     def add_result(self, _: str, status: str, msg: str | None = None, **kwargs):
+        MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
         res, created = MIDDLEWARE.task_models.CeleryTaskResult.objects.get_or_create(
             task=self, retry_no=self.retry, defaults={"status": status, "message": msg}, **kwargs
         )
@@ -242,6 +245,7 @@ class CeleryTaskBase(models.Model):
         return "\n".join(last_lines)
 
     def display(self, full=True, can_edit=False, **kwargs) -> str:
+        MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
         state = self.get_state()
 
         runtime = None
