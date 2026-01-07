@@ -115,11 +115,11 @@ def rest_tasks_permission_required(klass):
 
 
 def check_task_perms(request, klass, task_id, raise_exception=True):
-    recurrent = klass == MIDDLEWARE.models.RecurrentTask
+    recurrent = klass == MIDDLEWARE.task_models.RecurrentTask
     users = [request.user]
     if SciriusTokenUser.objects.filter(pk=request.user.sciriususer).exists():
         users = [request.user.sciriususer.sciriustokenuser.parent.user, request.user]
-    tasks_list = MIDDLEWARE.models.CeleryTask.get_user_tasks(request, users=users, recurrent=recurrent)
+    tasks_list = MIDDLEWARE.task_models.CeleryTask.get_user_tasks(request, users=users, recurrent=recurrent)
 
     if task_id and tasks_list.filter(pk=task_id).count() == 0:
         if raise_exception:
@@ -346,23 +346,23 @@ class UpdateGenerateRuleset(SciriusTask):
 
     def _run(self, update, generate, ruleset_pk, **_):
         if update:
-            update = MIDDLEWARE.models.CeleryTask.new(
+            update = MIDDLEWARE.task_models.CeleryTask.new(
                 'UpdateRuleset',
                 user=self.celery_task.user,
                 ruleset_pk=ruleset_pk
             )
-            test = MIDDLEWARE.models.CeleryTask.new(
+            test = MIDDLEWARE.task_models.CeleryTask.new(
                 'RulesetTestTask',
                 ruleset_pk=ruleset_pk,
                 user=self.celery_task.user
             )
-            analyse = MIDDLEWARE.models.CeleryTask.new(
+            analyse = MIDDLEWARE.task_models.CeleryTask.new(
                 'RulesetRulesAnalysis',
                 ruleset_pk=ruleset_pk,
                 user=self.celery_task.user
             )
             if generate:
-                build = MIDDLEWARE.models.CeleryTask.new(
+                build = MIDDLEWARE.task_models.CeleryTask.new(
                     'BuildSuricataRuleset',
                     user=self.celery_task.user,
                     ruleset_pk=ruleset_pk
@@ -375,7 +375,7 @@ class UpdateGenerateRuleset(SciriusTask):
                     [update], [test, analyse]
                 ).apply_async()
         elif generate:
-            MIDDLEWARE.models.CeleryTask.spawn(
+            MIDDLEWARE.task_models.CeleryTask.spawn(
                 'BuildSuricataRuleset',
                 user=self.celery_task.user,
                 ruleset_pk=ruleset_pk
@@ -519,15 +519,15 @@ class SourceUpdateParentTask(SciriusTask, SourceTask):
                 main_task_params['task'] = 'AddSourceTask'
 
         if source.datatype not in source.custom_data_type:
-            update = MIDDLEWARE.models.CeleryTask.new(**main_task_params)
+            update = MIDDLEWARE.task_models.CeleryTask.new(**main_task_params)
 
-            test = MIDDLEWARE.models.CeleryTask.new(
+            test = MIDDLEWARE.task_models.CeleryTask.new(
                 'SourceTestTask',
                 source_pk=source_pk,
                 user=self.celery_task.user
             )
 
-            analysis = MIDDLEWARE.models.CeleryTask.new(
+            analysis = MIDDLEWARE.task_models.CeleryTask.new(
                 'SourceRulesAnalysis',
                 source_pk=source_pk,
                 user=self.celery_task.user
@@ -537,8 +537,8 @@ class SourceUpdateParentTask(SciriusTask, SourceTask):
                 [update], [test, analysis]
             ).apply_async()
         else:
-            update = MIDDLEWARE.models.CeleryTask.new(**main_task_params)
-            analysis = MIDDLEWARE.models.CeleryTask.new(
+            update = MIDDLEWARE.task_models.CeleryTask.new(**main_task_params)
+            analysis = MIDDLEWARE.task_models.CeleryTask.new(
                 'SourceRulesAnalysis',
                 source_pk=source_pk,
                 user=self.celery_task.user
@@ -584,7 +584,7 @@ def run_scheduled_tasks():
         if MIDDLEWARE.license.grace_period_has_expired():
             return
 
-    scheduled_tasks = MIDDLEWARE.models.RecurrentTask.objects.all()
+    scheduled_tasks = MIDDLEWARE.task_models.RecurrentTask.objects.all()
     ctime = timezone.now()
     # we iterate on the scheduled_tasks
     for stask in scheduled_tasks:
@@ -621,7 +621,7 @@ def setup_periodic_tasks(**kwargs):
 
 @shared_task(bind=True, max_retries=3)
 def run_celery_task(self, scirius_id):
-    task = MIDDLEWARE.models.CeleryTask.objects.get(id=scirius_id)
+    task = MIDDLEWARE.task_models.CeleryTask.objects.get(id=scirius_id)
     if task.status == 'revoked':
         return
     task.celery_id = self.request.id
