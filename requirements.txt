@@ -62,7 +62,6 @@ pytz
 PyYAML
 six
 smmap
-subprocess32
 suricata-language-server>=1.0.0
 vine
 web.py
