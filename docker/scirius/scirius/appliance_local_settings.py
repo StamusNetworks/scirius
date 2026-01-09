@@ -298,6 +298,8 @@ INSTALLED_APPS = (
     'chunked_upload',
     'django_ace',
     'djangosaml2',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
     'mcp_server',
 )
 
