@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import json
+from django.db import models
 import psutil
 from rest_framework import serializers
 
@@ -115,7 +116,15 @@ def get_es_indexes() -> list[str]:
 
 
 def get_tenants(empty_queryset=False):
-    return []
+    """
+    The tenant is not available in CE and makes the swagger crashes (DRF spectacular).
+    """
+    class Tenant(models.Model):
+        """Not available in CE edition"""
+        class Meta:
+            managed = False  # Django won't try to create/modify a table for this
+            abstract = False
+    return Tenant.objects.none()
 
 
 def update_scirius_user_class(user, data):
