@@ -388,7 +388,7 @@ def update_source(request, source_id):
         return source(request, source_id, error="Invalid method for page")
 
     get_object_or_404(Source, pk=source_id)
-    MIDDLEWARE.models.CeleryTask.spawn("SourceUpdateParentTask", source_pk=source_id, user=request.user)
+    MIDDLEWARE.task_models.CeleryTask.spawn("SourceUpdateParentTask", source_pk=source_id, user=request.user)
 
     if is_ajax(request):
         data = {"status": True}
