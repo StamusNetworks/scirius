@@ -217,7 +217,8 @@ def get_custom_urls():
         re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/extract_pcap/$', PcapFilestoreViewSet.as_view({'post': 'extract_pcap'}), name='filestore_pcap_extract'),
         re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/status/$', PcapFilestoreViewSet.as_view({'get': 'status'}), name='filestore_pcap_status'),
         re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/retrieve/$', PcapFilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_pcap_retrieve'),
-        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/download/$', PcapFilestoreViewSet.as_view({'get': 'download'}), name='filestore_pcap_download')
+        re_path(r'rules/filestore_pcap/(?P<filename>[0-9a-zA-Z_-]+)/download/$', PcapFilestoreViewSet.as_view({'get': 'download'}), name='filestore_pcap_download'),
+        path("suricata/update_push_all/", SuricataViewSet.as_view(), name="update_push_all"),
     ]
 
 
