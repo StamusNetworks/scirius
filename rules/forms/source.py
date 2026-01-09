@@ -147,7 +147,7 @@ class SourceForm(forms.ModelForm, CommentForm):
                 category.save()
 
         if need_update:
-            MIDDLEWARE.models.CeleryTask.spawn(
+            MIDDLEWARE.task_models.CeleryTask.spawn(
                 "SourceUpdateParentTask", source_pk=self.instance.pk, user=request.user, **kwargs
             )
 
@@ -272,7 +272,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
                     tmpfile.write(chunk)
                 path = tmpfile.name
 
-        MIDDLEWARE.models.CeleryTask.spawn(
+        MIDDLEWARE.task_models.CeleryTask.spawn(
             "SourceUpdateParentTask", source_pk=self.instance.pk, user=request.user, path=path, add=True
         )
 
@@ -307,7 +307,7 @@ class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
             self.fields["rulesets"].required = False
 
     def update(self, request):
-        MIDDLEWARE.models.CeleryTask.spawn(
+        MIDDLEWARE.task_models.CeleryTask.spawn(
             "SourceUpdateParentTask", source_pk=self.instance.pk, user=request.user, path=None, add=True
         )
 
