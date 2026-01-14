@@ -132,7 +132,7 @@ def update_scirius_user_class(user, data):
 
 
 def update_ruleset(request, ruleset):
-    from suricata.models import CeleryTask
+    from suricata.task_models import CeleryTask
     CeleryTask.spawn(
         'UpdateGenerateRuleset',
         ruleset_pk=ruleset.pk,
