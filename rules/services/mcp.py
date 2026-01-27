@@ -9,6 +9,7 @@ from rules.messages.mcp import (
     AlertMessage,
     HitProbeMessage,
     HitTimelineEntryMessage,
+    MatchedRuleMessage,
     RuleMessage,
     RuleReferenceMessage,
     TalkersInfoMessage,
@@ -146,7 +147,7 @@ class McpService:
         # get rule info and build response
         repo = RuleRepository()
         result: list[RuleMessage] = []
-        for rule in repo.rules(sids, with_rule_at_version=True, with_categories=False):
+        for rule in repo.rules(sids, with_rule_at_version=True, with_categories=False).iterator(chunk_size=128):
             timeline: list[HitTimelineEntryMessage] = []
             probes = []
             hits = 0
@@ -161,7 +162,8 @@ class McpService:
                     message=rule.msg,
                     hits=hits,
                     references=[
-                        RuleReferenceMessage(key=ref.key, value=ref.value, url=ref.url) for ref in rule.extract_rule_references()
+                        RuleReferenceMessage(key=ref.key, value=ref.value, url=ref.url)
+                        for ref in rule.extract_rule_references()
                     ],
                     content=rule.ruleatversion_set.order_by("-version").first().content,
                     probes=probes,
@@ -186,16 +188,18 @@ class McpService:
                             count = line5["doc_count"]
                             first_seen = line5["first_seen"]["value_as_string"]
                             last_seen = line5["last_seen"]["value_as_string"]
-                            result.append(TalkersInfoMessage(
-                                app_proto=app_proto,
-                                first_seen=first_seen,
-                                last_seen=last_seen,
-                                event_type=event_type,
-                                host=host if host != "N/A" else None,
-                                dest_ip=dest_ip,
-                                src_ip=src_ip,
-                                count=count,
-                            ))
+                            result.append(
+                                TalkersInfoMessage(
+                                    app_proto=app_proto,
+                                    first_seen=first_seen,
+                                    last_seen=last_seen,
+                                    event_type=event_type,
+                                    host=host if host != "N/A" else None,
+                                    dest_ip=dest_ip,
+                                    src_ip=src_ip,
+                                    count=count,
+                                )
+                            )
         return result
 
     def talkers(
@@ -211,3 +215,26 @@ class McpService:
         request.GET["from_date"] = str(start)
         request.GET["to_date"] = str(end)
         return self._get_talkers_results(request, filter)
+
+    def rules_search(
+        self,
+        query: str,
+        # pagination parameters
+        page: PositiveInt = 1,
+        limit: PositiveInt = 50,
+    ) -> list[MatchedRuleMessage]:
+        repo = RuleRepository()
+        return [
+            MatchedRuleMessage(
+                sid=rule.sid,
+                source=rule.category.source.name,
+                category=rule.category.name,
+                message=rule.msg,
+                created=rule.created,
+                updated=rule.updated,
+                in_rulesets=[ruleset.name for ruleset in rule.category.source.ruleset_set.all()],
+            )
+            for rule in repo.rules(query=query, with_categories=True, with_sources=True, with_ruleset=True)[
+                page - 1:limit * page
+            ].iterator(chunk_size=128)
+        ]
