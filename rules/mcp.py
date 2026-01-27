@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from rules.messages.mcp import (
     AlertMessage,
+    MatchedRuleMessage,
     ProductInfoMessage,
     RuleMessage,
     TalkersInfoMessage,
@@ -213,3 +214,30 @@ class McpController(MCPToolset):
             {"field": "dns.query.rrname", "type": "string", "description": "The DNS resource record name"},
             {"field": "tls.sni", "type": "string", "description": "The Server Name Indication from TLS traffic"},
         ]
+
+    @has_group_permission(required_groups=["rules.source_view"])
+    def rules_search(
+        self,
+        query: str,
+        # pagination parameters
+        page: PositiveInt = 1,
+        limit: PositiveInt = 50,
+    ) -> list[MatchedRuleMessage]:
+        """
+        List signatures matching a query
+
+        ### Parameters & Returns
+
+        * **Args**:
+            * `query` (str): text to search
+            * `page` (PositiveInt): The page number for the results (default: `1`).
+            * `limit` (PositiveInt): The maximum number of events per page (default: `50`).
+
+        * **Returns**:
+            * `list[MatchedRuleMessage]`: A list of dictionaries, with each dictionary representing a Rule. The `sid` field in the result corresponds to the `SID` field in the Suricata rule.
+        """
+        return self.service.rules_search(
+            query=query,
+            page=page,
+            limit=limit,
+        )
