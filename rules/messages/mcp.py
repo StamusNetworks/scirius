@@ -52,6 +52,16 @@ class RuleMessage(BaseModel):
     references: list[RuleReferenceMessage] = []
 
 
+class MatchedRuleMessage(BaseModel):
+    sid: int
+    source: str
+    category: str
+    message: str
+    created: datetime | None
+    updated: datetime | None
+    in_rulesets: list[str] = []
+
+
 class TalkersInfoMessage(BaseInfo):
     event_type: str
     src_ip: IPvAnyAddress
