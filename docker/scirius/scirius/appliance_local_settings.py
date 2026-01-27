@@ -382,5 +382,8 @@ BOOTSTRAP3 = {
     }
 }
 
+# https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html#crontab-schedules
+CURATOR_CRON = {"minute": 0, "hour": "*"}
+
 with contextlib.suppress(ImportError, NameError):
     from .authentication import *  # type: ignore # noqa: F403, F401
