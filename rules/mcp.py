@@ -224,12 +224,14 @@ class McpController(MCPToolset):
         limit: PositiveInt = 50,
     ) -> list[MatchedRuleMessage]:
         """
-        List signatures matching a query
+        ### List signatures matching a query
+
+        This endpoint retrieves a paginated list of **Intrusion Detection System rules** that match a specified search query. It allows users to search for specific detection signatures based on keywords or patterns. This is instrumental for coverage analysis and identifying rules that can detect specific threats or network behaviors.
 
         ### Parameters & Returns
 
         * **Args**:
-            * `query` (str): text to search
+            * `query` (str): text to search via substring matching in the rule content.
             * `page` (PositiveInt): The page number for the results (default: `1`).
             * `limit` (PositiveInt): The maximum number of events per page (default: `50`).
 
