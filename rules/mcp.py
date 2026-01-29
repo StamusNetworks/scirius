@@ -213,6 +213,8 @@ class McpController(MCPToolset):
             {"field": "http.url", "type": "string", "description": "The URL from HTTP traffic"},
             {"field": "dns.query.rrname", "type": "string", "description": "The DNS resource record name"},
             {"field": "tls.sni", "type": "string", "description": "The Server Name Indication from TLS traffic"},
+            {"field": "metadata.flowbits", "type": "string", "description": "Label set on events by detection indicating specific behaviors"},
+            {"field": "host", "type": "string", "description": "Name of the probe that did generate the event"}
         ]
 
     @has_group_permission(required_groups=["rules.source_view"])
