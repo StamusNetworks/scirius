@@ -59,6 +59,7 @@ class MatchedRuleMessage(BaseModel):
     message: str
     created: datetime | None
     updated: datetime | None
+    suricata_rule: str = ""
     in_rulesets: list[str] = []
 
 
