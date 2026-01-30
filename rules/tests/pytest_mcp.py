@@ -114,6 +114,12 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
     assert results[0].source == "test source"
     assert results[0].category == "test category"
     assert results[0].in_rulesets == ["test ruleset"]
+    assert results[0].suricata_rule == content
+
+    # get the last version of the rule content
+    RuleAtVersion.objects.create(rule=rule2, version=1, content=f"{content} RANDOM TEXT")
+    results = controller.rules_search("whatever DNS", page=1)
+    assert results[0].suricata_rule == f"{content} RANDOM TEXT"
 
     results = controller.rules_search("does not exist")
     assert len(results) == 0

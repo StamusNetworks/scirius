@@ -217,7 +217,7 @@ class McpController(MCPToolset):
             {"field": "host", "type": "string", "description": "Name of the probe that did generate the event"}
         ]
 
-    @has_group_permission(required_groups=["rules.source_view"])
+    @has_group_permission(required_groups=["rules.source_view", "rules.ruleset_policy_view"])
     def rules_search(
         self,
         query: str,
