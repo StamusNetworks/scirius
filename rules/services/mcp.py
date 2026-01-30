@@ -232,9 +232,10 @@ class McpService:
                 message=rule.msg,
                 created=rule.created,
                 updated=rule.updated,
+                suricata_rule=rule.ruleatversion_set.order_by("-version").first().content,
                 in_rulesets=[ruleset.name for ruleset in rule.category.source.ruleset_set.all()],
             )
-            for rule in repo.rules(query=query, with_categories=True, with_sources=True, with_ruleset=True)[
-                page - 1:limit * page
-            ].iterator(chunk_size=128)
+            for rule in repo.rules(
+                query=query, with_categories=True, with_sources=True, with_ruleset=True, with_rule_at_version=True
+            )[page - 1:limit * page].iterator(chunk_size=128)
         ]
