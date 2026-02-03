@@ -274,6 +274,13 @@ skip-magic-trailing-comma = false
 # Like Black, automatically detect the appropriate line ending. default: auto
 line-ending = "lf"
 
+[tool.ruff.lint.per-file-ignores]
+"**/tests.py" = ["S101"]
+"**/test_*.py" = ["S101"]
+"**/pytest.py" = ["S101"]
+"**/pytests.py" = ["S101"]
+"**/pytest_*.py" = ["S101"]
+
 # [project.scripts]
 # start = "uvicorn app.main:app --host 0.0.0.0 --port 8000" # A convenient way to start for development
 
