@@ -104,7 +104,12 @@ def static_redirect(request, static_path):
     return response
 
 
-@csp(DEFAULT_SRC=["'self'"], SCRIPT_SRC=[], STYLE_SRC=["'self'", "'unsafe-inline'"], IMG_SRC=["'self'", "data:", '*'])
+@csp({
+    "default-src": ["'self'"],
+    "script-src": ["'self'"],
+    "style-src": ["'self'", "'unsafe-inline'"],
+    "img-src": ["'self'", "data:", "*"]
+})
 @permission_required('rules.events_view', raise_exception=True)
 def ui_view(request, red_path):
     context = {'current_user_url': reverse('current_user')}
