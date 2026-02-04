@@ -13,7 +13,7 @@ const FiltersDropdownItems = {
         {
           id: 'dns',
           label: 'DNS',
-          children: [{ id: 'dns.query.rrname' }, { id: 'dns.query.rrtype' }],
+          children: [{ id: 'dns.queries.rrname' }, { id: 'dns.queries.rrtype' }],
         },
         {
           id: 'http',

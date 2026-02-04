@@ -159,8 +159,8 @@ _HUNT_FILTERS = [
                 'id': 'dns',
                 'title': 'DNS',
                 'filterValues': [
-                    {'id': 'query.rrname', 'title': 'Query Name'},
-                    {'id': 'query.rrtype', 'title': 'Query Type'},
+                    {'id': 'queries.rrname', 'title': 'Query Name'},
+                    {'id': 'queries.rrtype', 'title': 'Query Type'},
                 ]
             },
             {

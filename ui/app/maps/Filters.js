@@ -338,13 +338,13 @@ export const FiltersList = [
   },
   {
     title: 'Queried Name',
-    id: 'dns.query.rrname',
+    id: 'dns.queries.rrname',
     type: FilterType.HOSTNAME,
     category: FilterCategory.EVENT,
   },
   {
     title: 'Queried Type',
-    id: 'dns.query.rrtype',
+    id: 'dns.queries.rrtype',
     category: FilterCategory.EVENT,
   },
   {

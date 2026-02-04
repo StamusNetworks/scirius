@@ -522,16 +522,16 @@ class AlertItem extends React.Component {
               <UICard data-test="alert-card-DNS" title="DNS" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.dns) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                  {data.dns?.query?.map(query => (
+                  {data.dns?.queries?.map(query => (
                     <>
                       {query.rrname && (
                         <ErrorHandler>
-                          <EventField filter={new Filter('dns.query.rrname', query.rrname)} />
+                          <EventField filter={new Filter('dns.queries.rrname', query.rrname)} />
                         </ErrorHandler>
                       )}
                       {query.rrtype && (
                         <ErrorHandler>
-                          <EventField filter={new Filter('dns.query.rrtype', query.rrtype)} />
+                          <EventField filter={new Filter('dns.queries.rrtype', query.rrtype)} />
                         </ErrorHandler>
                       )}
                     </>

@@ -264,14 +264,14 @@ class RulePage extends React.Component {
                     <HuntStat
                       title="Name"
                       filters={this.props.filters}
-                      item="dns.query.rrname"
+                      item="dns.queries.rrname"
                       filterParams={this.props.filterParams}
                       loadMore={this.loadMore}
                     />
                     <HuntStat
                       title="Type"
                       filters={this.props.filters}
-                      item="dns.query.rrtype"
+                      item="dns.queries.rrtype"
                       filterParams={this.props.filterParams}
                       loadMore={this.loadMore}
                     />

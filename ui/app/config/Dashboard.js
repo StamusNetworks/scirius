@@ -216,11 +216,11 @@ export const dashboard = [
     position: 12,
     items: [
       {
-        i: 'dns.query.rrname',
+        i: 'dns.queries.rrname',
         title: 'Names',
       },
       {
-        i: 'dns.query.rrtype',
+        i: 'dns.queries.rrtype',
         title: 'Types',
       },
     ],

@@ -469,9 +469,9 @@ FILTER_SETS = [
             {
                 'negated': False,
                 'fullString': False,
-                'id': 'dns.query.rrname',
+                'id': 'dns.queries.rrname',
                 'value': '*',
-                'label': 'dns.query.rrname: *'
+                'label': 'dns.queries.rrname: *'
             }
         ],
         'name': 'Hunt: DNS related events',
