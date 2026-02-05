@@ -216,24 +216,6 @@ build-backend = "setuptools.build_meta"
 line-length = 120
 indent-width = 4
 target-version = "py311"
-# select = [
-#     "E",  # Error
-#     "W",  # Warning
-#     "F",  # Pyflakes
-#     "I",  # Isort
-#     "C",  # Complexity
-#     "B",  # Bugbear
-#     "UP", # Pyupgrade
-#     "A",  # Builtin names
-#     "D",  # Pydocstyle (optional, adjust to your preference)
-# ]
-# ignore = [
-#     "E501", # Line too long (let ruff format handle this)
-#     "D100", # Missing docstring in public module
-#     "D104", # Missing docstring in public package
-#     "D105", # Missing docstring in public function
-#     "D107", # Missing docstring in __init__
-# ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".bzr",
@@ -280,6 +262,27 @@ line-ending = "lf"
 "**/pytest.py" = ["S101"]
 "**/pytests.py" = ["S101"]
 "**/pytest_*.py" = ["S101"]
+
+[tool.ruff.lint]
+# select = [
+#     "E",  # Error
+#     "W",  # Warning
+#     "F",  # Pyflakes
+#     "I",  # Isort
+#     "C",  # Complexity
+#     "B",  # Bugbear
+#     "UP", # Pyupgrade
+#     "A",  # Builtin names
+#     "D",  # Pydocstyle (optional, adjust to your preference)
+# ]
+ignore = [
+    "PLR0913", # too many arguments in a function
+#     "E501", # Line too long (let ruff format handle this)
+#     "D100", # Missing docstring in public module
+#     "D104", # Missing docstring in public package
+#     "D105", # Missing docstring in public function
+#     "D107", # Missing docstring in __init__
+]
 
 # [project.scripts]
 # start = "uvicorn app.main:app --host 0.0.0.0 --port 8000" # A convenient way to start for development
