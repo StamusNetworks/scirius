@@ -1,11 +1,12 @@
-from datetime import UTC, datetime
-from unittest.mock import patch, MagicMock
 import os
-import pytest
+from datetime import UTC, datetime
+from unittest.mock import MagicMock, patch
 
-from django.contrib.auth.models import Group, User
+import pytest
+from django.contrib.auth.models import Group, Permission, User
 from django.test import RequestFactory
 from django.utils import timezone
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.test import force_authenticate
 
@@ -36,11 +37,18 @@ def mcp_user(db):
 
 @pytest.fixture
 def mcp_request(rf: RequestFactory, mcp_user: User) -> Request:
-    """Simulate a DRF Request with auth user"""
+    return _create_request(rf, mcp_user)
+
+
+def _create_request(rf: RequestFactory, mcp_user: User) -> Request:
+    """
+    Simulate a DRF Request with auth user
+
+    Not in the fixture because we need it when checking perms
+    """
     request = rf.get("/")
     request.user = mcp_user
     force_authenticate(request, user=mcp_user)
-    # raise Exception(request, type(request))
     return Request(request)
 
 
@@ -55,6 +63,42 @@ def test_without_data(mcp_request: Request):
     controller.version()
 
     controller.rules_search("dummy")
+
+
+def _create_user(
+    username: str,
+    group: str = "test",
+    group_perms: list[Permission] | None = None,
+    *,
+    is_superuser: bool = False,
+    is_staff: bool = True,
+):
+    u = User.objects.create(username=username, password="scirius2", is_superuser=is_superuser, is_staff=is_staff)  # noqa: S106
+    g = Group.objects.create(name=group)
+    if group_perms:
+        g.permissions.set(group_perms)
+    u.groups.add(g)
+    data = {"timezone": "UTC"}
+    return SciriusUser.create_full(u, data)
+
+
+@pytest.mark.django_db
+def test_group_perms(rf: RequestFactory):
+    # user with no permission
+    user = _create_user(username="almost-anonymous", group="nopermgroup")
+    request = _create_request(rf, user)
+    controller = McpController(request=request)
+
+    with pytest.raises(PermissionDenied, match="No group permission"):
+        controller.rules_search("should be forbidden")
+
+    # user with perms for the endpoint
+    perm1 = Permission.objects.get(codename="source_view")
+    perm2 = Permission.objects.get(codename="ruleset_policy_view")
+    user = _create_user(username="mcp-user", group="mcpgroup", group_perms=[perm1, perm2])
+    request = _create_request(rf, user)
+    controller = McpController(request=request)
+    controller.rules_search("should be OK")
 
 
 @pytest.mark.django_db
