@@ -21,7 +21,7 @@ from rules.models.misc import get_system_settings
 from scirius.utils import get_middleware_module
 from scirius.rest_utils import SciriusSetPagination
 
-if get_system_settings(static=True).use_opensearch_2():
+if get_system_settings(static=True).use_opensearch():
     from opensearchpy import OpenSearch as Elasticsearch, OpenSearchException as ElasticsearchException, Transport, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
 else:
     from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
