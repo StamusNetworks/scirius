@@ -167,6 +167,10 @@ class SystemSettings(models.Model):
         return settings.USE_DATA_LIKE == DATA_LIKE.OS_2
 
     @staticmethod
+    def use_opensearch_3():
+        return settings.USE_DATA_LIKE == DATA_LIKE.OS_3
+
+    @staticmethod
     def use_elasticsearch_6():
         return settings.USE_DATA_LIKE == DATA_LIKE.ES_6
 
@@ -180,7 +184,7 @@ class SystemSettings(models.Model):
 
     @staticmethod
     def use_opensearch():
-        return settings.USE_DATA_LIKE in (DATA_LIKE.OS_1, DATA_LIKE.OS_2)
+        return settings.USE_DATA_LIKE in (DATA_LIKE.OS_1, DATA_LIKE.OS_2, DATA_LIKE.OS_3)
 
     @property
     def arkime_url(self):

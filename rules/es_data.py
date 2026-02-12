@@ -36,7 +36,7 @@ from rules.es_graphs import get_es_major_version, ESError
 from rules.es_query import ESQuery
 from rules.models.misc import get_system_settings
 
-if get_system_settings(static=True).use_opensearch_2():
+if get_system_settings(static=True).use_opensearch():
     from opensearchpy import ConnectionError
     from opensearchpy.exceptions import RequestError
 else:
@@ -1700,7 +1700,7 @@ class ESData(ESQuery):
         super().__init__(None)
         self.es_extra_params = {}
 
-        if not get_system_settings(static=True).use_opensearch_2():
+        if not get_system_settings(static=True).use_opensearch():
             doc_type = '_doc'
             # TODO: remove when ES 6 not supported anymore
             if get_es_major_version() == 6:
@@ -1810,7 +1810,7 @@ class ESData(ESQuery):
         return tar_name, file_.name
 
     def _create_kibana_mappings(self):
-        if get_system_settings(static=True).use_opensearch_2():
+        if get_system_settings(static=True).use_opensearch():
             try:
                 self.es.indices.delete(index='.kibana_1')
             except Exception:
@@ -1854,7 +1854,7 @@ class ESData(ESQuery):
             content['config']['defaultIndex'] = idx
             self.es.update(index='.kibana', id=hit['_id'], body={'doc': content}, refresh=True, **self.es_extra_params)
 
-        if get_system_settings(static=True).use_opensearch_2():
+        if get_system_settings(static=True).use_opensearch():
             self._kibana_request('/api/opensearch-dashboards/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}*'}, method='POST')
         else:
             self._kibana_request('/api/kibana/settings/defaultIndex', {'value': f'{settings.ELASTICSEARCH_LOGSTASH_INDEX_INJECTED}*'}, method='POST')
