@@ -20,12 +20,12 @@ const Icon = styled.span`
 `;
 
 export default () => (
-  <Menu.Item key="preview">
-    <Link href="/preview" target="_blank" rel="noopener noreferrer">
+  <Menu.Item key="ui">
+    <Link href="/ui" target="_blank" rel="noopener noreferrer">
       <Icon>
         <PlayCircleOutlined />
       </Icon>
-      Preview new UI
+      Default UI
     </Link>
   </Menu.Item>
 );
