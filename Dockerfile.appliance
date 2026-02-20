@@ -56,6 +56,7 @@ RUN \
 RUN echo  "**** COPY Scirius ****"
 WORKDIR /code
 COPY . /code
+RUN cp /code/docker/scirius/scirius/appliance_local_settings.py /code/scirius/local_settings.py
 RUN chmod ugo+x /code/docker/scirius/bin/*
 
 
@@ -158,8 +159,6 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 COPY --from=source /code /code
 
 RUN \
-    echo "**** install packages ****" && \
-    echo "deb http://deb.debian.org/debian bullseye-backports main" > /etc/apt/sources.list.d/bullseye-backports.list && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
@@ -174,12 +173,16 @@ RUN \
     libz-dev \
     libpq-dev \
     gunicorn && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -t bullseye-backports suricata -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install  suricata -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir gunicorn celery flower pylint astroid mypy flake8 bandit "sqlalchemy==1.4"
 
+RUN mkdir -p /var/log/celery && \
+    touch /var/log/celery/ansible.log && \
+    mkdir -p /root/.ssh && \
+    touch /root/.ssh/config
 
 COPY --from=build_js /code/rules/static /code/rules/static
 COPY --from=python_modules /root/.local /root/.local
@@ -193,6 +196,8 @@ HEALTHCHECK --start-period=3m \
     CMD curl --silent --fail http://127.0.0.1:8000 || exit 1
 
 VOLUME /rules /data /static /logs
+
+WORKDIR /code
 
 EXPOSE 8000
 
