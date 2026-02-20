@@ -1317,25 +1317,28 @@ class Source(models.Model):
         fcntl.flock(source_lock, fcntl.LOCK_EX)
 
         try:
-            for filename in os.listdir(source_dir):
-                full_path = os.path.join(source_dir, filename)
+            # Check if source directory exists before trying to list it
+            # This can happen when database exists but sources haven't been downloaded yet
+            if os.path.exists(source_dir):
+                for filename in os.listdir(source_dir):
+                    full_path = os.path.join(source_dir, filename)
 
-                # don't copy original rules file to dest
-                if filename.endswith(".rules") and self.datatype in datatypes:
-                    continue
+                    # don't copy original rules file to dest
+                    if filename.endswith(".rules") and self.datatype in datatypes:
+                        continue
 
-                if filename.endswith("categories.txt") and self.datatype in ("sig", "sigs"):
-                    with open(full_path, "r") as f:
-                        cats_content = f.read()
-                    continue
+                    if filename.endswith("categories.txt") and self.datatype in ("sig", "sigs"):
+                        with open(full_path, "r") as f:
+                            cats_content = f.read()
+                        continue
 
-                if filename.endswith(".list") and self.datatype in ("sig", "sigs"):
-                    with open(full_path, "r") as f:
-                        iprep_content = f.read()
-                    continue
+                    if filename.endswith(".list") and self.datatype in ("sig", "sigs"):
+                        with open(full_path, "r") as f:
+                            iprep_content = f.read()
+                        continue
 
-                if os.path.isfile(full_path):
-                    shutil.copy2(full_path, directory)
+                    if os.path.isfile(full_path):
+                        shutil.copy2(full_path, directory)
         finally:
             source_lock.close()
 

@@ -44,20 +44,25 @@ class Command(BaseCommand):
         if datatype not in ['sigs', 'sig']:
             raise CommandError("Data type '%s' is not supported" % (datatype))
 
-        source = Source.objects.create(
+        source, created = Source.objects.get_or_create(
             name=name,
-            uri=uri,
-            method=method,
-            created_date=timezone.now(),
-            datatype=datatype)
+            defaults={
+                'uri': uri,
+                'method': method,
+                'created_date': timezone.now(),
+                'datatype': datatype
+            })
 
-        self.stdout.write('Successfully created source "%s"' % name)
-        if source.method == 'http':
-            source.update()
+        if created:
+            self.stdout.write('Successfully created source "%s"' % name)
+            if source.method == 'http':
+                source.update()
+            else:
+                with open(uri, 'r') as f:
+                    if source.datatype == 'sigs':
+                        source.handle_rules_in_tar(f)
+                    elif source.datatype == 'sig':
+                        source.handle_rules_file(f)
+            self.stdout.write('Successfully updated source "%s"' % name)
         else:
-            with open(uri, 'r') as f:
-                if source.datatype == 'sigs':
-                    source.handle_rules_in_tar(f)
-                elif source.datatype == 'sig':
-                    source.handle_rules_file(f)
-        self.stdout.write('Successfully updated source "%s"' % name)
+            self.stdout.write('Source "%s" already exists, skipping creation' % name)
