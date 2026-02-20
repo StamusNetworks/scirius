@@ -220,33 +220,69 @@ USE_OPENSEARCH = True
 CELERY_BROKER = os.getenv("CELERY_BROKER", 'amqp://guest:guest@rabbitmq:5672//')
 CELERY_RESULT_BACKEND = f'db+postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'
 
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000",
-    "http://localhost:5173",
-]
+CSRF_COOKIE_SECURE = bool(strtobool(os.getenv('CSRF_COOKIE_SECURE', '1')))
+CSRF_COOKIE_DOMAIN = os.getenv('CSRF_COOKIE_DOMAIN', '.stamus-networks.net')
+CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'None')
+
+# CSRF_TRUSTED_ORIGINS can be set via environment variable (space-separated)
+# If not set, use default development/internal origins
+_csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _csrf_trusted_origins_env:
+    CSRF_TRUSTED_ORIGINS = _csrf_trusted_origins_env.split()
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:8000",
+        "http://localhost:5173",
+        "https://stamus-ui.main.devel-dev-stamus-ui.stamus-networks.net",
+        "https://back.k8s.devel-dev-scirius.test-scs.stamus-networks.net",
+        "https://*.stamus-networks.net",
+    ]
+
+SESSION_COOKIE_SECURE = bool(strtobool(os.getenv('SESSION_COOKIE_SECURE', '1')))
+SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'None')
+SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', '.stamus-networks.net')
 
 
-# CORS_ALLOWED_ORIGINS = [
-#     "*",
-# ]
-CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS settings - configurable via environment variables
+CORS_ALLOW_CREDENTIALS = bool(strtobool(os.getenv('CORS_ALLOW_CREDENTIALS', '1')))
 
-CORS_ALLOW_HEADERS = ["authorization", "cookies", "withcredentials", "content-type"]
+# django-cors-headers >= 4 expects the new setting name for blanket allow rules.
+CORS_ALLOW_ALL_ORIGINS = bool(strtobool(os.getenv('CORS_ALLOW_ALL_ORIGINS', '0')))
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://localhost:8000',
-    'http://localhost',
-    'https://localhost',
-    os.getenv('HTTP_HOST', "http://localhost:8000"),
-    os.getenv('STATIC_URL', "http://localhost:3001"),
-    os.getenv('FRONT_URL', "http://localhost:3002")
-]
+# CORS_ALLOW_HEADERS can be set via environment variable (comma-separated)
+_cors_allow_headers_env = os.getenv('CORS_ALLOW_HEADERS', '')
+if _cors_allow_headers_env:
+    CORS_ALLOW_HEADERS = [h.strip() for h in _cors_allow_headers_env.split(',')]
+else:
+    CORS_ALLOW_HEADERS = ["authorization", "cookies", "withcredentials", "content-type", "x-csrftoken"]
+
+# CORS_ALLOWED_ORIGINS can be set via environment variable (space-separated)
+# If not set, use default development/internal origins
+_cors_allowed_origins_env = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if _cors_allowed_origins_env:
+    CORS_ALLOWED_ORIGINS = _cors_allowed_origins_env.split()
+else:
+    CORS_ALLOWED_ORIGINS = [
+        'https://stamus-ui.main.devel-dev-stamus-ui.stamus-networks.net',
+        'https://back.k8s.devel-dev-scirius.test-scs.stamus-networks.net',
+        'http://localhost:5173',
+        'http://localhost:8000',
+        'http://localhost',
+        'https://localhost',
+        os.getenv('HTTP_HOST', "http://localhost:8000"),
+        os.getenv('STATIC_URL', "http://localhost:3001"),
+        os.getenv('FRONT_URL', "http://localhost:3002")
+    ]
+
+# CORS_ALLOWED_ORIGIN_REGEXES can be set via environment variable (space-separated regex patterns)
+# Use regex patterns to support wildcard domain matching for CORS
+_cors_allowed_origin_regexes_env = os.getenv('CORS_ALLOWED_ORIGIN_REGEXES', '')
+if _cors_allowed_origin_regexes_env:
+    CORS_ALLOWED_ORIGIN_REGEXES = _cors_allowed_origin_regexes_env.split()
+else:
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^https://.*\.stamus-networks\.net$",
+    ]
 
 ANSIBLE_BASE_DIR = "/ansible"
 ANSIBLE_PATH = "ansible"
@@ -299,13 +335,13 @@ INSTALLED_APPS = (
     'chunked_upload',
     'django_ace',
     'djangosaml2',
-    'drf_spectacular',
-    'drf_spectacular_sidecar',
+    'corsheaders',
     'mcp_server',
 )
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -321,7 +357,7 @@ MIDDLEWARE = [
 ]
 
 
-GENERATED_BASE_DIR = '/var/lib/scirius-pro/'
+GENERATED_BASE_DIR = '/data/'
 UPGRADE_BASE_DIR = f'{GENERATED_BASE_DIR}upgrade/'
 GIT_SOURCES_BASE_DIRECTORY = f'{GENERATED_BASE_DIR}git-sources/'
 GIT_RULESETS_BASE_DIRECTORY = f'{GENERATED_BASE_DIR}git-rulesets/'
@@ -332,7 +368,8 @@ PCAPS_FILESTORE_DEST = f'{GENERATED_BASE_DIR}pcaps'
 SAML_IDP_DEST = f'{GENERATED_BASE_DIR}saml'
 FLOCK_PATH = os.path.join(GENERATED_BASE_DIR, 'lock')
 
-LOGSTASH_CIDR_RANGE = '192.0.2.2/32'
+LOGSTASH_CIDR_RANGE = '0.0.0.0/0'
+LOGSTASH_TOKEN = os.getenv('LOGSTASH_TOKEN', 'changeme-logstash-token')
 
 SSH_KEY_ABSOLUTE_PATH = '/var/www/.ssh/id_rsa'
 USE_GO_POSTPROC_TEST_CONF = False

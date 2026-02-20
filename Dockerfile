@@ -59,7 +59,7 @@ COPY . /code
 RUN git config user.email "bot@stamus-networks.com"
 RUN git config user.name "stamus bot"
 RUN ./tests/master-build.py --app-branch HEAD --master-branch "remotes/origin/master" --remote "" .
-RUN mv /code/docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
+RUN cp /code/docker/scirius/scirius/local_settings.py /code/scirius/local_settings.py
 RUN chmod ugo+x /code/docker/scirius/bin/*
 
 
