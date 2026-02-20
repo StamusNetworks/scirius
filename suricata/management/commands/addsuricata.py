@@ -42,11 +42,16 @@ class Command(BaseCommand):
         except Exception:
             raise CommandError(f'No Ruleset with name "{nruleset}" found')
 
-        suricata = Suricata.objects.create(
+        suricata, created = Suricata.objects.get_or_create(
             name=name,
-            descr=descr,
-            ruleset=ruleset,
-            created_date=timezone.now(),
-            updated_date=timezone.now()
+            defaults={
+                'descr': descr,
+                'ruleset': ruleset,
+                'created_date': timezone.now(),
+                'updated_date': timezone.now()
+            }
         )
-        self.stdout.write(f'Successfully created suricata "{suricata.name}"')
+        if created:
+            self.stdout.write('Successfully created suricata "%s"' % suricata.name)
+        else:
+            self.stdout.write('Suricata "%s" already exists, skipping creation' % name)
