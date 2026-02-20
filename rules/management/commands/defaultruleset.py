@@ -41,19 +41,24 @@ class Command(BaseCommand):
         except Exception:
             raise CommandError("No Category is defined")
 
-        ruleset = Ruleset.objects.create(
+        ruleset, created = Ruleset.objects.get_or_create(
             name=name,
-            created_date=timezone.now(),
-            updated_date=timezone.now()
+            defaults={
+                'created_date': timezone.now(),
+                'updated_date': timezone.now()
+            }
         )
 
-        # set default transformations
-        ruleset.set_transformation(key=Transformation.LATERAL, value=Transformation.L_AUTO)
-        ruleset.set_transformation(key=Transformation.TARGET, value=Transformation.T_AUTO)
+        if created:
+            # set default transformations
+            ruleset.set_transformation(key=Transformation.LATERAL, value=Transformation.L_AUTO)
+            ruleset.set_transformation(key=Transformation.TARGET, value=Transformation.T_AUTO)
 
-        for source in sources:
-            ruleset.sources.add(source)
-        for cat in categories:
-            ruleset.categories.add(cat)
-        ruleset.save()
-        self.stdout.write(f'Successfully created default ruleset "{name}"')
+            for source in sources:
+                ruleset.sources.add(source)
+            for cat in categories:
+                ruleset.categories.add(cat)
+            ruleset.save()
+            self.stdout.write('Successfully created default ruleset "%s"' % name)
+        else:
+            self.stdout.write('Ruleset "%s" already exists, skipping creation' % name)
