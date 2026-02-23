@@ -235,7 +235,7 @@ def help_links(djlink):
     }
     Probe = __import__(settings.RULESET_MIDDLEWARE)
     help_link = Probe.common.help_links(djlink)
-    return help_link if help_link else HELP_LINKS_TABLE.get(djlink)
+    return help_link or HELP_LINKS_TABLE.get(djlink)
 
 
 def convert_datetime_to_timestamp(dt: datetime.datetime, in_ms: bool = False) -> int:

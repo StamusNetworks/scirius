@@ -66,8 +66,8 @@ class BaseEditForm:
                 if hasattr(instance, field_name):
                     old_value = getattr(instance, field_name)
                     # set empty string to None to be able to compare
-                    old_value = old_value if old_value else None
-                    new_value = new_value if new_value else None
+                    old_value = old_value or None
+                    new_value = new_value or None
                     if old_value != new_value:
                         self.fields_changed.append(field_name)
                 # else: form.field_name is different than model.field_name
