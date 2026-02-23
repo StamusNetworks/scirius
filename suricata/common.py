@@ -164,7 +164,7 @@ def get_hunt_filters():
 
 def validate_rule_postprocessing(data, partial, serializer):
     action = data.get('action')
-    if not partial and action not in ('suppress',):
+    if not partial and action != "suppress":
         raise serializers.ValidationError('Action "%s" is not supported.' % action)
     serializer.validate_rule_postprocessing(data, partial)
 

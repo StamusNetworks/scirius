@@ -111,7 +111,7 @@ class McpController(MCPToolset):
             start=convert_datetime_to_timestamp(start, True),
             end=convert_datetime_to_timestamp(end, True),
             ip=ip,
-            filter=filter if filter else "",
+            filter=filter or "",
             raw=raw,
             page=page,
             limit=limit,
@@ -159,7 +159,7 @@ class McpController(MCPToolset):
         if start is None:
             start = end - timedelta(hours=24)
         return self.service.talkers(
-            filter if filter else "",
+            filter or "",
             convert_datetime_to_timestamp(start, True),
             convert_datetime_to_timestamp(end, True),
         )
