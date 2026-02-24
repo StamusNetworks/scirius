@@ -36,3 +36,6 @@ docker/containers-data/
 *.vsix
 
 .mypy_cache
+
+build/
+scirius.egg-info/
