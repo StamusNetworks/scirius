@@ -1,5 +1,6 @@
 from typing import Iterable
 
+import os
 import pytest
 import shutil
 
@@ -100,3 +101,16 @@ def prepare_test_environment():
     prepare_test_files(settings.GENERATED_BASE_DIR, git_sources_dir)
 
     yield settings.BASE_DIR
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_custom_home(tmp_path_factory: pytest.TempPathFactory):
+    """
+    Change the home to avoid the override of ~/.ssh/config with ansible
+    """
+    temp_dir = tmp_path_factory.mktemp("scirius_home")
+    os.environ["HOME"] = str(temp_dir)
+    ssh_dir = temp_dir / ".ssh"
+    ssh_dir.mkdir()
+    yield temp_dir
+    shutil.rmtree(temp_dir, ignore_errors=True)
