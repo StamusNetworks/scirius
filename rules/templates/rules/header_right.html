@@ -119,7 +119,7 @@ $(function (){
                     <li class="applauncher-pf-item" role="presentation">
                         <a class="applauncher-pf-link"
                            {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}
-                                style="color: inherit" href="/stamus"
+                                style="color: inherit" href="/ui"
                             {% else %}
                                 style="pointer-events: none"
                             {% endif %}
@@ -134,7 +134,7 @@ $(function (){
                     <li class="applauncher-pf-item" role="presentation">
                         <a class="applauncher-pf-link"
                            {% if generator == 'appliances' and license and license.etl and perms.rules.events_view or generator == 'suricata' and perms.rules.events_view %}
-                                href="/stamus/hunting/dashboards" style="color: inherit"
+                                href="/ui/explorer" style="color: inherit"
                             {% else %}
                                 style="pointer-events: none"
                             {% endif %}
