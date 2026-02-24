@@ -126,6 +126,11 @@ dev = [
     "ruff",           # Code linter/formatter
     "mypy",           # Type checker
     "pre-commit",
+    # to resolve pyright typing
+    "django-stubs",
+    "celery-types",
+    "types-paramiko",
+    "types-psutil",
 ]
 # You need those packages when you have a Stamus license
 appliances = [
@@ -382,3 +387,8 @@ directory = "coverage_html_report"
 
 [tool.coverage.xml]
 output = "coverage.xml"
+
+[tool.pyright]
+plugins = [
+    { name = "django" }
+]
