@@ -345,7 +345,7 @@ def use_stamuslogger():
 
 def login_redirection_url(request):
     if request.user.has_perm('rules.events_view'):
-        return '/stamus/hunting/dashboards'
+        return '/ui/explorer'
     return '/rules'
 
 
