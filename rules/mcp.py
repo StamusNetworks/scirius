@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta, timezone, UTC
+from collections.abc import Iterable
+from datetime import datetime, timedelta, UTC
 from functools import wraps
-from typing import Any, Iterable
+from typing import Any
 from django.conf import settings
 from django.http import HttpRequest
 from mcp_server import MCPToolset
@@ -64,7 +65,7 @@ class McpController(MCPToolset):
         start: datetime | None = None,
         end: datetime | None = None,
         ip: IPvAnyAddress | None = None,
-        filter: str | None = None,
+        filter: str | None = None,  # noqa: A002
         raw: bool = False,
         # pagination parameters
         page: PositiveInt = 1,
@@ -104,7 +105,7 @@ class McpController(MCPToolset):
             * `list[dict]`: A list of dictionaries, with each dictionary representing an IDS alert. The `signature_id` field in the result corresponds to the `SID` field in the Suricata rule.
         """
         if end is None:
-            end = datetime.now(timezone.utc)
+            end = datetime.now(UTC)
         if start is None:
             start = end - timedelta(hours=24)
 
@@ -132,7 +133,7 @@ class McpController(MCPToolset):
     @has_group_permission(required_groups=["rules.events_view"])
     def talkers(
         self,
-        filter: str | None = None,
+        filter: str | None = None,  # noqa: A002
         start: datetime | None = None,
         end: datetime | None = None,
     ) -> list[TalkersInfoMessage]:
@@ -156,7 +157,7 @@ class McpController(MCPToolset):
 
         """
         if end is None:
-            end = datetime.now(timezone.utc)
+            end = datetime.now(UTC)
         if start is None:
             start = end - timedelta(hours=24)
         return self.service.talkers(
