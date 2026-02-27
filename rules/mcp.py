@@ -1,7 +1,8 @@
 from collections.abc import Iterable
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 from functools import wraps
 from typing import Any
+
 from django.conf import settings
 from django.http import HttpRequest
 from mcp_server import MCPToolset
@@ -9,6 +10,7 @@ from pydantic import IPvAnyAddress, PositiveInt
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
+from rules.api.permissions import HasGroupPermission
 from rules.messages.mcp import (
     AlertMessage,
     FieldStatMessage,
@@ -17,10 +19,8 @@ from rules.messages.mcp import (
     RuleMessage,
     TalkersInfoMessage,
 )
-from rules.api.permissions import HasGroupPermission
 from rules.services.mcp import McpService
 from scirius.utils import convert_datetime_to_timestamp
-
 
 # In the CSR pattern, controllers are responsible to prepare input data for the Service (trim strings, reformat, ...)
 # They are also responsible for returning the formatted response and handle exceptions from the Service
@@ -115,6 +115,43 @@ class McpController(MCPToolset):
             ip=ip,
             filter=filter or "",
             raw=raw,
+            page=page,
+            limit=limit,
+        )
+
+    @has_group_permission(required_groups=["rules.events_view"])
+    def events(
+        self,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        lucene_filter: str | None = None,
+        # pagination parameters
+        page: PositiveInt = 1,
+        limit: PositiveInt = 10,
+    ) -> dict[str, Any]:
+        """
+        List raw events from the OpenSearch or ElasticSearch database
+
+        ### Parameters & Returns
+
+        * **Args**:
+            * `start` (datetime): The start of the time interval in **UTC (ISO 8601)** format. By default, it's 24 hours before the current time or the `end` time.
+            * `end` (datetime): The end of the time interval in **UTC (ISO 8601)** format. By default, it's the current time.
+            * `lucene_filter` (str, optional): optional lucene filter
+            * `page` (PositiveInt): The page number for the results (default: `1`).
+            * `limit` (PositiveInt): The maximum number of talkers to return (default: `10`).
+
+        * **Returns**:
+            * `list[dict[str, Any]]`: list of events.
+        """
+        if end is None:
+            end = datetime.now(UTC)
+        if start is None:
+            start = end - timedelta(hours=24)
+        return self.service.event_list(
+            start=convert_datetime_to_timestamp(start, True),
+            end=convert_datetime_to_timestamp(end, True),
+            lucene_filter=lucene_filter if lucene_filter is not None else "",
             page=page,
             limit=limit,
         )
