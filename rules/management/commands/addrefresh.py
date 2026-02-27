@@ -40,7 +40,8 @@ class Command(BaseCommand):
 
         # bail if we have already a recurring task
         if RecurrentTask.objects.exists():
-            raise CommandError('Periodic refresh task already exists')
+            self.stdout.write('Periodic refresh task already exists, skipping creation')
+            return
 
         # schedule the task to run the next hour at actual time
         now = timezone.now()
