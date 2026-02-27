@@ -89,6 +89,29 @@ class McpService:
             ret_array.append(alert)
         return ret_array
 
+    def _prepare_event_list_request_object(
+        self,
+        start: PositiveInt,
+        end: PositiveInt,
+        lucene_filter: str = "",
+        # pagination parameters
+        page: PositiveInt = 1,
+        limit: PositiveInt = 20,
+    ) -> HttpRequest:
+        request = HttpRequest()
+
+        request.GET["ordering"] = "-timestamp"
+        request.GET["from_date"] = str(start)
+        request.GET["to_date"] = str(end)
+
+        if lucene_filter:
+            request.GET["qfilter"] = lucene_filter
+
+        request.GET["page_size"] = str(limit)
+        request.GET["page"] = str(page)
+
+        return request
+
     def alert_list(
         self,
         start: PositiveInt,
@@ -110,6 +133,21 @@ class McpService:
         """
         request = self._prepare_alert_list_request_object(start, end, ip, filter, page, limit)
         return self._get_alert_list_results(request, raw)
+
+    def event_list(
+        self,
+        start: PositiveInt,
+        end: PositiveInt,
+        lucene_filter: str = "",
+        page: PositiveInt = 1,
+        limit: PositiveInt = 10,
+    ) -> dict[str, Any]:
+        request = self._prepare_event_list_request_object(start, end, lucene_filter, page, limit)
+
+        drf_request = Request(request)
+        pagination = ESPaginator(drf_request)
+        es_params = pagination.get_es_params(None)
+        return ESEventsTail(request, f"{settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX}*").get(es_params=es_params)
 
     def rules(self, sids: list[int]) -> list[RuleMessage]:
         """
