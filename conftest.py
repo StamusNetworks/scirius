@@ -1,15 +1,19 @@
-from typing import Iterable
-
 import os
-import pytest
 import shutil
-import structlog
-
+from collections.abc import Iterable
 from pathlib import Path
+from typing import TypedDict
 
+import pytest
+import structlog
 from django.conf import settings
+from django.contrib.auth.models import Group, User
 from django.core import mail
 from django.core.cache import cache
+from django.test import Client
+from rest_framework.test import APIClient
+
+from accounts.models import SciriusUser
 
 
 def prepare_test_files(test_base_dir: Path, git_sources_dir: Path):
@@ -127,3 +131,36 @@ def setup_custom_home(tmp_path_factory: pytest.TempPathFactory):
     ssh_dir.mkdir()
     yield temp_dir
     shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+class DefaultProfile(TypedDict):
+    user: User
+    scirius_user: SciriusUser
+
+    superuser_role: Group
+    staff_role: Group
+    user_role: Group
+
+
+@pytest.fixture
+def default_profile(db, client: Client):
+    """
+    Create default user and roles
+    """
+    user = User.objects.create(username="default_scirius", password="scirius", is_superuser=False, is_staff=False)  # noqa: S106
+    su_role = Group.objects.get(name="Superuser")
+    su_role.user_set.add(user)
+    return DefaultProfile(
+        user=user,
+        scirius_user=SciriusUser.objects.create(user=user, timezone="UTC"),
+        superuser_role=su_role,
+        staff_role=Group.objects.get(name="Staff"),
+        user_role=Group.objects.get(name="User"),
+    )
+
+
+@pytest.fixture
+def drf(default_profile: DefaultProfile):
+    client = APIClient()
+    client.force_authenticate(user=default_profile["user"])
+    return client
