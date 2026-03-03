@@ -383,6 +383,9 @@ class AccountViewSet(viewsets.ModelViewSet):
     }
 
     def get_permissions(self):
+        if self.action == "list" and not self.request.user.has_perm("rules.configuration_auth"):
+            raise PermissionDenied
+
         if self.action in ('current_user', 'session_activity'):
             return [IsAuthenticated()]
         return super().get_permissions()
