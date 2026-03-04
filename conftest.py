@@ -3,6 +3,7 @@ from typing import Iterable
 import os
 import pytest
 import shutil
+import structlog
 
 from pathlib import Path
 
@@ -26,6 +27,18 @@ def prepare_test_files(test_base_dir: Path, git_sources_dir: Path):
     saml_dir.mkdir(parents=True, exist_ok=True)
     saml_dir = test_base_dir.parent / "lock"
     saml_dir.mkdir(parents=True, exist_ok=True)
+
+
+@pytest.fixture(autouse=True)
+def configure_structlog():
+    structlog.configure(
+        processors=[
+            structlog.processors.add_log_level,
+            structlog.processors.StackInfoRenderer(),
+            structlog.dev.set_exc_info,
+            structlog.dev.ConsoleRenderer(),  # redable display for the console
+        ],
+    )
 
 
 @pytest.fixture(autouse=True)
