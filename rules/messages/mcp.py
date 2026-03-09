@@ -70,3 +70,8 @@ class TalkersInfoMessage(BaseInfo):
     app_proto: str
     host: str | None
     count: int
+
+
+class FieldStatMessage(BaseModel):
+    key: str | int = ""
+    doc_count: int = 0

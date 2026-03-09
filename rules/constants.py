@@ -1,0 +1,16 @@
+ES_NO_KEYWORD_FIELDS = (
+    "src_port",
+    "dest_port",
+    "alert.signature_id",
+    "alert.severity",
+    "http.length",
+    "http.status",
+    "vlan",
+    "geoip.provider.autonomous_system_number",
+    "tunnel.depth",
+    "flow.dest_port",
+    "flow.src_port",
+    "stamus.incidents_id",
+    "stamus.asset_info.incident_id",
+    "stamus.offender_info.incident_id",
+)
