@@ -236,7 +236,7 @@ class AccountSerializer(serializers.ModelSerializer):
         try:
             password_validation.validate_password(password=password, user=User)
         except exceptions.ValidationError as e:
-            raise serializers.ValidationError({'password': [e.message]})
+            raise serializers.ValidationError({'password': e.messages})
 
         user = User.objects.create(**user_data)
         user.set_password(password)
