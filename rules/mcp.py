@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from functools import wraps
 from typing import Any, Iterable
 from django.conf import settings
@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from rules.messages.mcp import (
     AlertMessage,
+    FieldStatMessage,
     MatchedRuleMessage,
     ProductInfoMessage,
     RuleMessage,
@@ -243,5 +244,59 @@ class McpController(MCPToolset):
         return self.service.rules_search(
             query=query,
             page=page,
+            limit=limit,
+        )
+
+    @has_group_permission(required_groups=["rules.events_view"])
+    def top_or_least_keys(
+        self,
+        fields: list[str],
+        top: bool = True,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        sid: int | None = None,
+        lucene_filter: str = "",
+        limit: PositiveInt = 10,
+    ) -> dict[str, list[FieldStatMessage]]:
+        """
+        ### Top or least of a key
+
+        When you want tls.sni, http.host
+
+        ### Parameters & Returns
+
+        * **Args**:
+            * `fields` (list[str]): key list you want (example: `["tls.sni", "http.host"]`)
+            * `top` (bool): `True` for descending order if you want top otherwise `False` for least.
+            * `start` (datetime): The start of the time interval in **UTC (ISO 8601)** format. By default, it's 24 hours before the current time or the `end` time.
+            * `lucene_filter` (str, optional): optional lucene filter
+            * `end` (datetime): The end of the time interval in **UTC (ISO 8601)** format. By default, it's the current time.
+            * `sid` (PositiveInt): optional signature ID
+            * `limit` (PositiveInt): The maximum number of events per field (default: `10`).
+
+        * **Returns**:
+            * `dict[MatchedRuleMessage]`: A list of dictionaries, with each dictionary representing a Rule. The `sid` field in the result corresponds to the `SID` field in the Suricata rule.
+            Result example:
+            ```json
+            {
+                "alert.signature":[{"key":"SN Sampled EVE ALERT on proto ike","doc_count":99}],
+                "alert.category":[{"key":"","doc_count":99}],
+                "host":[{"key":"SSProbe-1","doc_count":99}]
+            }
+            ```
+        """
+
+        # https://10.136.4.15/rest/rules/es/fields_stats/?fields=alert.signature,alert.category,host&page_size=5&from_date=1770631115000&to_date=1770803915000&alert=true&discovery=true&stamus=true&qfilter=((NOT+alert.tag:*)+OR+alert.tag:%22relevant%22)+AND+alert.signature.raw:%22SN+Sampled+EVE+ALERT+on+proto+ike%22
+        if end is None:
+            end = datetime.now(UTC)
+        if start is None:
+            start = end - timedelta(hours=24)
+        return self.service.top_or_least_keys(
+            fields=fields,
+            top=top,
+            start=convert_datetime_to_timestamp(start, True),
+            end=convert_datetime_to_timestamp(end, True),
+            sid=sid,
+            lucene_filter=lucene_filter,
             limit=limit,
         )

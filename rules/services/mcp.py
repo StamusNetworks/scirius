@@ -1,3 +1,5 @@
+import contextlib
+
 from typing import Any, ClassVar
 from django.conf import settings
 from django.http import HttpRequest
@@ -7,6 +9,7 @@ from rest_framework.request import Request
 from rules.django_repository.rule import RuleRepository
 from rules.messages.mcp import (
     AlertMessage,
+    FieldStatMessage,
     HitProbeMessage,
     HitTimelineEntryMessage,
     MatchedRuleMessage,
@@ -16,7 +19,7 @@ from rules.messages.mcp import (
 )
 from rules.es_graphs import ESEventsTail, ESSigsListHits, ESTalkersList
 from rules.es_query import ESPaginator
-import contextlib
+from rules.repository.analytic import AnalyticRepository
 
 
 class McpService:
@@ -237,5 +240,36 @@ class McpService:
             )
             for rule in repo.rules(
                 query=query, with_categories=True, with_sources=True, with_ruleset=True, with_rule_at_version=True
-            )[page - 1:limit * page].iterator(chunk_size=128)
+            )[page - 1: limit * page].iterator(chunk_size=128)
         ]
+
+    def top_or_least_keys(
+        self,
+        fields: list[str],
+        start: int,
+        end: int,
+        sid: int | None,
+        lucene_filter: str = "",
+        limit: PositiveInt = 10,
+        bool_clause: dict | None = None,
+        *,
+        top: bool = True,
+    ) -> dict[str, FieldStatMessage]:
+        repo = AnalyticRepository()
+        if sid is not None:
+            lucene_filter = (
+                f"({lucene_filter}) AND alert.signature_id:{sid}" if lucene_filter else f"alert.signature_id:{sid}"
+            )
+        results = repo.fields_stats(
+            f"{settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX}*",
+            fields=fields,
+            start=start,
+            end=end,
+            lucene_filter=lucene_filter,
+            limit=limit,
+            bool_clause=bool_clause,
+            top=top,
+        )
+        if results is None:
+            results = {}
+        return {key: [FieldStatMessage(**v) for v in values] for key, values in results.items()}

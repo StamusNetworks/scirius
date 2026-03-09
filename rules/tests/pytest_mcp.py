@@ -1,3 +1,6 @@
+from datetime import UTC, datetime
+from unittest.mock import patch, MagicMock
+import os
 import pytest
 
 from django.contrib.auth.models import Group, User
@@ -123,3 +126,35 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
 
     results = controller.rules_search("does not exist")
     assert len(results) == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("ruleset_middleware", ["suricata", os.environ.get("RULESET_MIDDLEWARE", "suricata")])
+def test_mcp_top_or_least_key(settings, ruleset_middleware: str, mcp_request: Request):
+    settings.RULESET_MIDDLEWARE = ruleset_middleware
+    # basic test for coverage, does not perform the OpenSearch query
+    start_date = datetime(2026, 1, 1, tzinfo=UTC)
+    end_date = datetime(2026, 1, 15, tzinfo=UTC)
+    mock_data = {
+        "dummy.key": [{"key": "Hello world", "doc_count": 79}],
+        "another.key": [{"key": "", "doc_count": 32}],
+    }
+
+    with patch("rules.services.mcp.AnalyticRepository") as mock_es_class:
+        mock_instance = MagicMock()
+        mock_es_class.return_value = mock_instance
+        mock_instance.fields_stats.return_value = mock_data
+
+        controller = McpController(request=mcp_request)
+        result = controller.top_or_least_keys(["dummy.key", "another.key"], top=True, start=start_date, end=end_date, limit=20)
+
+        assert "dummy.key" in result
+        assert "another.key" in result
+        assert result["dummy.key"][0].key == "Hello world"
+        assert result["dummy.key"][0].doc_count == 79
+        mock_instance.fields_stats.assert_called_once()
+        _args, kwargs = mock_instance.fields_stats.call_args
+        assert kwargs["limit"] == 20
+        assert kwargs["top"]
+        assert "dummy.key" in kwargs["fields"]
+        assert "another.key" in kwargs["fields"]
