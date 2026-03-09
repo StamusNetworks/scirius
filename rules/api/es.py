@@ -9,6 +9,7 @@ from rest_framework import exceptions, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from rules.constants import ES_NO_KEYWORD_FIELDS
 from rules.es_analytics import (
     ESFieldUniqAgg,
     ESGenericSearch,
@@ -190,22 +191,7 @@ class ESPostStatsViewSet(ESBaseViewSet):
 
 
 class _ESFieldsNoKeyword:
-    NO_KEYWORD_FIELDS = (
-        "src_port",
-        "dest_port",
-        "alert.signature_id",
-        "alert.severity",
-        "http.length",
-        "http.status",
-        "vlan",
-        "geoip.provider.autonomous_system_number",
-        "tunnel.depth",
-        "flow.dest_port",
-        "flow.src_port",
-        "stamus.incidents_id",
-        "stamus.asset_info.incident_id",
-        "stamus.offender_info.incident_id",
-    )
+    NO_KEYWORD_FIELDS = ES_NO_KEYWORD_FIELDS
 
 
 class ESFieldsStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet, _ESFieldsNoKeyword):
