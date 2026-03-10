@@ -22,7 +22,7 @@ import builtins
 import contextlib
 import json
 import tarfile
-from datetime import date
+from datetime import datetime, UTC
 
 import django_tables2 as tables
 from django.conf import settings
@@ -143,7 +143,7 @@ def policies(request: HttpRequest):
         elif "export" in request.POST:
             file_tar_io = PoliciesForm._export()
             response = HttpResponse(file_tar_io.getvalue(), content_type="application/gzip")
-            response["Content-Disposition"] = f'attachment; filename="policies-filtersets-{date.today()!s}.tgz"'
+            response["Content-Disposition"] = f'attachment; filename="policies-filtersets-{datetime.now(tz=UTC).date()!s}.tgz"'
             return response
 
     return scirius_render(request, "rules/policies.html", context)

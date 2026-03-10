@@ -544,7 +544,7 @@ class UserAction(models.Model):
 
         actions_dict = get_middleware_module("common").get_user_actions_dict()
         if self.action_type not in list(actions_dict.keys()):
-            raise Exception('Unknown action type "%s"' % self.action_type)
+            raise Exception(f'Unknown action type "{self.action_type}"')
 
         format_ = {"user": format_html("<strong>{}</strong>", self.username), "datetime": self.date}
         actions = UserActionObject.objects.filter(user_action=self).all()
@@ -573,7 +573,7 @@ class UserAction(models.Model):
 
         actions_dict = get_middleware_module("common").get_user_actions_dict()
         if self.action_type not in list(actions_dict.keys()):
-            raise Exception('Unknown action type "%s"' % self.action_type)
+            raise Exception(f'Unknown action type "{self.action_type}"')
 
         return actions_dict[self.action_type]["title"]
 
