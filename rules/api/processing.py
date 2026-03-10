@@ -18,7 +18,10 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import contextlib
 import json
+from collections.abc import Iterable
+from typing import ClassVar
 
 from django.db import models
 from drf_spectacular.utils import extend_schema
@@ -27,9 +30,8 @@ from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from rules.models.model import Rule, Threshold, RuleProcessingFilter, RuleProcessingFilterDef, UserAction
+from rules.models.model import Rule, RuleProcessingFilter, RuleProcessingFilterDef, Threshold, UserAction
 from scirius.rest_utils import SciriusModelViewSet
-import contextlib
 
 
 class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
@@ -49,7 +51,7 @@ class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
         read_only_fields = ("pk",)
 
     def to_representation(self, instance):
-        data = super(RuleProcessingFilterDefSerializer, self).to_representation(instance)
+        data = super().to_representation(instance)
         if instance.key == "alert.signature_id":
             with contextlib.suppress(Rule.DoesNotExist):
                 data["msg"] = Rule.objects.get(sid=instance.value).msg
@@ -120,7 +122,11 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
         self.option_serializer = None
 
-        if "context" in kwargs and "enable_options" in kwargs["context"] and kwargs["context"]["enable_options"] is False:
+        if (
+            "context" in kwargs
+            and "enable_options" in kwargs["context"]
+            and kwargs["context"]["enable_options"] is False
+        ):
             self.fields.pop("options")
 
     def to_representation(self, instance):
@@ -128,7 +134,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             from scirius.utils import get_middleware_module
 
             instance = get_middleware_module("common").update_processing_filter_action_options(instance)
-        res = super(RuleProcessingFilterSerializer, self).to_representation(instance)
+        res = super().to_representation(instance)
         user_action = (
             UserAction.objects.filter(action_type="create_rule_filter", user_action_objects__object_id=instance.pk)
             .distinct()
@@ -160,7 +166,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             options = serializer.validated_data
         else:
             if options:
-                raise serializers.ValidationError({"options": ['Action "%s" does not accept options.' % action]})
+                raise serializers.ValidationError({"options": [f'Action "{action}" does not accept options.']})
             options = {}
 
         if not isinstance(serializer, serializers.ModelSerializer):
@@ -213,7 +219,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                     has_ip = True
                 else:
                     raise serializers.ValidationError(
-                        {"filter_defs": ['Field "%s" is not supported for threshold.' % f["key"]]}
+                        {"filter_defs": ['Field "{}" is not supported for threshold.'.format(f["key"])]}
                     )
 
             if f.get("operator") != "equal":
@@ -482,7 +488,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
     ordering_fields = ("pk", "index", "action", "enabled")
     filterset_fields = ("action", "enabled", "filter_defs__key", "filter_defs__value")
     search_fields = ("description", "filter_defs__key", "filter_defs__value")
-    REQUIRED_GROUPS = {
+    REQUIRED_GROUPS: ClassVar[dict[str, Iterable[str]]] = {
         "READ": ("rules.ruleset_policy_view",),
         "WRITE": ("rules.ruleset_policy_edit",),
     }
