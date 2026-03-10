@@ -1,29 +1,31 @@
+import orjson
 import os
 import tarfile
 import tempfile
+from io import BytesIO
+from shutil import rmtree
+from typing import TYPE_CHECKING
+from unittest.mock import patch
+
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.test import APITestCase
-from shutil import rmtree
-from typing import TYPE_CHECKING
-from unittest.mock import patch
+from rest_framework.test import APIClient, APITestCase
 
-from rules.api.source import SourceSerializer
+from rules.api.source import SourceSerializer, UploadEditSourceTaskSerializer
 from rules.models.model import (
-    Rule,
-    Source,
     InvalidCategoryException,
+    Rule,
     Ruleset,
+    Source,
+    SourceUpdate,
     UserAction,
 )
 
-from rules.api.source import UploadEditSourceTaskSerializer
 from .test_misc import RestAPITestBase
-
 
 if TYPE_CHECKING:
     from rules.models.model import IoCMeta
@@ -599,3 +601,206 @@ def test_rest_serializer_ioc_representation(db):
     assert representation["datatype"] == source["datatype"]
     assert representation["ioc_type"] == source["ioc_type"]
     assert representation["metadata"] == source["metadata"]
+
+
+# def _set_source_from_name(name):
+#     sources = Source.objects.filter(name=name)
+#     assert sources.count() == 1
+#     return sources[0]
+
+
+# @pytest.mark.slow
+# def test_000_custom_source_iprep(db, drf: APIClient):
+#     # create a custom source
+#     params = {
+#         "name": "sonic test custom source",
+#         "comment": "MyCustomComment",
+#         "method": "http",
+#         "datatype": "sigs",
+#         "uri": ET_URL,
+#         "cert_verif":True,
+#         "use_iprep": False,
+#     }
+#     resp = drf.post(reverse("source-list"), params)
+#     assert resp.status_code == status.HTTP_201_CREATED
+#     sources = Source.objects.filter(name="sonic test custom source")
+#     assert sources.count() == 1
+
+#     resp = drf.get(reverse('source-list'))
+#     assert resp.status_code == status.HTTP_200_OK
+#     assert 'results' in  resp.json()
+
+#     results = resp.json().get('results', [])
+#     assert 'use_iprep' in results[0]
+#     assert not results[0]['use_iprep']
+
+#     source = sources.first()
+#     source.update()
+#     category = source.category_set.get(name='botcc')
+#     rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server group')
+
+#     size = rules.count()
+#     assert size > 1
+#     for rule in rules:
+#         assert 'group' in rule.msg
+
+#     resp = drf.patch(reverse('source-detail', args=(source.pk,)), {'use_iprep': True, 'version': 1})
+#     assert resp.status_code == status.HTTP_200_OK
+#     assert resp.json()['use_iprep']
+
+#     source = _set_source_from_name('sonic test custom source')
+#     source.update()
+#     category = source.category_set.get(name='botcc')
+#     rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server')
+#     assert rules.count() == 1
+#     assert 'iprep' in rules[0].ruleatversion_set.first().content
+
+#     resp = drf.patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': False, 'version': 1})
+#     assert resp.status_code == status.HTTP_200_OK
+#     assert not resp.json()['use_iprep']
+
+#     source = _set_source_from_name('sonic test custom source')
+#     source.update()
+#     category = source.category_set.get(name='botcc')
+#     rules = category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server')
+#     assert size == rules.count()
+
+
+# Cannot be migrated: Connection error '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1016)'
+# def test_001_public_source(db, drf: APIClient):
+#     ruleset = Ruleset.objects.create(
+#         name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
+#     )
+
+#     # create public source using REST API
+#     params = {
+#         "name": "sonic test public source",
+#         "comment": "MyPublicComment",
+#         "public_source": "oisf/trafficid",
+#     }
+#     resp = drf.post(reverse("publicsource-list"), params)
+#     assert resp.status_code == status.HTTP_201_CREATED
+#     sources = Source.objects.filter(name="sonic test public source")
+#     assert sources.count() == 1
+
+#     public_source = sources.first()
+#     ruleset.sources.add(sources.first())
+
+#     resp = drf.get(reverse("publicsource-fetch-list-sources"))
+#     assert resp.status_code == status.HTTP_200_OK
+#     assert resp.json() == {"fetch": "ok"}
+
+#     public_source.update()
+
+#     # behavior/status could be different on remote and local build
+#     test_results = public_source.test()
+
+#     if test_results["status"] is True:
+#         drf.get(reverse("publicsource-list-sources"))
+#     else:
+#         assert "errors" in test_results
+
+#     resp = drf.delete(reverse("publicsource-detail", args=(public_source.pk,)))
+#     assert resp.status_code == status.HTTP_204_NO_CONTENT
+#     sources = Source.objects.filter(pk=public_source.pk)
+#     assert sources.count() == 0
+
+
+def test_002_custom_source_upload(db, drf: APIClient):
+    ruleset = Ruleset.objects.create(
+        name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
+    )
+
+    # create custom source
+    params = {
+        "name": "sonic test custom source",
+        "comment": "MyCustomComment",
+        "method": "local",
+        "datatype": "sig",
+    }
+    resp = drf.post(reverse("source-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    sources = Source.objects.filter(name="sonic test custom source")
+    assert sources.count() == 1
+
+    source = sources.first()
+    ruleset.sources.add(sources.first())
+
+    source.new_uploaded_file(BytesIO(RULE_CONTENT.encode("utf-8")))
+
+    resp = drf.post(reverse("source-update-source", args=(source.pk,)), status=status.HTTP_400_BAD_REQUEST)
+
+    resp = drf.get(reverse("category-list") + f"?source={source.pk}")
+    assert resp.status_code == status.HTTP_200_OK
+    categories = resp.json().get("results", [])
+    assert len(categories) == 1
+
+    resp = drf.get(reverse("rule-list") + "?category={}".format(categories[0]["pk"]))
+    assert resp.status_code == status.HTTP_200_OK
+    rules = resp.json().get("results", [])
+    assert len(rules) == 1
+
+    rule = rules[0]
+
+    expected = {
+        "sid": 2100498,
+        "msg": "Unicode test rule éàç",  # ignore_utf8_check: 233 224 231
+    }
+    assert rule == rule | expected
+
+    expected = {"state": True, "commented_in_source": False, "content": RULE_CONTENT, "rev": 7}
+    assert rule["versions"][0] == rule["versions"][0] | expected
+
+
+def test_all_changelog(db, drf):
+    # create a public source
+    ruleset = Ruleset.objects.create(
+        name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
+    )
+    ruleset.save()
+
+    params = {
+        "name": "sonic test public source",
+        "comment": "MyPublicComment",
+        "public_source": "oisf/trafficid",
+    }
+    resp = drf.post(reverse("publicsource-list"), params)
+    resp.status_code == status.HTTP_201_CREATED
+    sources = Source.objects.filter(name="sonic test public source")
+    assert sources.count() == 1
+
+    public_source = sources.first()
+    ruleset.sources.add(sources.first())
+
+    data = {
+        "deleted": [],
+        "updated": [
+            {
+                "msg": "SURICATA TRAFFIC-ID: Debian APT-GET",
+                "category": "Suricata Traffic ID ruleset Sigs",
+                "pk": 300000032,
+                "sid": 300000032,
+            },
+            {
+                "msg": "SURICATA TRAFFIC-ID: Ubuntu APT-GET",
+                "category": "Suricata Traffic ID ruleset Sigs",
+                "pk": 300000033,
+                "sid": 300000033,
+            },
+        ],
+        "added": [],
+    }
+
+    SourceUpdate.objects.create(
+        source=public_source,
+        created_date=timezone.now(),
+        data=orjson.dumps(data).decode("utf-8"),
+        changed=len(data["deleted"]) + len(data["added"]) + len(data["updated"]),
+    )
+
+    public_source.update()
+    resp = drf.get(reverse("sourceupdate-list"))
+    assert resp.status_code == status.HTTP_200_OK
+    response = resp.json()
+    assert response["results"][0]["source"] == public_source.pk
+    assert response["results"][0]["data"]["updated"] == data["updated"]
