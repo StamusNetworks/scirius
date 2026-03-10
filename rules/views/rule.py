@@ -138,6 +138,7 @@ def policies(request: HttpRequest):
             except tarfile.ReadError as e:
                 context["error"] = str(e).title()
             else:
+                UserAction.create(action_type="import_rule_filter", request=request)
                 context["success"] = "Successfully imported"
         elif "export" in request.POST:
             file_tar_io = PoliciesForm._export()

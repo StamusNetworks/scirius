@@ -97,7 +97,6 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
     options = JSONStringField(default=None, allow_null=True)
     comment = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     username = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    creation_date = serializers.DateTimeField(required=False)
 
     class Meta:
         model = RuleProcessingFilter
@@ -138,7 +137,6 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         if user_action:
             res["comment"] = user_action.comment
             res["username"] = user_action.username
-            res["creation_date"] = user_action.date
         return res
 
     def to_internal_value(self, data):
