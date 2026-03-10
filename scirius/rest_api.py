@@ -1,6 +1,5 @@
 
 from django.contrib.auth.models import User
-from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.routers import DefaultRouter, APIRootView as APIRootViewDJango
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from .utils import get_middleware_module
 from accounts.rest_api import router as accounts_router
 
-from .rest_utils import SciriusModelViewSet
 from rules.rest_api import router as rules_router, get_custom_urls
 import contextlib
 
@@ -19,13 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'email')
 
 
-@extend_schema(tags=["User"])
-class UserViewSet(SciriusModelViewSet):
-    queryset = User.objects.filter(sciriususer__sciriustokenuser__parent__isnull=True).order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-
-
 class APIRootView(APIRootViewDJango):
     pass
 
@@ -34,7 +25,6 @@ class APIRootView(APIRootViewDJango):
 class SciriusRouter(DefaultRouter):
     def __init__(self, *args, **kwargs):
         super(SciriusRouter, self).__init__(self, *args, **kwargs)
-        self.register('scirius/user', UserViewSet)
         self.registry.extend(rules_router.registry)
         self.registry.extend(accounts_router.registry)
         self.APIRootView = APIRootView
