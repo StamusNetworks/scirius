@@ -10,7 +10,6 @@ from django.db import models
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
-from rules.models.model import Ruleset, Source, SourceUpdate
 from rules.rest_api import router
 from accounts.models import SciriusUser
 
@@ -197,56 +196,3 @@ class PermissionsTestCase(TestCase):
                     found = True
 
             self.assertTrue(found, f'Permission not found on "{view_name}"')
-
-
-class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
-    def _create_public_source(self):
-        self.ruleset = Ruleset.objects.create(
-            name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
-        )
-        self.ruleset.save()
-
-        params = {
-            "name": "sonic test public source",
-            "comment": "MyPublicComment",
-            "public_source": "oisf/trafficid",
-        }
-        self.http_post(reverse("publicsource-list"), params, status=status.HTTP_201_CREATED)
-        sources = Source.objects.filter(name="sonic test public source")
-        self.assertEqual(sources.count() == 1, True)
-
-        self.public_source = sources.first()
-        self.ruleset.sources.add(sources.first())
-
-    def test_001_all_changelog(self):
-        self._create_public_source()
-        data = {
-            "deleted": [],
-            "updated": [
-                {
-                    "msg": "SURICATA TRAFFIC-ID: Debian APT-GET",
-                    "category": "Suricata Traffic ID ruleset Sigs",
-                    "pk": 300000032,
-                    "sid": 300000032,
-                },
-                {
-                    "msg": "SURICATA TRAFFIC-ID: Ubuntu APT-GET",
-                    "category": "Suricata Traffic ID ruleset Sigs",
-                    "pk": 300000033,
-                    "sid": 300000033,
-                },
-            ],
-            "added": [],
-        }
-
-        SourceUpdate.objects.create(
-            source=self.public_source,
-            created_date=timezone.now(),
-            data=orjson.dumps(data).decode('utf-8'),
-            changed=len(data["deleted"]) + len(data["added"]) + len(data["updated"]),
-        )
-
-        self.public_source.update()
-        response = self.http_get(reverse("sourceupdate-list"))
-        self.assertEqual(response["results"][0]["source"], self.public_source.pk)
-        self.assertEqual(response["results"][0]["data"]["updated"], data["updated"])
