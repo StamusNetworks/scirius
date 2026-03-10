@@ -421,6 +421,14 @@ class UserAction(models.Model):
                 },
             ),
             (
+                "import_rule_filter",
+                {
+                    "description": "{user} has imported rule filter(s) in ruleset {ruleset}",
+                    "title": "Import rule filter",
+                    "perm": "rules.events_view",
+                },
+            ),
+            (
                 "edit_rule_filter",
                 {
                     "description": "{user} has edited rule filter {rule_filter} in ruleset {ruleset}",
@@ -3812,6 +3820,7 @@ class RuleProcessingFilter(models.Model):
     rulesets = models.ManyToManyField(Ruleset, related_name="processing_filters")
     imported = models.BooleanField(default=False)
     event_type = models.CharField(max_length=32, default="alert", null=False, blank=False)
+    creation_date = models.DateTimeField("date created", default=timezone.now)
 
     class Meta:
         ordering: Iterable[str] = ["index"]
