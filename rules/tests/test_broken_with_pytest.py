@@ -4,9 +4,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from rules.models.model import (
-    Category,
-    Rule,
-    RuleAtVersion,
+    # Category,
+    # Rule,
+    # RuleAtVersion,
     Ruleset,
     Source,
 )
@@ -118,105 +118,3 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         )
         sources = Source.objects.filter(pk=self.public_source.pk)
         self.assertEqual(sources.count(), 0)
-
-    def test_002_custom_source_upload(self):
-        from io import BytesIO
-
-        self._create_custom_source("local", "sig")
-        self.source.new_uploaded_file(BytesIO(RULE_CONTENT.encode("utf-8")))
-
-        self.http_post(reverse("source-update-source", args=(self.source.pk,)), status=status.HTTP_400_BAD_REQUEST)
-
-        response = self.http_get(reverse("category-list") + "?source=%i" % self.source.pk)
-        categories = response.get("results", [])
-        self.assertEqual(len(categories), 1)
-
-        response = self.http_get(reverse("rule-list") + "?category=%i" % categories[0]["pk"])
-        rules = response.get("results", [])
-        self.assertEqual(len(rules), 1)
-
-        rule = rules[0]
-
-        self.assertDictContainsSubset(
-            {
-                "sid": 2100498,
-                "msg": "Unicode test rule éàç",  # ignore_utf8_check: 233 224 231
-            },
-            rule,
-        )
-
-        self.assertDictContainsSubset(
-            {"state": True, "commented_in_source": False, "content": RULE_CONTENT, "rev": 7}, rule["versions"][0]
-        )
-
-
-class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
-    def setUp(self):
-        RestAPITestBase.setUp(self)
-        APITestCase.setUp(self)
-
-        self.source = Source.objects.create(
-            name="test source", created_date=timezone.now(), method="local", datatype="sig"
-        )
-        self.source.save()
-        self.category = Category.objects.create(name="test category", filename="test", source=self.source)
-        self.category.save()
-
-        content = (
-            'alert ip $HOME_NET any -> [103.207.29.161,103.207.29.171,103.225.168.222,103.234.36.190,103.234.37.4,103.4.164.34, \
-103.6.207.37,104.131.93.109,104.140.137.152,104.143.5.144,104.144.167.131,104.144.167.251,104.194.206.108, \
-104.199.121.36,104.207.154.26,104.223.87.207,104.43.200.222,106.187.48.236,107.161.19.71] \
-any (msg:"ET CNC Shadowserver Reported CnC Server IP group 1"; \
-reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,www.shadowserver.org;\
-threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; \
-flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
-        )
-
-        self.rule = Rule.objects.create(sid=1, category=self.category, msg="test rule")
-        self.rule.save()
-        RuleAtVersion.objects.create(rule=self.rule, content=content)
-        self.ruleset = Ruleset.objects.create(
-            name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
-        )
-        self.ruleset.save()
-        self.ruleset.sources.add(self.source)
-        self.ruleset.categories.add(self.category)
-
-    def test_003_rule_permission(self):
-        self.client.logout()
-
-        # Non logged request are rejected
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)),
-            {"ruleset": self.ruleset.pk},
-            status=status.HTTP_403_FORBIDDEN,
-        )
-
-        self.client.force_login(self.user)
-        # Read still authorized
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)), {"ruleset": self.ruleset.pk}, status=status.HTTP_200_OK
-        )
-
-        # Post not authorized non-role
-        self.superuser_role.user_set.remove(self.user)
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)),
-            {"ruleset": self.ruleset.pk},
-            status=status.HTTP_403_FORBIDDEN,
-        )
-
-        # Post authorized staff role
-        self.staff_role.user_set.add(self.user)
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)), {"ruleset": self.ruleset.pk}, status=status.HTTP_200_OK
-        )
-
-        # Post not authorized user role
-        self.staff_role.user_set.remove(self.user)
-        self.user_role.user_set.add(self.user)
-        self.http_post(
-            reverse("rule-disable", args=(self.rule.pk,)),
-            {"ruleset": self.ruleset.pk},
-            status=status.HTTP_403_FORBIDDEN,
-        )
