@@ -321,6 +321,16 @@ class ESQuery:
         body = self._get_query(*args, **kwargs)
         sort_field = kwargs.get('sort_field')
 
+        # Replace any _id sort entry with _seq_no to avoid fielddata access on
+        # _id, which is disallowed by default in Elasticsearch. _seq_no is
+        # always indexed and returns a value in last_item['sort'] just like
+        # _id did, so no other changes to the search_after logic are needed.
+        if 'sort' in body:
+            body['sort'] = [
+                {'_seq_no': s['_id']} if isinstance(s, dict) and '_id' in s else s
+                for s in body['sort']
+            ]
+
         offset = 0
         if sort_field and sort_field not in self.SEARCH_AFTER_ORDERING_BL:
             # offset to get new_timestamp and next_id
