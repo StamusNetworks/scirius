@@ -27,9 +27,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
-from accounts.rest_api import router
 from .models import SciriusTokenUser, SciriusUser
-from rules.tests.test_misc import RestAPIListTestCase
 
 
 class TestUsers(TypedDict):
@@ -391,9 +389,3 @@ def test_044_tokenuser_disabled(db, accounts: TestUsers):
     client.credentials(HTTP_AUTHORIZATION=f"Token {user.auth_token}")
     res = client.get(reverse("tokenuser-list"))
     assert res.status_code == status.HTTP_200_OK
-
-
-class RestAPIAccountListTestCase(RestAPIListTestCase):
-    def setUp(self):
-        super(RestAPIAccountListTestCase, self).setUp()
-        self.router = router
