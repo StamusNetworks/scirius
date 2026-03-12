@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from copy import deepcopy
 from typing import NotRequired, TypedDict
 
 from django.conf import settings
@@ -914,4 +915,4 @@ class FilterSet(models.Model):
 
     @staticmethod
     def get_default_filter_sets() -> list[FilterSetDict]:
-        return FILTER_SETS
+        return deepcopy(FILTER_SETS)  # return a copy of the list to avoid unwanted modifications
