@@ -113,7 +113,7 @@ def prepare_test_environment():
     # copy needed files
     prepare_test_files(settings.GENERATED_BASE_DIR, git_sources_dir)
 
-    yield settings.BASE_DIR
+    return settings.BASE_DIR
 
 
 @pytest.fixture(scope="session", autouse=True)
