@@ -1,3 +1,4 @@
+from typing import ClassVar
 import json
 
 from django.conf import settings
@@ -76,7 +77,7 @@ class RuleFilter(filters.FilterSet):
 
     class Meta:
         model = Rule
-        fields = [
+        fields: ClassVar[list[str]] = [
             "sid",
             "category",
             "msg",
@@ -86,13 +87,13 @@ class RuleFilter(filters.FilterSet):
             "ruleatversion__created",
             "ruleatversion__updated",
         ]
-        extra_kwargs = {
+        extra_kwargs: ClassVar[dict[str, dict[str, str]]] = {
             "not_in_msg": {"source": "msg"},
             "not_in_content": {"source": "content"},
         }
 
-    def filter_analysis(self, queryset, name, value):
-        lookup = "__".join([name, "isnull"])
+    def filter_analysis(self, queryset, name: str, value):
+        lookup = f"{name}__isnull"
         return queryset.filter(**{lookup: value})
 
 
