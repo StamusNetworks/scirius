@@ -24,9 +24,12 @@ from django.db import models
 import psutil
 from rest_framework import serializers
 
+from copy import deepcopy
 from typing import Optional
 
 from django.conf import settings
+
+from rules.constants import USER_ACTIONS
 
 
 if settings.SURICATA_UNIX_SOCKET:
@@ -153,8 +156,7 @@ def help_links(djlink):
 
 
 def get_user_actions_dict():
-    from rules.models.model import UserAction
-    return UserAction.get_user_actions_dict()
+    return deepcopy(USER_ACTIONS)
 
 
 def get_hunt_filters():
