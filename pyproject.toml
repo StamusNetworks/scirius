@@ -199,6 +199,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.uv]
+dev-dependencies = [
+    "ty>=0.0.23",
+]
 # UV specific configurations can go here if needed
 # For example:
 # python = "3.11"
