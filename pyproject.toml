@@ -299,6 +299,10 @@ testpaths = ["accounts", "appliances", "rules", "scirius", "suricata", "volumetr
 # identifying them
 python_files = "pytest.py pytests.py pytest_*.py"
 usefixtures = ["django_db_setup"]  # to create the DB automatically without using fixture
+# Since most of the test should be fast, we are setting a timeout. Scirius is taking about a minute to start.
+# It avoid the CI to kill the job if 1 test is taking too much time like when fetchin an HTTP query in test.
+# If you are expecting a slow test you can use `@pytest.mark.timeout(300)` above your test function
+timeout = 120
 
 # asyncio_mode = "auto" # Or "strict" for explicit markers
 asyncio_default_fixture_loop_scope = "class"  # function | session | class
