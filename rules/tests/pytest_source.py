@@ -666,44 +666,43 @@ def test_rest_serializer_ioc_representation(db):
 #     assert size == rules.count()
 
 
-# Cannot be migrated: Connection error '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1016)'
-# def test_001_public_source(db, drf: APIClient):
-#     ruleset = Ruleset.objects.create(
-#         name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
-#     )
+def test_001_public_source(db, drf: APIClient):
+    ruleset = Ruleset.objects.create(
+        name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
+    )
 
-#     # create public source using REST API
-#     params = {
-#         "name": "sonic test public source",
-#         "comment": "MyPublicComment",
-#         "public_source": "oisf/trafficid",
-#     }
-#     resp = drf.post(reverse("publicsource-list"), params)
-#     assert resp.status_code == status.HTTP_201_CREATED
-#     sources = Source.objects.filter(name="sonic test public source")
-#     assert sources.count() == 1
+    # create public source using REST API
+    params = {
+        "name": "sonic test public source",
+        "comment": "MyPublicComment",
+        "public_source": "oisf/trafficid",
+    }
+    resp = drf.post(reverse("publicsource-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    sources = Source.objects.filter(name="sonic test public source")
+    assert sources.count() == 1
 
-#     public_source = sources.first()
-#     ruleset.sources.add(sources.first())
+    public_source = sources.first()
+    ruleset.sources.add(sources.first())
 
-#     resp = drf.get(reverse("publicsource-fetch-list-sources"))
-#     assert resp.status_code == status.HTTP_200_OK
-#     assert resp.json() == {"fetch": "ok"}
+    resp = drf.get(reverse("publicsource-fetch-list-sources"))
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.json() == {"fetch": "ok"}
 
-#     public_source.update()
+    public_source.update()
 
-#     # behavior/status could be different on remote and local build
-#     test_results = public_source.test()
+    # behavior/status could be different on remote and local build
+    test_results = public_source.test()
 
-#     if test_results["status"] is True:
-#         drf.get(reverse("publicsource-list-sources"))
-#     else:
-#         assert "errors" in test_results
+    if test_results["status"] is True:
+        drf.get(reverse("publicsource-list-sources"))
+    else:
+        assert "errors" in test_results
 
-#     resp = drf.delete(reverse("publicsource-detail", args=(public_source.pk,)))
-#     assert resp.status_code == status.HTTP_204_NO_CONTENT
-#     sources = Source.objects.filter(pk=public_source.pk)
-#     assert sources.count() == 0
+    resp = drf.delete(reverse("publicsource-detail", args=(public_source.pk,)))
+    assert resp.status_code == status.HTTP_204_NO_CONTENT
+    sources = Source.objects.filter(pk=public_source.pk)
+    assert sources.count() == 0
 
 
 def test_002_custom_source_upload(db, drf: APIClient):
