@@ -62,6 +62,6 @@ pytz
 PyYAML
 six
 smmap
-suricata-language-server>=1.0.0
+suricata-language-server>=1.0.0,<2
 vine
 web.py

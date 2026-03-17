@@ -103,7 +103,7 @@ dependencies = [
     "sqlparse==0.5.3",
     "sse-starlette==3.0.2",
     "starlette==0.47.3",
-    "suricata-language-server>=1.0.0",
+    "suricata-language-server>=1.0.0,<2",
     "typing-extensions==4.15.0",
     "typing-inspection==0.4.2",
     "uritemplate==4.2.0",
