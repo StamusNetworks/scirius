@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import json
+import orjson
 from django.core.exceptions import PermissionDenied
 
 from django.shortcuts import redirect, get_object_or_404
@@ -425,7 +425,7 @@ def edit_user(request, user_id):
 
     context = {
         'user': user,
-        'username': json.dumps(user.username),
+        'username': orjson.dumps(user.username).decode('utf-8'),
         'current_action': f"Edit {method} user {user.username}",
         'is_from_ldap': user.sciriususer.is_from_ldap(),
         'show_perm_warning': user.sciriususer.has_kibana_or_evebox_perm()
@@ -519,7 +519,7 @@ def add_group(request):
     context = {
         'form': form,
         'current_action': 'Add role',
-        'mapping': json.dumps(form.mapping),
+        'mapping': orjson.dumps(form.mapping, option=orjson.OPT_NON_STR_KEYS).decode('utf-8'),
         'can_edit': True
     }
     return scirius_render(request, 'accounts/group.html', context)
@@ -533,7 +533,7 @@ def edit_group(request, group_id):
     context = {
         'group': django_group,
         'action': 'edit',
-        'group_name': json.dumps(django_group.name),
+        'group_name': orjson.dumps(django_group.name).decode('utf-8'),
         'show_perm_warning': scirius_user.has_all_tenants() and scirius_user.has_no_tenant()
     }
 
@@ -558,7 +558,7 @@ def edit_group(request, group_id):
     form = GroupEditForm(instance=django_group)
     context['can_edit'] = django_group.name not in GroupEditForm.DEFAULT_GROUPS
     context['form'] = form
-    context['mapping'] = json.dumps(form.mapping)
+    context['mapping'] = orjson.dumps(form.mapping, option=orjson.OPT_NON_STR_KEYS).decode('utf-8')
     context['current_action'] = 'Edit role %s' % django_group.name
     return scirius_render(request, 'accounts/group.html', context)
 
@@ -591,7 +591,7 @@ def delete_group(request, group_id):
 @permission_required('rules.configuration_auth', raise_exception=True)
 def edit_password(request, user_id):
     user = get_object_or_404(User, pk=user_id)
-    context = {'user': user, 'username': json.dumps(user.username)}
+    context = {'user': user, 'username': orjson.dumps(user.username).decode('utf-8')}
 
     if request.method == 'POST':
         form = PasswordForm(request.POST)

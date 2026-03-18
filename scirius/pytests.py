@@ -1,6 +1,8 @@
-import datetime
+import orjson
 import pytest
 
+from datetime import datetime, UTC
+from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock
 from zoneinfo import ZoneInfo
@@ -8,8 +10,9 @@ from zoneinfo import ZoneInfo
 from django.http import HttpRequest, QueryDict
 from freezegun import freeze_time
 
+from scirius.drf import ORJSONParser, ORJSONRenderer
 from scirius.utils import (
-    ExtendedJSONSerializer,
+    ORJSONSessionSerializer,
     build_path_info,
     convert_datetime_to_timestamp,
     get_folder_size,
@@ -95,7 +98,7 @@ def test_get_folder_size(tmp_path: Path):
 
 @freeze_time("2025-08-26 10:16:50 UTC")
 def test_conversion_in_seconds():
-    dt = datetime.datetime(2025, 8, 26, 10, 16, 50, tzinfo=datetime.UTC)
+    dt = datetime(2025, 8, 26, 10, 16, 50, tzinfo=UTC)
     expected_timestamp = 1756203410
     assert convert_datetime_to_timestamp(dt) == expected_timestamp
     assert convert_datetime_to_timestamp(dt, False) == expected_timestamp
@@ -103,7 +106,7 @@ def test_conversion_in_seconds():
 
 @freeze_time("2025-08-26 10:16:50 UTC")
 def test_conversion_in_milliseconds():
-    dt = datetime.datetime(2025, 8, 26, 10, 16, 50, tzinfo=datetime.UTC)
+    dt = datetime(2025, 8, 26, 10, 16, 50, tzinfo=UTC)
     expected_timestamp_ms = 1756203410000
     assert convert_datetime_to_timestamp(dt, True) == expected_timestamp_ms
 
@@ -162,16 +165,77 @@ def test_sizeof_fmt(num: int, expected: str):
     assert sizeof_fmt(num) == expected
 
 
-def test_extended_json_serializer():
-    serializer = ExtendedJSONSerializer()
+class TestORJSONComponents:
+    @pytest.fixture
+    def renderer(self):
+        return ORJSONRenderer()
 
-    dt = datetime.datetime(2025, 8, 26, 10, 16, 50, 123456, tzinfo=datetime.UTC)
-    res = serializer.dumps({"dt": dt})
-    assert res.decode() == '{"dt":"2025-08-26T10:16:50.123456"}'
+    @pytest.fixture
+    def parser(self):
+        return ORJSONParser()
 
-    dt = datetime.datetime(2025, 8, 26, 10, 16, 50, 123456, tzinfo=ZoneInfo("Europe/Paris"))
-    res = serializer.dumps([dt])
-    assert res.decode() == '["2025-08-26T08:16:50.123456"]'
+    def test_basic_types_serialization(self, renderer):
+        data = {"int": 42, "bool": True, "str": "Stamus Networks", "float": 3.14, "none": None}
+        rendered = renderer.render(data)
+        # orjson produces binary without space by default
+        assert b'"int":42' in rendered
+        assert b'"bool":true' in rendered
+        assert b'"str":"Stamus Networks"' in rendered
+        assert b'"float":3.14' in rendered
 
-    res = serializer.dumps({"a": 1, "b": "string", "c": [1, 2, 3], "d": {"key": "val", "t": dt}})
-    assert res.decode() == '{"a":1,"b":"string","c":[1,2,3],"d":{"key":"val","t":"2025-08-26T08:16:50.123456"}}'
+    def test_datetime_serialization(self, renderer):
+        """Check datetime is working"""
+        dt = datetime(2024, 5, 20, 15, 30, 0, tzinfo=UTC)
+        data = {"timestamp": dt}
+
+        rendered = renderer.render(data)
+        # orjson serialization is ISO 8601 format
+        assert b'"timestamp":"2024-05-20T15:30:00+00:00"' in rendered
+
+    def test_non_str_keys_serialization(self, renderer):
+        """Check OPT_NON_STR_KEYS allow non str key"""
+        data = {1: "entier", 2.5: "float"}
+        rendered = renderer.render(data)
+        # orjson convert keys to str to have a valid JSON
+        assert b'"1":"entier"' in rendered
+        assert b'"2.5":"float"' in rendered
+
+    def test_complex_structures(self, renderer, parser):
+        """Test round-tripfor nested list and dicts"""
+        data = {"list": [1, {"nested": "value"}, [3, 4]], "dict": {"a": 1, "b": [None, False]}}
+
+        rendered = renderer.render(data)
+        stream = BytesIO(rendered)
+        parsed_data = parser.parse(stream)
+
+        assert parsed_data == data
+        assert parsed_data["list"][1]["nested"] == "value"
+
+    def test_parser_basic(self, parser):
+        json_content = b'{"name": "scirius", "active": true}'
+        stream = BytesIO(json_content)
+
+        result = parser.parse(stream)
+        assert result == {"name": "scirius", "active": True}
+
+    def test_renderer_none_data(self, renderer):
+        assert renderer.render(None) == b""
+
+    def test_invalid_json_parsing(self, parser):
+        bad_stream = BytesIO(b'{"key": "missing_bracket"')
+        with pytest.raises(orjson.JSONDecodeError):
+            parser.parse(bad_stream)
+
+    def test_misc_json(self):
+        serializer = ORJSONSessionSerializer()
+
+        dt = datetime(2025, 8, 26, 10, 16, 50, 123456, tzinfo=UTC)
+        res = serializer.dumps({"dt": dt})
+        assert res == b'{"dt":"2025-08-26T10:16:50.123456+00:00"}'
+
+        dt = datetime(2025, 8, 26, 10, 16, 50, 123456, tzinfo=ZoneInfo("Europe/Paris"))
+        res = serializer.dumps([dt])
+        assert res == b'["2025-08-26T10:16:50.123456+02:00"]'
+
+        res = serializer.dumps({"a": 1, "b": "string", "c": [1, 2, 3], "d": {"key": "val", "t": dt}})
+        assert res == b'{"a":1,"b":"string","c":[1,2,3],"d":{"key":"val","t":"2025-08-26T10:16:50.123456+02:00"}}'

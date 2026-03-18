@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import base64
 import logging
-import json
+import orjson
 import os
 import structlog
 import tarfile
@@ -1721,7 +1721,7 @@ class ESData(ESQuery):
             headers['kbn-xsrf'] = True
         if gsettings.custom_elasticsearch and gsettings.elasticsearch_user and gsettings.elasticsearch_pass:
             headers['authorization'] = b'Basic %s' % base64.b64encode(f'{gsettings.elasticsearch_user}:{gsettings.elasticsearch_pass}'.encode('utf-8'))
-        data = json.dumps(data)
+        data = orjson.dumps(data).decode('utf-8')
         kibana_url = settings.KIBANA_URL + url
         req = urllib.request.Request(kibana_url, data.encode('utf8'), headers=headers, method=method)  # noqa: S310
         urllib.request.urlopen(req)  # noqa: S310
@@ -1770,8 +1770,8 @@ class ESData(ESQuery):
 
                 res = self.es.get(index='.kibana', id=_id, **self.es_extra_params)
 
-                with open(filename, 'w') as file_:
-                    file_.write(json.dumps(res['_source'], separators=(',', ':')))
+                with open(filename, 'wb') as file_:
+                    file_.write(orjson.dumps(res['_source'], separators=(',', ':')))
 
     def kibana_export(self, full=False):
         dest = tempfile.mkdtemp()

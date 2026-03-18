@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
 from typing import Any
 import datetime
 import pytz
@@ -26,7 +25,7 @@ from importlib import import_module
 from pathlib import Path
 from time import time
 import httpx
-import json
+import orjson
 import os
 import ssl
 
@@ -36,7 +35,6 @@ from django.core.signing import JSONSerializer as DjangoJSONSerializer
 from django.utils import timezone
 from django.contrib import messages
 from django.db.models.query import QuerySet
-from django.utils.timezone import is_aware, make_naive
 
 import django_tables2 as tables
 
@@ -45,10 +43,10 @@ from rules.models.misc import get_system_settings
 
 
 def build_path_info(request):
-    splval = request.path_info.strip('/ ').split('/')
-    if splval[0] == 'rules':
+    splval = request.path_info.strip("/ ").split("/")
+    if splval[0] == "rules":
         try:
-            splval.remove('pk')
+            splval.remove("pk")
         except ValueError:
             pass
         splval = splval[1:]
@@ -78,127 +76,132 @@ class CustomCSPMiddleware(object):
 
     def __call__(self, request):
         response = self.get_response(request)
-        splitted_path = list(filter(str.strip, request.path.split('/')))
+        splitted_path = list(filter(str.strip, request.path.split("/")))
         if len(splitted_path) > 0:
-            if splitted_path[0] in ['rules', 'appliances', 'volumetry', 'viz', 'suricata']:
-                response._csp_update = {'style-src': "'unsafe-inline'", 'script-src': "'unsafe-inline'"}
-            elif splitted_path[0] == 'accounts':
+            if splitted_path[0] in ["rules", "appliances", "volumetry", "viz", "suricata"]:
+                response._csp_update = {"style-src": "'unsafe-inline'", "script-src": "'unsafe-inline'"}
+            elif splitted_path[0] == "accounts":
                 if len(splitted_path) > 1 and splitted_path[1] == "login":
-                    response._csp_update = {'script-src': "'none'"}
+                    response._csp_update = {"script-src": "'none'"}
                 else:
-                    response._csp_update = {'style-src': "'unsafe-inline'", 'script-src': "'unsafe-inline'"}
-            elif splitted_path[0] == 'saml2' and splitted_path[1] == 'login':
-                if get_middleware_module('common').has_saml_auth():
-                    response._csp_update = {'form-action': get_middleware_module('common').saml_idp_hostname(), 'script-src': "'unsafe-inline'"}
+                    response._csp_update = {"style-src": "'unsafe-inline'", "script-src": "'unsafe-inline'"}
+            elif splitted_path[0] == "saml2" and splitted_path[1] == "login":
+                if get_middleware_module("common").has_saml_auth():
+                    response._csp_update = {
+                        "form-action": get_middleware_module("common").saml_idp_hostname(),
+                        "script-src": "'unsafe-inline'",
+                    }
 
         return response
 
 
 def complete_context(request, context):
-    if request.GET.__contains__('duration'):
-        duration = int(request.GET.get('duration', '24'))
+    if request.GET.__contains__("duration"):
+        duration = int(request.GET.get("duration", "24"))
         if duration > 24 * 30:
             duration = 24 * 30
-        request.session['duration'] = duration
+        request.session["duration"] = duration
     else:
-        duration = int(request.session.get('duration', '24'))
+        duration = int(request.session.get("duration", "24"))
 
     from_date = int((time() - (duration * 3600)) * 1000)
     if duration <= 24:
-        date = '%ih' % int(duration)
+        date = "%ih" % int(duration)
     else:
-        date = '%id' % int(duration / 24)
+        date = "%id" % int(duration / 24)
 
-    context['draw_func'] = 'draw_sunburst'
-    context['draw_elt'] = 'path'
+    context["draw_func"] = "draw_sunburst"
+    context["draw_elt"] = "path"
 
-    context['date'] = date
-    context['from_date'] = from_date
-    context['time_range'] = duration * 3600
+    context["date"] = date
+    context["from_date"] = from_date
+    context["time_range"] = duration * 3600
 
 
 def scirius_render(request, template, context):
-    context['generator'] = settings.RULESET_MIDDLEWARE
-    context['path_info'] = build_path_info(request)
-    context['scirius_release'] = settings.APP_LONG_NAME + " v" + settings.SCIRIUS_VERSION
-    context['app_mngt_name'] = settings.APP_MNGT_NAME
-    context['scirius_title'] = get_middleware_module('common').get_homepage_context()['title']
-    context['scirius_short_title'] = get_middleware_module('common').get_homepage_context()['short_title']
-    context['common_long_name'] = get_middleware_module('common').get_homepage_context()['common_long_name']
-    context['product_long_name'] = get_middleware_module('common').get_homepage_context()['product_long_name']
-    context['use_stamuslogger'] = get_middleware_module('common').use_stamuslogger()
+    context["generator"] = settings.RULESET_MIDDLEWARE
+    context["path_info"] = build_path_info(request)
+    context["scirius_release"] = settings.APP_LONG_NAME + " v" + settings.SCIRIUS_VERSION
+    context["app_mngt_name"] = settings.APP_MNGT_NAME
+    context["scirius_title"] = get_middleware_module("common").get_homepage_context()["title"]
+    context["scirius_short_title"] = get_middleware_module("common").get_homepage_context()["short_title"]
+    context["common_long_name"] = get_middleware_module("common").get_homepage_context()["common_long_name"]
+    context["product_long_name"] = get_middleware_module("common").get_homepage_context()["product_long_name"]
+    context["use_stamuslogger"] = get_middleware_module("common").use_stamuslogger()
     gsettings = get_system_settings()
     if settings.USE_SURICATA_STATS:
-        context['suricata_stats'] = 1
+        context["suricata_stats"] = 1
     if settings.USE_LOGSTASH_STATS:
-        context['logstash_stats'] = 1
+        context["logstash_stats"] = 1
     if settings.HAVE_NETINFO_AGG:
-        context['netinfo_agg'] = 1
+        context["netinfo_agg"] = 1
 
-    context['elasticsearch'] = 1
-    context['custom_elasticsearch'] = gsettings.custom_elasticsearch
+    context["elasticsearch"] = 1
+    context["custom_elasticsearch"] = gsettings.custom_elasticsearch
     if settings.USE_KIBANA:
-        context['kibana'] = 1
+        context["kibana"] = 1
         if settings.KIBANA_PROXY:
-            context['kibana_url'] = "/kibana"
+            context["kibana_url"] = "/kibana"
         else:
-            context['kibana_url'] = settings.KIBANA_URL
+            context["kibana_url"] = settings.KIBANA_URL
 
     if settings.USE_EVEBOX:
-        context['evebox'] = 1
-        context['evebox_url'] = "/evebox"
+        context["evebox"] = 1
+        context["evebox_url"] = "/evebox"
     if settings.USE_CYBERCHEF:
-        context['cyberchef'] = 1
-        context['cyberchef_url'] = "/static/cyberchef/"
+        context["cyberchef"] = 1
+        context["cyberchef_url"] = "/static/cyberchef/"
     if settings.SCIRIUS_HAS_DOC:
         djurl = request.resolver_match
-        context['help_link'] = help_links(djurl.view_name)
+        context["help_link"] = help_links(djurl.view_name)
 
-    context['toplinks'] = [{
-        'id': 'suricata',
-        'url': '/suricata/',
-        'icon': 'eye-open',
-        'label': 'Suricata',
-        'perm': request.user.has_perm('rules.configuration_view')
-    }]
-    context['monitoring_url'] = 'suricata_index'
+    context["toplinks"] = [
+        {
+            "id": "suricata",
+            "url": "/suricata/",
+            "icon": "eye-open",
+            "label": "Suricata",
+            "perm": request.user.has_perm("rules.configuration_view"),
+        }
+    ]
+    context["monitoring_url"] = "suricata_index"
 
-    extra_context = get_middleware_module('common').update_context(request)
-    if 'license' in context:
-        extra_context.pop('license', None)
+    extra_context = get_middleware_module("common").update_context(request)
+    if "license" in context:
+        extra_context.pop("license", None)
     context.update(extra_context)
-    context['messages'] = messages.get_messages(request)
-    context['settings'] = settings
+    context["messages"] = messages.get_messages(request)
+    context["settings"] = settings
     complete_context(request, context)
     return render(request, template, context)
 
 
-def scirius_listing(request, objectname, assocfn, template='rules/object_list.html', table=None, adduri=None):
+def scirius_listing(request, objectname, assocfn, template="rules/object_list.html", table=None, adduri=None):
     # FIXME could be improved by generating function name
 
     name = list(assocfn.keys())[0]
-    if name == 'Roles' and get_middleware_module('common').has_ldap_auth():
-        assocfn['Roles']['action_links']['edit_priorities'] = 'Edit priorities'
+    if name == "Roles" and get_middleware_module("common").has_ldap_auth():
+        assocfn["Roles"]["action_links"]["edit_priorities"] = "Edit priorities"
 
     action = name
     if not isinstance(objectname, QuerySet):
-        action = objectname.__name__.lower() if name != 'Roles' else 'role'
+        action = objectname.__name__.lower() if name != "Roles" else "role"
         olist = objectname.objects.all()
     else:
         olist = objectname
 
     if name in assocfn:
-        if 'annotate' in assocfn[name]:
-            olist = olist.annotate(**assocfn[name]['annotate'])
-        if 'order_by' in assocfn[name]:
-            olist = olist.order_by(*assocfn[name]['order_by'])
+        if "annotate" in assocfn[name]:
+            olist = olist.annotate(**assocfn[name]["annotate"])
+        if "order_by" in assocfn[name]:
+            olist = olist.order_by(*assocfn[name]["order_by"])
 
-    links = assocfn.get(name, {}).get('manage_links', {})
-    action_links = assocfn.get(name, {}).get('action_links', {})
+    links = assocfn.get(name, {}).get("manage_links", {})
+    action_links = assocfn.get(name, {}).get("action_links", {})
 
     if olist:
         if table is None:
-            data = assocfn[name]['table'](olist)
+            data = assocfn[name]["table"](olist)
         else:
             data = table(olist)
         tables.RequestConfig(request).configure(data)
@@ -206,32 +209,44 @@ def scirius_listing(request, objectname, assocfn, template='rules/object_list.ht
         data = None
 
     context = {
-        'objects': data,
-        'size': olist.count(),
-        'name': name,
-        'manage_links': links,
-        'action_links': action_links,
-        'action': action,
-        'adduri': adduri
+        "objects": data,
+        "size": olist.count(),
+        "name": name,
+        "manage_links": links,
+        "action_links": action_links,
+        "action": action,
+        "adduri": adduri,
     }
 
     return scirius_render(request, template, context)
 
 
 def get_middleware_module(module):
-    return import_module('%s.%s' % (settings.RULESET_MIDDLEWARE, module))
+    return import_module("%s.%s" % (settings.RULESET_MIDDLEWARE, module))
 
 
 def help_links(djlink):
     HELP_LINKS_TABLE = {
         "sources": {"name": "Creating a source", "base_url": "doc/ruleset.html", "anchor": "#creating-source"},
         "add_source": {"name": "Add a custom source", "base_url": "doc/ruleset.html", "anchor": "#manual-addition"},
-        "add_public_source": {"name": "Add a public source", "base_url": "doc/ruleset.html", "anchor": "#public-sources"},
-        "threshold_rule": {"name": "Suppression and thresholding", "base_url": "doc/ruleset.html", "anchor": "#suppression-and-thresholding"},
+        "add_public_source": {
+            "name": "Add a public source",
+            "base_url": "doc/ruleset.html",
+            "anchor": "#public-sources",
+        },
+        "threshold_rule": {
+            "name": "Suppression and thresholding",
+            "base_url": "doc/ruleset.html",
+            "anchor": "#suppression-and-thresholding",
+        },
         "add_ruleset": {"name": "Ruleset creation", "base_url": "doc/ruleset.html", "anchor": "#creating-ruleset"},
         "edit_ruleset": {"name": "Edit Ruleset", "base_url": "doc/ruleset.html", "anchor": "#editing-ruleset"},
         "edit_rule": {"name": "Transform Rule", "base_url": "doc/ruleset.html", "anchor": "#rule-transformations"},
-        "accounts_manage": {"name": "Accounts Management", "base_url": "doc/local-user-management.html", "anchor": "#manage-accounts"},
+        "accounts_manage": {
+            "name": "Accounts Management",
+            "base_url": "doc/local-user-management.html",
+            "anchor": "#manage-accounts",
+        },
     }
     Probe = __import__(settings.RULESET_MIDDLEWARE)
     help_link = Probe.common.help_links(djlink)
@@ -261,7 +276,7 @@ def convert_datetime_to_timestamp(dt: datetime.datetime, in_ms: bool = False) ->
 # Based on https://github.com/jieter/django-tables2/blob/master/CHANGELOG.md#breaking-changes-200
 class SciriusTable(tables.Table):
     def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
+        self.request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
 
     def get_column_class_names(self, classes_set, bound_column):
@@ -298,26 +313,22 @@ class RequestsWrapper:
         """
         Initialize HTTPX client with all the related configuraation
         """
-        client_kwargs: dict[str, Any] = {
-            'timeout': 30,
-            'verify': self._verify,
-            'headers': self._get_default_headers()
-        }
+        client_kwargs: dict[str, Any] = {"timeout": 30, "verify": self._verify, "headers": self._get_default_headers()}
 
         if use_proxy:
             proxy = self._get_proxy(scheme)
             if proxy:
-                client_kwargs['proxy'] = proxy
+                client_kwargs["proxy"] = proxy
 
         return httpx.Client(**client_kwargs)
 
     def _get_default_headers(self) -> dict[str, str]:
-        agent = f'scirius/{settings.SCIRIUS_VERSION}'
-        seed = os.getenv('STAMUSCTL_SEED')
+        agent = f"scirius/{settings.SCIRIUS_VERSION}"
+        seed = os.getenv("STAMUSCTL_SEED")
         if seed:
             seed = seed.strip().strip('"')
-            agent = f'scirius/{settings.SCIRIUS_VERSION} ({seed})'
-        return {'User-Agent': agent}
+            agent = f"scirius/{settings.SCIRIUS_VERSION} ({seed})"
+        return {"User-Agent": agent}
 
     def request(self, method: str, url: str, **kwargs) -> httpx.Response:
         """
@@ -346,9 +357,9 @@ class RequestsWrapper:
 
         except httpx.HTTPError as exc:
             # Centralize HTTP errors management
-            if hasattr(exc, 'response') and exc.response.status_code == 404:
+            if hasattr(exc, "response") and exc.response.status_code == 404:
                 raise OSError("URL not found on server (error 404), please check URL")
-            if hasattr(exc, 'response'):
+            if hasattr(exc, "response"):
                 raise OSError(f"HTTP error {exc.response.status_code} sent by server, please check URL or server")
             # HTTP error without response (ex: redirect before response)
             raise OSError(f"An unspecified HTTP error occurred: {exc}")
@@ -430,30 +441,20 @@ def sizeof_fmt(num: float) -> str:
 
 def get_folder_size(folder):
     # based on: https://stackoverflow.com/a/55659577
-    return sum(file.stat().st_size for file in Path(folder).rglob('*'))
+    return sum(file.stat().st_size for file in Path(folder).rglob("*"))
 
 
 def is_ajax(request):
-    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    return request.headers.get("x-requested-with") == "XMLHttpRequest"
 
 
-class ExtendedJSONEncoder(json.JSONEncoder):
-    """Custom JSONEncoder that handles datetime objects."""
-
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            # Convert datetime object to ISO 8601 string
-            if is_aware(obj):
-                obj = make_naive(obj)
-            return obj.isoformat()
-        # default behaviour for remaining stuff
-        return super().default(obj)
-
-
-class ExtendedJSONSerializer(DjangoJSONSerializer):
+class ORJSONSessionSerializer(DjangoJSONSerializer):
     """
     Extended JSONSerializer that uses a custom encoder to handle datetime objects.
     """
 
     def dumps(self, obj):
-        return json.dumps(obj, separators=(",", ":"), cls=ExtendedJSONEncoder).encode("latin-1")
+        return orjson.dumps(obj, option=orjson.OPT_NAIVE_UTC | orjson.OPT_NON_STR_KEYS)
+
+    def loads(self, data):
+        return orjson.loads(data)

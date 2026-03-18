@@ -1,5 +1,5 @@
 from typing import ClassVar
-import json
+import orjson as json
 
 from django.conf import settings
 from django.core.exceptions import ValidationError

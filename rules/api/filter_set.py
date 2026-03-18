@@ -1,4 +1,4 @@
-import json
+import orjson
 from typing import Any
 
 from django.conf import settings
@@ -20,7 +20,7 @@ class FilterSetSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data: dict[str, Any]):
         try:
             if "content" in data:
-                data["content"] = json.dumps(data["content"])
+                data["content"] = orjson.dumps(data["content"]).decode('utf-8')
         except ValueError:
             raise serializers.ValidationError({"content": "Not a JSON format."})
 
@@ -31,7 +31,7 @@ class FilterSetSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["content"] = json.loads(data["content"])
+        data["content"] = orjson.loads(data["content"])
         data["share"] = "global" if data["user"] is None else "private"
         data.pop("user")
 

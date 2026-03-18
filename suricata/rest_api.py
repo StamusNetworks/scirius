@@ -1,5 +1,5 @@
 import os
-import json
+import orjson
 import subprocess
 
 from drf_spectacular.utils import extend_schema
@@ -92,13 +92,13 @@ class PcapFilestoreViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def upload(self, request):
         content = self._extract_file(request)
-        json_file = json.loads(content.decode())
+        json_file = orjson.loads(content.decode())
         filename = json_file['_id']
         json_file = json_file.get('_source', json_file)
         src_path = os.path.join('/tmp', '%s.json' % filename)  # noqa: S108
 
-        with open(src_path, 'w') as f:
-            f.write(json.dumps(json_file))
+        with open(src_path, 'wb') as f:
+            f.write(orjson.dumps(json_file))
 
         return Response({'upload': 'done', 'filename': filename})
 

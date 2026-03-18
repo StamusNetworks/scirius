@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import json
+import orjson as json
 from suricata.task_models import RecurrentTask
 from scirius.utils import SciriusTable
 from rules.tables import DefaultMeta
