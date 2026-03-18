@@ -143,7 +143,7 @@ def delete_scheduledtask(request: HttpRequest, task_id: int):
 @tasks_permission_required(MIDDLEWARE.task_models.RecurrentTask)
 def edit_scheduledtask(request: HttpRequest, task_id: int):
     stask = get_object_or_404(MIDDLEWARE.task_models.RecurrentTask, pk=task_id)
-    form = MIDDLEWARE.forms.EditRecurrentTaskForm(
+    form = MIDDLEWARE.forms.misc.EditRecurrentTaskForm(
         request.POST if request.method == "POST" else None, instance=stask, request=request
     )
     task_options = stask.get_task().task_options
