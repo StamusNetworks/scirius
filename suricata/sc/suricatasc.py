@@ -14,10 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
+import orjson
 import readline
 import select
 from socket import AF_UNIX, error, socket
@@ -118,7 +115,7 @@ class SuricataSC:
         while True:
             data += self.socket.recv(INC_SIZE).decode('iso-8859-1')
             if data.endswith('\n'):
-                cmdret = json.loads(data)
+                cmdret = orjson.loads(data)
                 break
         return cmdret
 
@@ -131,8 +128,8 @@ class SuricataSC:
         if arguments:
             cmdmsg['arguments'] = arguments
         if self.verbose:
-            print("SND: " + json.dumps(cmdmsg))
-        cmdmsg_str = json.dumps(cmdmsg) + "\n"
+            print("SND: " + orjson.dumps(cmdmsg).decode('utf-8'))
+        cmdmsg_str = orjson.dumps(cmdmsg).decode('utf-8') + "\n"
         self.socket.send(bytes(cmdmsg_str, 'iso-8859-1'))
 
         ready = select.select([self.socket], [], [], 600)
@@ -144,7 +141,7 @@ class SuricataSC:
             raise SuricataReturnException("Unable to get message from server")
 
         if self.verbose:
-            print("RCV: %s" % json.dumps(cmdret))
+            print("RCV: {}".format(orjson.dumps(cmdret).decode('utf-8')))
 
         return cmdret
 
@@ -159,9 +156,9 @@ class SuricataSC:
         self.socket.settimeout(10)
         # send version
         if self.verbose:
-            print("SND: " + json.dumps({"version": VERSION}))
+            print("SND: " + orjson.dumps({"version": VERSION}).decode('utf-8'))
 
-        self.socket.send(bytes(json.dumps({"version": VERSION}), 'iso-8859-1'))
+        self.socket.send(orjson.dumps({"version": VERSION}, 'iso-8859-1'))
 
         ready = select.select([self.socket], [], [], 600)
         if ready[0]:
@@ -173,7 +170,7 @@ class SuricataSC:
             raise SuricataReturnException("Unable to get message from server")
 
         if self.verbose:
-            print("RCV: %s" % json.dumps(cmdret))
+            print("RCV: {}".format(orjson.dumps(cmdret).decode('utf-8')))
 
         if cmdret["return"] == "NOK":
             raise SuricataReturnException("Error: %s" % (cmdret["message"]))
@@ -253,9 +250,9 @@ class SuricataSC:
                 # decode json message
                 if cmdret["return"] == "NOK":
                     print("Error:")
-                    print(json.dumps(cmdret["message"], sort_keys=True, indent=4, separators=(',', ': ')))
+                    print(orjson.dumps(cmdret["message"], option=orjson.OPT_SORT_KEYS | orjson.OPT_INDENT_2).decode('utf-8'))
                 else:
                     print("Success:")
-                    print(json.dumps(cmdret["message"], sort_keys=True, indent=4, separators=(',', ': ')))
+                    print(orjson.dumps(cmdret["message"], option=orjson.OPT_SORT_KEYS | orjson.OPT_INDENT_2).decode('utf-8'))
         except KeyboardInterrupt:
             print("[!] Interrupted")

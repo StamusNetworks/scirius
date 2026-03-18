@@ -27,7 +27,7 @@ from django.urls import reverse
 
 # Create your models here.
 import os
-import json
+import orjson
 import socket
 
 from rules.models.model import Ruleset, Rule, export_iprep_files
@@ -71,7 +71,7 @@ class Suricata(models.Model):
         with open(os.path.join(settings.SURICATA_OUTPUT_DIRECTORY, 'rules.json'), 'w') as rfile:
             for rule in Rule.objects.all():
                 dic = {'sid': rule.pk, 'created': str(rule.created), 'updated': str(rule.updated)}
-                rfile.write(json.dumps(dic) + '\n')
+                rfile.write(orjson.dumps(dic).decode('utf-8') + '\n')
         # Export IPrep
         export_iprep_files(settings.SURICATA_OUTPUT_DIRECTORY, cats_content, iprep_content)
 

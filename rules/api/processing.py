@@ -19,7 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import contextlib
-import json
+import orjson as json
 from collections.abc import Iterable
 from typing import ClassVar
 
@@ -78,7 +78,7 @@ class JSONStringField(serializers.Field):
         return json.loads(data)
 
     def to_internal_value(self, data):
-        return json.dumps(data)
+        return json.dumps(data).decode('utf-8')
 
 
 class ThresholdOptionsSerializer(serializers.Serializer):

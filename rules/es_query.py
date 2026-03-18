@@ -6,7 +6,7 @@ import logging
 from collections import OrderedDict
 from traceback import format_exc
 import os
-import json
+import orjson
 import re
 import urllib.parse
 
@@ -137,7 +137,7 @@ class ESWrap(object):
     def __call__(self, *args, **kwargs):
         if settings.DEBUG:
             msg = ''
-            body = json.dumps(kwargs.get('body'), sort_keys=True, indent=2)
+            body = orjson.dumps(kwargs.get('body'), option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS).decode("utf-8")
             if 'index' in kwargs:
                 msg = kwargs['index']
                 if body:
@@ -550,7 +550,7 @@ class ESQuery:
                 val = val['settings']
 
                 if 'index' in val and 'blocks' in val['index'] and 'read_only_allow_delete' in val['index']['blocks']:
-                    if json.loads(val['index']['blocks'].get('read_only_allow_delete', 'false')):
+                    if orjson.loads(val['index']['blocks'].get('read_only_allow_delete', 'false')):
                         return True
         return False
 

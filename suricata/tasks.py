@@ -19,7 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
-import json
+import orjson as json
 import structlog
 from functools import wraps
 from datetime import timedelta

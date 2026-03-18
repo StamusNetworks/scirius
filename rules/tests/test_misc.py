@@ -1,5 +1,5 @@
 import sys
-import json
+import orjson
 import re
 from django.contrib.auth.models import User, Group
 from django.urls import reverse
@@ -242,7 +242,7 @@ class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
         SourceUpdate.objects.create(
             source=self.public_source,
             created_date=timezone.now(),
-            data=json.dumps(data),
+            data=orjson.dumps(data).decode('utf-8'),
             changed=len(data["deleted"]) + len(data["added"]) + len(data["updated"]),
         )
 

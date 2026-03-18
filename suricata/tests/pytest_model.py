@@ -1,5 +1,5 @@
 import pytest
-import json
+import orjson
 
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock
@@ -220,7 +220,7 @@ def test_recurrent_task_schedule_run(db, mock_user, mocker):
         user=mock_user,
         recurrence="daily",
         scheduled=timezone.now(),
-        task_options=json.dumps({"option_a": 1, "option_b": 2}),
+        task_options=orjson.dumps({"option_a": 1, "option_b": 2}).decode('utf-8'),
     )
 
     mock_celery_spawn = mocker.patch("suricata.task_models.CeleryTask.spawn")

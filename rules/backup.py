@@ -25,7 +25,7 @@ import tempfile
 import shutil
 import os
 import sys
-import json
+import orjson
 
 from dbbackup.db.base import get_connector
 from dbbackup.storage import get_storage
@@ -132,7 +132,7 @@ class SCBackup(SCOperation):
         migfile = os.path.join(self.directory, 'miglevel')
 
         with open(migfile, 'w') as miglevel:
-            miglevel.write(json.dumps(last_migrations))
+            miglevel.write(orjson.dumps(last_migrations).decode('utf-8'))
 
     def run(self):
         self.directory = tempfile.mkdtemp()
@@ -215,7 +215,7 @@ class SCRestore(SCOperation):
     def test_migration_level(self):
         miglevel = None
         with open(os.path.join(self.directory, 'miglevel'), 'r') as migfile:
-            miglevel = json.load(migfile)
+            miglevel = orjson.loads(migfile.read())
         return self.is_migration_level_lower(miglevel)
 
     def run(self):

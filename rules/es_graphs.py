@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import math
-import json
+import orjson
 import structlog
 
 from django.conf import settings
@@ -818,7 +818,7 @@ class ESShardStats(ESQuery):
                 }
                 params = {'filter_path': 'index,node_allocation_decisions.node_name,node_allocation_decisions.deciders.*'}
                 content = self.es.cluster.allocation_explain(body=body, params=params)
-                res['explains'].append(json.dumps(content))
+                res['explains'].append(orjson.dumps(content).decode('utf-8'))
         res['explains'] = '\n'.join(res['explains'])
 
         return res

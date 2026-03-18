@@ -29,7 +29,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 import pytz
 
-import json
+import orjson
 from copy import deepcopy
 from datetime import datetime, timedelta
 
@@ -113,7 +113,7 @@ class CeleryTaskBase(models.Model):
         user = _kwargs.pop("user", None)
         run_from_command = _kwargs.pop("run_from_command", False)
         rtask_parent = _kwargs.pop("rtask_parent", None)
-        task_options = json.dumps(_kwargs)
+        task_options = orjson.dumps(_kwargs).decode('utf-8')
         run_now = False
 
         if recurrence:
@@ -346,7 +346,7 @@ class RecurrentTaskBase(models.Model):
         return self.scheduled + timedelta(seconds=runs * self.get_interval())
 
     def schedule_run(self, eta: datetime | None = None, **kwargs):
-        kwargs.update(json.loads(self.task_options))
+        kwargs.update(orjson.loads(self.task_options))
         CeleryTask.spawn(self.task, schedule=eta, user=self.user, rtask_parent=self, **kwargs)
 
     def display(self, **kwargs):
