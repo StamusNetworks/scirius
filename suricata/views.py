@@ -29,7 +29,7 @@ from scirius.utils import scirius_render
 
 # import task to be seen by MIDDLEWARE
 from suricata.tables import RecurrentTaskTable  # noqa: F401
-from suricata.forms import SuricataForm, SuricataUpdateForm
+from suricata.forms.misc import SuricataForm, SuricataUpdateForm
 from suricata.models import Suricata
 from rules.models.model import SuppressedRuleAtVersion, dependencies_check, Rule, UserAction
 
