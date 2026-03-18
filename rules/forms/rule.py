@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import json
+import orjson
 import tarfile
 from io import BytesIO
 
@@ -48,7 +48,7 @@ class PoliciesForm(RulesetPolicyEditPermForm, BaseEditForm, forms.Form):
 
         with tarfile.open(fileobj=file_, mode="r:gz") as tar:
             policy = tar.getmember("policies.json")
-            content = json.loads(tar.extractfile(policy).read().decode())
+            content = orjson.loads(tar.extractfile(policy).read().decode())
 
             with transaction.atomic():
                 if delete:
@@ -87,7 +87,7 @@ class PoliciesForm(RulesetPolicyEditPermForm, BaseEditForm, forms.Form):
                         get_middleware_module("common").import_policies(**extra_policies)
 
                 filterset = tar.getmember("filtersets.json")
-                content = json.loads(tar.extractfile(filterset).read().decode())
+                content = orjson.loads(tar.extractfile(filterset).read().decode())
 
                 for item in content:
                     item["imported"] = True
@@ -124,8 +124,8 @@ class PoliciesForm(RulesetPolicyEditPermForm, BaseEditForm, forms.Form):
             get_middleware_module("common").update_policies(proc_filter)
 
         # Get only shared filtersets
-        json_filtersets = json.dumps(list(FilterSet.objects.filter(user_id=None).values(*filterset_fields)))
-        json_content = json.dumps(list(res.values()), cls=DjangoJSONEncoder)
+        json_filtersets = orjson.dumps(list(FilterSet.objects.filter(user_id=None).values(*filterset_fields))).decode('utf-8')
+        json_content = orjson.dumps(list(res.values()), cls=DjangoJSONEncoder).decode('utf-8')
 
         tar_path_io = BytesIO()
         with tarfile.open(fileobj=tar_path_io, mode="w:gz") as tar:

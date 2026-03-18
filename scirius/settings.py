@@ -395,7 +395,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-SESSION_SERIALIZER = "scirius.utils.ExtendedJSONSerializer"
+SESSION_SERIALIZER = "scirius.utils.ORJSONSessionSerializer"
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
@@ -418,6 +418,8 @@ CSP_EXCLUDE_URL_PREFIXES = ('/evebox', '/schema', '/redoc', '/swagger', '/mcp')
 CSP_BASE_URI = ("'self'",)
 
 REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": ("scirius.drf.ORJSONRenderer",),
+    "DEFAULT_PARSER_CLASSES": ("scirius.drf.ORJSONParser",),
     'DEFAULT_PERMISSION_CLASSES': (
         'rules.api.permissions.HasGroupPermission',
     ),

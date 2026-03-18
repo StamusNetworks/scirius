@@ -80,6 +80,7 @@ dependencies = [
     "opentelemetry-instrumentation-django==0.59b0",
     "opentelemetry-instrumentation-logging==0.59b0",
     "opentelemetry-sdk==1.38.0",
+    "orjson==3.11.7",
     "paramiko==3.4.0",
     "psutil==6.0.0",
     "psycopg2-binary==2.9.9",
@@ -260,11 +261,11 @@ skip-magic-trailing-comma = false
 line-ending = "lf"
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests.py" = ["S101"]
-"**/test_*.py" = ["S101"]
-"**/pytest.py" = ["S101"]
-"**/pytests.py" = ["S101"]
-"**/pytest_*.py" = ["S101"]
+"**/tests.py" = ["S101", "SLF001"]
+"**/test_*.py" = ["S101", "SLF001"]
+"**/pytest.py" = ["S101", "SLF001"]
+"**/pytests.py" = ["S101", "SLF001"]
+"**/pytest_*.py" = ["S101", "SLF001"]
 
 [tool.ruff.lint]
 # select = [

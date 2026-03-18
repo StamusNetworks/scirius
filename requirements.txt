@@ -50,6 +50,7 @@ opentelemetry-instrumentation-django
 opentelemetry-instrumentation-logging
 opentelemetry-api
 opentelemetry-sdk
+orjson
 paramiko
 psutil
 psycopg2-binary

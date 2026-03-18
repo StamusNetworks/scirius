@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import base64
 import fcntl
-import json
+import orjson
 import logging
 import os
 import re
@@ -874,7 +874,7 @@ class Source(models.Model):
         SourceUpdate.objects.create(
             source=self,
             created_date=timezone.now(),
-            data=json.dumps(update),
+            data=orjson.dumps(update).decode('utf-8'),
             changed=len(update["deleted"]) + len(update["added"]) + len(update["updated"]),
         )
 
@@ -1111,7 +1111,7 @@ class SourceUpdate(models.Model):
         return reverse("sourceupdate", args=[str(self.id)])
 
     def diff(self):
-        data = json.loads(self.data)
+        data = orjson.loads(self.data)
         diff = data
         diff["stats"] = {"updated": len(data["updated"]), "added": len(data["added"]), "deleted": len(data["deleted"])}
         diff["date"] = self.created_date
@@ -2570,7 +2570,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
         for rav in ravs:
             msg = content[rav.rule.sid]
             msg.pop("raw")
-            rav.analysis = json.dumps(msg)
+            rav.analysis = orjson.dumps(msg).decode('utf-8')
 
         if ravs:
             RuleAtVersion.objects.bulk_update(ravs, ["analysis"], batch_size=1000)
@@ -2832,7 +2832,7 @@ class Ruleset(models.Model, Transformable):
         return self.name
 
     def _json_errors(self):
-        return json.loads(self.errors)
+        return orjson.loads(self.errors)
 
     json_errors = property(_json_errors)
 
@@ -3228,9 +3228,9 @@ class Ruleset(models.Model, Transformable):
         result["rules_count"] = self.rules_count
         self.validity = result["status"]
         if "errors" in result:
-            self.errors = json.dumps(result["errors"])
+            self.errors = orjson.dumps(result["errors"]).decode('utf-8')
         else:
-            self.errors = json.dumps([])
+            self.errors = orjson.dumps([]).decode('utf-8')
         self.save()
         return result
 
@@ -3449,7 +3449,7 @@ class RuleProcessingFilter(models.Model):
     def get_options(self):
         if not self.options:
             return {}
-        return json.loads(self.options)
+        return orjson.loads(self.options)
 
     def get_threshold_content(self, ruleset=None):
         sid_track_ip = {}

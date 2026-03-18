@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import builtins
 import contextlib
-import json
+import orjson as json
 import tarfile
 from datetime import datetime, UTC
 

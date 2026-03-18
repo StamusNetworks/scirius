@@ -19,7 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import json
+import orjson
 from django.db import models
 import psutil
 from rest_framework import serializers
@@ -352,7 +352,7 @@ def login_redirection_url(request):
 
 
 def current_user_js(request):
-    return 'var current_user = %s;\n' % json.dumps(request.user.sciriususer.to_dict(json_compatible=True))
+    return 'var current_user = %s;\n' % orjson.dumps(request.user.sciriususer.to_dict(json_compatible=True).decode('utf-8'))
 
 
 def rule_version(_):
