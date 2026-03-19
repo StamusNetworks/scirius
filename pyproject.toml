@@ -124,6 +124,8 @@ dev = [
     "pytest-freezegun",
     "pytest-cov",
     "pytest-xdist",
+    "pytest-sugar",
+    "pytest-drop-dup-tests",
     "ruff",           # Code linter/formatter
     "mypy",           # Type checker
     "pre-commit",
