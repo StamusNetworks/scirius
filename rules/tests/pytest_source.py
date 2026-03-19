@@ -1,5 +1,6 @@
 import orjson
 import os
+import pytest
 import tarfile
 import tempfile
 from io import BytesIO
@@ -442,6 +443,8 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         sources = Source.objects.filter(pk=self.source.pk)
         self.assertEqual(sources.count(), 0)
 
+    @pytest.mark.timeout(300)
+    @pytest.mark.slow
     def test_004_custom_source_http(self):
         self._create_custom_source("http", "sigs", uri=ET_URL, cert_verif=True)
         self.source.update()
