@@ -304,6 +304,9 @@ usefixtures = ["django_db_setup"]  # to create the DB automatically without usin
 # If you are expecting a slow test you can use `@pytest.mark.timeout(300)` above your test function
 timeout = 120
 
+# If a test is taking more than 5 minutes, stop everything and dump stacktrace of all threads
+faulthandler_timeout=300
+
 # asyncio_mode = "auto" # Or "strict" for explicit markers
 asyncio_default_fixture_loop_scope = "class"  # function | session | class
 addopts = [
