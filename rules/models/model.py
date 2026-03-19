@@ -32,7 +32,7 @@ from datetime import date as datetime_date
 from enum import Enum, unique
 from io import BytesIO
 from collections.abc import Iterable
-from typing import ClassVar, TypedDict
+from typing import Any, ClassVar, TypedDict
 
 import IPy
 from django.conf import settings
@@ -327,7 +327,7 @@ class Source(models.Model):
         else:
             self.update_ruleset = None
         self.first_run = False
-        self.updated_rules = {"added": [], "deleted": [], "updated": []}
+        self.updated_rules = {"added": set(), "deleted": set(), "updated": set()}
 
         from scirius.utils import get_middleware_module
 
@@ -558,10 +558,10 @@ class Source(models.Model):
     def __str__(self):
         return self.name
 
-    def aggregate_update(self, update):
-        self.updated_rules["added"] = list(set(self.updated_rules["added"]).union(set(update["added"])))
-        self.updated_rules["deleted"] = list(set(self.updated_rules["deleted"]).union(set(update["deleted"])))
-        self.updated_rules["updated"] = list(set(self.updated_rules["updated"]).union(set(update["updated"])))
+    def aggregate_update(self, update: dict[str, Any]):
+        self.updated_rules["added"] = set(self.updated_rules["added"]).union(set(update["added"]))
+        self.updated_rules["deleted"] = set(self.updated_rules["deleted"]).union(set(update["deleted"]))
+        self.updated_rules["updated"] = set(self.updated_rules["updated"]).union(set(update["updated"]))
 
     def get_categories(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
@@ -858,12 +858,8 @@ class Source(models.Model):
         Rule.SID_RANGES = get_middleware_module("common").get_stamus_range(self)
         self.get_categories()
 
-    def json_rules_list(self, rlist):
-        rules = []
-        for rule in rlist:
-            rules.append({"sid": rule.sid, "msg": rule.msg, "category": rule.category.name, "pk": rule.pk})
-        # for each rule we create a json object sid + msg + content
-        return rules
+    def json_rules_list(self, rlist: Iterable["Rule"]):
+        return [{"sid": rule.sid, "msg": rule.msg, "category": rule.category.name, "pk": rule.pk} for rule in rlist]
 
     def create_update(self):
         # for each set
@@ -916,7 +912,7 @@ class Source(models.Model):
                     source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
                     get_middleware_module("common").update_custom_source(source_path)
 
-                rules_pk = [rule.sid for rule in self.updated_rules["deleted"]]
+                rules_pk = {rule.sid for rule in self.updated_rules["deleted"]}
                 Rule.objects.filter(pk__in=rules_pk).delete()
 
         finally:
@@ -1694,7 +1690,7 @@ class Category(models.Model, Transformable, Cache):
         group_rule.next_rev = rule.rev
 
     def add_group_signature(
-        self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged
+        self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged: set
     ):
         # parse the line with ids tools
         try:
@@ -1737,9 +1733,9 @@ class Category(models.Model, Transformable, Cache):
                     # the signature will be deleted as it is not referenced in a changed or
                     # unchanged list
                     if rule_base_msg == existing_rules_hash[rule.sid][version].rule.msg:
-                        rules_update["updated"].append(existing_rules_hash[rule.sid][version].rule)
+                        rules_update["updated"].add(existing_rules_hash[rule.sid][version].rule)
             else:
-                rules_unchanged.append(group_rule)
+                rules_unchanged.add(group_rule)
         else:
             creation_date = timezone.now()
             state = True
@@ -1762,7 +1758,7 @@ class Category(models.Model, Transformable, Cache):
                     rav.state = state
                 rav.commented_in_source = not state
                 rav.save()
-                rules_update["updated"].append(group_rule)
+                rules_update["updated"].add(group_rule)
             else:
                 group_rule = Rule(
                     category=self,
@@ -1784,7 +1780,7 @@ class Category(models.Model, Transformable, Cache):
 
                 rav.parse_metadata()
                 rav.parse_flowbits(source, flowbits, addition=True)
-                rules_update["updated"].append(group_rule)
+                rules_update["updated"].add(group_rule)
                 rules_update["ravs"].append(rav)
             if track_by == "src":
                 group_rule.group_by = "by_src"
@@ -1805,9 +1801,9 @@ class Category(models.Model, Transformable, Cache):
         if filename is None:
             filename = self.filename
 
-        rules_update = {"added": [], "deleted": [], "updated": [], "ravs": []}
+        rules_update = {"added": set(), "deleted": set(), "updated": set(), "ravs": []}
         flowbits = {"added": {"flowbit": [], "through_set": [], "through_isset": []}}
-        rules_unchanged = []
+        rules_unchanged = set()
 
         if existing_rules_hash is None:
             existing_rules_hash = {"groups": {}}
@@ -1828,11 +1824,11 @@ class Category(models.Model, Transformable, Cache):
                         existing_rules_hash["groups"][rule.category.name] = []
                     existing_rules_hash["groups"][rule.category.name].append(rav)
 
-        rules_list = Rule.objects.filter(
-            sid__in=RuleAtVersion.objects.filter(rule__category=self, version=version).values_list(
-                "rule__sid", flat=True
-            )
-        )
+        rules_list = {
+            versions_dict[version].rule
+            for sid, versions_dict in existing_rules_hash.items()
+            if sid != "groups" and version in versions_dict and versions_dict[version].rule.category_id == self.pk
+        }
 
         for key in ("flowbits", "hostbits", "xbits"):
             flowbits[key] = {}
@@ -1845,176 +1841,172 @@ class Category(models.Model, Transformable, Cache):
         if source.use_iprep:
             rules_groups = self.build_sigs_group(existing_rules_hash)
 
-        with open(os.path.join(source_git_dir, filename)) as rfile:
-            with transaction.atomic():
-                for line in rfile:
-                    state = True
-                    if line.startswith("#"):
-                        # check if it is a commented signature
-                        if "->" in line and "sid" in line and ")" in line:
-                            line = line.lstrip("# ")
-                            state = False
-                        else:
-                            continue
-                    match = getsid.search(line)
-                    if not match:
+        with open(os.path.join(source_git_dir, filename)) as rfile, transaction.atomic():
+            for line in rfile:
+                state = True
+                if line.startswith("#"):
+                    # check if it is a commented signature
+                    if "->" in line and "sid" in line and ")" in line:
+                        line = line.lstrip("# ")
+                        state = False
+                    else:
                         continue
-                    sid_str = match.groups()[0]
-                    match = getrev.search(line)
-                    if match:
-                        rev = int(match.groups()[0])
-                    else:
-                        rev = None
-                    match = getmsg.search(line)
-                    if not match:
-                        msg = ""
-                    else:
-                        msg = match.groups()[0]
-                        # length of message could exceed 1000 so truncate
-                        if len(msg) > 1000:
-                            msg = msg[0:999]
+                match = getsid.search(line)
+                if not match:
+                    continue
+                sid_str = match.groups()[0]
+                match = getrev.search(line)
+                rev = int(match.groups()[0]) if match else None
+                match = getmsg.search(line)
+                if not match:
+                    msg = ""
+                else:
+                    msg = match.groups()[0]
+                    # length of message could exceed 1000 so truncate
+                    if len(msg) > 1000:
+                        msg = msg[0:999]
 
-                    if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
-                        self.add_group_signature(
-                            rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged
-                        )
-                    else:
-                        sid = int(sid_str)
-                        if sid in existing_rules_hash and version in existing_rules_hash[sid]:
-                            # FIXME update references if needed
-                            rav = existing_rules_hash[sid][version]
-                            rule = rav.rule
+                if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
+                    self.add_group_signature(
+                        rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged
+                    )
+                else:
+                    sid = int(sid_str)
+                    if sid in existing_rules_hash and version in existing_rules_hash[sid]:
+                        # FIXME update references if needed
+                        rav = existing_rules_hash[sid][version]
+                        rule = rav.rule
 
-                            if rule.category.source != source:
-                                raise DuplicateSidException(sid)
+                        if rule.category.source != source:
+                            raise DuplicateSidException(sid)
 
-                            # check if rav has been saved,
-                            # if not it means rules with duplicate sids in same source
-                            if rav.pk is None:
-                                raise DuplicateSidException(sid, same_source=True)
+                        # check if rav has been saved,
+                        # if not it means rules with duplicate sids in same source
+                        if rav.pk is None:
+                            raise DuplicateSidException(sid, same_source=True)
 
-                            if (
-                                rav.content != line or rule.group is True or (rav.state != rav.commented_in_source and rav.commented_in_source == state)
-                            ):
-                                rav.content = line
+                        if (
+                            rav.content != line or rule.group is True or (rav.state != rav.commented_in_source and rav.commented_in_source == state)
+                        ):
+                            rav.content = line
 
-                                if rav.state != rav.commented_in_source and rav.commented_in_source == state:
-                                    rav.state = state
-                                rav.commented_in_source = not state
+                            if rav.state != rav.commented_in_source and rav.commented_in_source == state:
+                                rav.state = state
+                            rav.commented_in_source = not state
 
-                                rav.rev = 0 if rev is None else rev
-                                rav.parse_metadata()
-                                rav.parse_flowbits(source, flowbits)
-                                rav.updated_date = creation_date
-                                rav.save()
-
-                                if rule.category != self:
-                                    rule.category = self
-
-                                if rule.msg != msg:
-                                    rule.msg = msg
-
-                                rule.save()
-                                rules_update["updated"].append(rule)
-
-                            else:
-                                rules_unchanged.append(rule)
-                        else:
-                            if rev is None:
-                                rev = 0
-
-                            if sid in existing_rules_hash:
-                                rule = list(existing_rules_hash[sid].values())[0].rule
-                                rules_update["updated"].append(rule)
-                            else:
-                                rule = Rule(
-                                    category=self,
-                                    sid=sid,
-                                    msg=msg,
-                                )
-                                existing_rules_hash[rule.sid] = {}
-
-                                try:
-                                    rule.clean()
-                                    # we avoid foreign key / pk (sid) to not call DB
-                                    # on each rule
-                                    rule.full_clean(exclude=("category", "sid"))
-                                except ValidationError as e:
-                                    err = {"sid_": rule.sid}
-                                    err.update(e.message_dict)
-                                    raise ValidationError(err)
-
-                                rules_update["added"].append(rule)
-
-                            rav = RuleAtVersion(
-                                rule=rule,
-                                rev=rev,
-                                version=version,
-                                content=line,
-                                state=state,
-                                commented_in_source=not state,
-                                imported_date=creation_date,
-                                updated_date=creation_date,
-                            )
-
+                            rav.rev = 0 if rev is None else rev
                             rav.parse_metadata()
-                            rav.parse_flowbits(source, flowbits, addition=True)
-                            rules_update["ravs"].append(rav)
-                            existing_rules_hash[rule.sid][rav.version] = rav
-
-                if len(rules_update["added"]):
-                    try:
-                        Rule.objects.bulk_create(rules_update["added"])
-                    except IntegrityError as e:
-                        error = str(e)
-                        match = re.search(r"\(sid\)=\((\d+)\)", error)
-                        sid = ""
-                        if match:
-                            sid = match.group(1)
-                        raise DuplicateSidException(sid)
-
-                if len(rules_update["ravs"]):
-                    # We cannot validate before like rules,
-                    # because rules need to be saved first
-                    for rav in rules_update["ravs"]:
-                        try:
-                            rav.clean()
-                            rav.full_clean(exclude=("rule",))
-                        except ValidationError as e:
-                            err = {"sid_": rav.rule.sid}
-                            err.update(e.message_dict)
-                            raise ValidationError(err)
-
-                    RuleAtVersion.objects.bulk_create(rules_update["ravs"])
-
-                if len(rules_groups):
-                    for val in rules_groups.values():
-                        # If IP list is empty it will be deleted because it has not
-                        # been put in a changed or unchanged list. So we just care
-                        # about saving the rule.
-                        rav = val["rav"]
-                        rule = val["rule"]
-
-                        if len(rule.ips_list) > 0:
-                            rule.group_ips_list = ",".join(rule.ips_list)
-                            rule.save()
-                            rav.rev = rule.next_rev
+                            rav.parse_flowbits(source, flowbits)
+                            rav.updated_date = creation_date
                             rav.save()
 
-                            if rule.category.name not in existing_rules_hash["groups"]:
-                                existing_rules_hash["groups"][rule.category.name] = []
-                            existing_rules_hash["groups"][rule.category.name].append(rav)
+                            if rule.category != self:
+                                rule.category = self
 
-                if len(flowbits["added"]["flowbit"]):
-                    Flowbit.objects.bulk_create(flowbits["added"]["flowbit"])
-                if len(flowbits["added"]["through_set"]):
-                    Flowbit.set.through.objects.bulk_create(flowbits["added"]["through_set"])
-                if len(flowbits["added"]["through_isset"]):
-                    Flowbit.isset.through.objects.bulk_create(flowbits["added"]["through_isset"])
-                rules_update["deleted"] = list(
-                    set(rules_list) - set(rules_update["added"]).union(set(rules_update["updated"])) - set(rules_unchanged)
-                )
-                source.aggregate_update(rules_update)
+                            if rule.msg != msg:
+                                rule.msg = msg
+
+                            rule.save()
+                            rules_update["updated"].add(rule)
+
+                        else:
+                            rules_unchanged.add(rule)
+                    else:
+                        if rev is None:
+                            rev = 0
+
+                        if sid in existing_rules_hash:
+                            rule = next(iter(existing_rules_hash[sid].values())).rule
+                            rules_update["updated"].add(rule)
+                        else:
+                            rule = Rule(
+                                category=self,
+                                sid=sid,
+                                msg=msg,
+                            )
+                            existing_rules_hash[rule.sid] = {}
+
+                            try:
+                                rule.clean()
+                                # we avoid foreign key / pk (sid) to not call DB
+                                # on each rule
+                                rule.full_clean(exclude=("category", "sid"))
+                            except ValidationError as e:
+                                err = {"sid_": rule.sid}
+                                err.update(e.message_dict)
+                                raise ValidationError(err)
+
+                            rules_update["added"].add(rule)
+
+                        rav = RuleAtVersion(
+                            rule=rule,
+                            rev=rev,
+                            version=version,
+                            content=line,
+                            state=state,
+                            commented_in_source=not state,
+                            imported_date=creation_date,
+                            updated_date=creation_date,
+                        )
+
+                        rav.parse_metadata()
+                        rav.parse_flowbits(source, flowbits, addition=True)
+                        rules_update["ravs"].append(rav)
+                        existing_rules_hash[rule.sid][rav.version] = rav
+
+            if len(rules_update["added"]):
+                try:
+                    Rule.objects.bulk_create(rules_update["added"])
+                except IntegrityError as e:
+                    error = str(e)
+                    match = re.search(r"\(sid\)=\((\d+)\)", error)
+                    sid = ""
+                    if match:
+                        sid = match.group(1)
+                    raise DuplicateSidException(sid)
+
+            if len(rules_update["ravs"]):
+                # We cannot validate before like rules,
+                # because rules need to be saved first
+                for rav in rules_update["ravs"]:
+                    try:
+                        rav.clean()
+                        rav.full_clean(exclude=("rule",))
+                    except ValidationError as e:
+                        err = {"sid_": rav.rule.sid}
+                        err.update(e.message_dict)
+                        raise ValidationError(err)
+
+                RuleAtVersion.objects.bulk_create(rules_update["ravs"])
+
+            if len(rules_groups):
+                for val in rules_groups.values():
+                    # If IP list is empty it will be deleted because it has not
+                    # been put in a changed or unchanged list. So we just care
+                    # about saving the rule.
+                    rav = val["rav"]
+                    rule = val["rule"]
+
+                    if len(rule.ips_list) > 0:
+                        rule.group_ips_list = ",".join(rule.ips_list)
+                        rule.save()
+                        rav.rev = rule.next_rev
+                        rav.save()
+
+                        if rule.category.name not in existing_rules_hash["groups"]:
+                            existing_rules_hash["groups"][rule.category.name] = []
+                        existing_rules_hash["groups"][rule.category.name].append(rav)
+
+            if len(flowbits["added"]["flowbit"]):
+                Flowbit.objects.bulk_create(flowbits["added"]["flowbit"])
+            if len(flowbits["added"]["through_set"]):
+                Flowbit.set.through.objects.bulk_create(flowbits["added"]["through_set"])
+            if len(flowbits["added"]["through_isset"]):
+                Flowbit.isset.through.objects.bulk_create(flowbits["added"]["through_isset"])
+            rules_update["deleted"] = list(
+                rules_list - rules_update["added"].union(rules_update["updated"]) - rules_unchanged
+            )
+            source.aggregate_update(rules_update)
 
     def get_absolute_url(self):
         return reverse("category", args=[str(self.id)])
