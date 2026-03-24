@@ -24,7 +24,6 @@ from io import BytesIO
 
 from django import forms
 from django.conf import settings
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.db.models import F
 
@@ -125,7 +124,7 @@ class PoliciesForm(RulesetPolicyEditPermForm, BaseEditForm, forms.Form):
 
         # Get only shared filtersets
         json_filtersets = orjson.dumps(list(FilterSet.objects.filter(user_id=None).values(*filterset_fields))).decode('utf-8')
-        json_content = orjson.dumps(list(res.values()), cls=DjangoJSONEncoder).decode('utf-8')
+        json_content = orjson.dumps(list(res.values()), default=str).decode('utf-8')
 
         tar_path_io = BytesIO()
         with tarfile.open(fileobj=tar_path_io, mode="w:gz") as tar:
