@@ -7,11 +7,12 @@ from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from rules.models.model import IoCMeta, Source, SourceUpdate, UserAction
 from rules.views.source import fetch_public_sources, get_public_sources
+from scirius.drf import ORJSONParser
 from scirius.utils import get_middleware_module
 from suricata.rest_tasks import SciriusTaskSerializer
 
@@ -92,6 +93,7 @@ class BaseSourceSerializer(serializers.ModelSerializer):
 
 @extend_schema(tags=["Source"])
 class BaseSourceViewSet(viewsets.ModelViewSet):
+    parser_classes = (FormParser, MultiPartParser, ORJSONParser)
     REQUIRED_GROUPS = {
         "READ": ("rules.source_view",),
         "WRITE": ("rules.source_edit",),
@@ -547,7 +549,7 @@ class SourceViewSet(BaseSourceViewSet):
 
     queryset = Source.objects.filter(public_source__isnull=True)
     serializer_class = SourceSerializer
-    parser_classes = (MultiPartParser, JSONParser)
+    parser_classes = (FormParser, MultiPartParser, ORJSONParser)
     ordering = ("name",)
     ordering_fields = ("name", "created_date", "updated_date", "datatype")
     filterset_fields = ("name", "method", "datatype")
