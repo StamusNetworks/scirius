@@ -1,202 +1,225 @@
+import pytest
+
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient
 
-from rules.models.model import (
-    Category,
-    Rule,
-    Ruleset,
-    Source,
-)
-from .test_misc import RestAPITestBase
+from rules.models.model import Category, Rule, Ruleset, Source
 
 
-class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
-    def setUp(self):
-        RestAPITestBase.setUp(self)
-        APITestCase.setUp(self)
+@pytest.fixture
+def source(db):
+    source = Source.objects.create(name="test source", created_date=timezone.now(), method="local", datatype="sig")
+    source.save()
+    return source
 
-        self.source = Source.objects.create(
-            name="test source", created_date=timezone.now(), method="local", datatype="sig"
-        )
-        self.source.save()
 
-        self.source2 = Source.objects.create(
-            name="test source 2", created_date=timezone.now(), method="local", datatype="sig"
-        )
-        self.source2.save()
+@pytest.fixture
+def source2(db):
+    source = Source.objects.create(name="test source 2", created_date=timezone.now(), method="local", datatype="sig")
+    source.save()
+    return source
 
-        self.category = Category.objects.create(name="test category", filename="test", source=self.source)
-        self.category.save()
 
-        self.rule = Rule.objects.create(sid=1, category=self.category, msg="test rule")
-        self.rule.save()
+@pytest.fixture
+def category(source):
+    category = Category.objects.create(name="test category", filename="test", source=source)
+    category.save()
+    return category
 
-    def test_001_ruleset_actions(self):
-        params = {
-            "name": "MyCreatedRuleset",
-            "comment": "My custom ruleset comment",
-            "sources": [self.source.pk, self.source2.pk],
-            "categories": [self.category.pk],
-        }
 
-        # Create Ruleset
-        self.http_post(reverse("ruleset-list"), params, status=status.HTTP_201_CREATED)
+@pytest.fixture
+def rule(category):
+    rule = Rule.objects.create(sid=1, category=category, msg="test rule")
+    rule.save()
+    return rule
+
+
+def test_001_ruleset_actions(drf: APIClient, source, source2, category):
+    params = {
+        "name": "MyCreatedRuleset",
+        "comment": "My custom ruleset comment",
+        "sources": [source.pk, source2.pk],
+        "categories": [category.pk],
+    }
+
+    # Create Ruleset
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    rulesets = Ruleset.objects.all()
+    sources = rulesets[0].sources.all()
+
+    assert rulesets.count() == 1
+    assert rulesets[0].name == "MyCreatedRuleset"
+    assert rulesets[0].categories.count() > 0
+    assert sources.count() == 2
+
+    for src in sources:
+        assert src in [source, source2]
+
+    # PUT/PATCH Ruleset
+    for idx, request in enumerate((drf.put, drf.patch)):
+        params["name"] = f"MyRenamedCreatedRuleset{idx}"
+
+        status_ = status.HTTP_200_OK
+        if request == drf.patch:
+            params["sources"] = []
+            status_ = status.HTTP_400_BAD_REQUEST
+
+        resp = request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params)
+        assert resp.status_code == status_
+
+        if request == drf.patch:
+            del params["sources"]
+
+        resp = request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params)
+        assert resp.status_code == status.HTTP_200_OK
+
         rulesets = Ruleset.objects.all()
-        sources = rulesets[0].sources.all()
+        assert rulesets.count() == 1
+        assert rulesets[0].name == f"MyRenamedCreatedRuleset{idx}"
 
-        self.assertEqual(rulesets.count(), 1)
-        self.assertEqual(rulesets[0].name, "MyCreatedRuleset")
-        self.assertEqual(rulesets[0].categories.count() > 0, True)
-        self.assertEqual(sources.count() == 2, True)
+        assert rulesets[0].sources.count() == 2
 
-        for src in sources:
-            self.assertEqual(src in [self.source, self.source2], True)
+    # Delete
+    rulesets = Ruleset.objects.all()
+    assert rulesets.count() == 1
+    resp = drf.delete(reverse("ruleset-detail", args=(rulesets[0].pk,)))
+    assert resp.status_code == status.HTTP_204_NO_CONTENT
+    rulesets = Ruleset.objects.all()
+    assert rulesets.count() == 0
 
-        # PUT/PATCH Ruleset
-        for idx, request in enumerate((self.http_put, self.http_patch)):
-            params["name"] = f"MyRenamedCreatedRuleset{idx}"
 
-            status_ = status.HTTP_200_OK
-            if request == self.http_patch:
-                params["sources"] = []
-                status_ = status.HTTP_400_BAD_REQUEST
+def test_002_create_ruleset_source_wrong_category(drf: APIClient, source2, category):
+    params = {
+        "name": "MyCreatedRuleset",
+        "comment": "My custom ruleset comment",
+        "sources": [source2.pk],
+        "categories": [category.pk],
+    }
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
-            request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params, status=status_)
 
-            status_ = status.HTTP_200_OK
-            if request == self.http_patch:
-                del params["sources"]
-                status_ = status.HTTP_400_BAD_REQUEST
+def test_003_create_ruleset_no_source_categories(drf: APIClient, category):
+    params = {"name": "MyCreatedRuleset", "comment": "My custom ruleset comment", "categories": [category.pk]}
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
-            request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
 
-            rulesets = Ruleset.objects.all()
-            self.assertEqual(rulesets.count(), 1)
-            self.assertEqual(rulesets[0].name, "MyRenamedCreatedRuleset%s" % idx)
+def test_004_create_ruleset_sources_categories(drf: APIClient, source, category):
+    params = {
+        "name": "MyCreatedRuleset",
+        "comment": "My custom ruleset comment",
+        "sources": [source.pk],
+        "categories": [category.pk],
+    }
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
 
-            self.assertEqual(rulesets[0].sources.count() == 2, True)
 
-        # Delete
-        rulesets = Ruleset.objects.all()
-        self.assertEqual(rulesets.count(), 1)
-        self.http_delete(reverse("ruleset-detail", args=(rulesets[0].pk,)), status=status.HTTP_204_NO_CONTENT)
-        rulesets = Ruleset.objects.all()
-        self.assertEqual(rulesets.count(), 0)
+def test_005_update_ruleset_source_wrong_category(drf: APIClient, source, source2, category):
+    params = {
+        "name": "MyCreatedRuleset",
+        "comment": "My custom ruleset comment",
+        "sources": [source.pk],
+        "categories": [category.pk],
+    }
 
-    def test_002_create_ruleset_source_wrong_category(self):
-        params = {
-            "name": "MyCreatedRuleset",
-            "comment": "My custom ruleset comment",
-            "sources": [self.source2.pk],
-            "categories": [self.category.pk],
-        }
+    # Create valid Ruleset
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    rulesets = Ruleset.objects.all()
+    assert rulesets.count() == 1
 
-        self.http_post(reverse("ruleset-list"), params, status=status.HTTP_400_BAD_REQUEST)
+    # PUT/PATCH
+    params["sources"] = [source2.pk]
+    for idx, request in enumerate((drf.put, drf.patch)):
+        params["name"] = f"MyRenamedCreatedRuleset{idx}"
+        resp = request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params)
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_003_create_ruleset_no_source_categories(self):
-        params = {"name": "MyCreatedRuleset", "comment": "My custom ruleset comment", "categories": [self.category.pk]}
 
-        self.http_post(reverse("ruleset-list"), params, status=status.HTTP_400_BAD_REQUEST)
+def test_006_update_ruleset_no_source_categories(drf: APIClient, source, category):
+    params = {
+        "name": "MyCreatedRuleset",
+        "comment": "My custom ruleset comment",
+        "sources": [source.pk],
+        "categories": [category.pk],
+    }
 
-    def test_004_create_ruleset_sources_categories(self):
-        params = {
-            "name": "MyCreatedRuleset",
-            "comment": "My custom ruleset comment",
-            "sources": [self.source.pk],
-            "categories": [self.category.pk],
-        }
+    # Create valid Ruleset
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    rulesets = Ruleset.objects.all()
+    assert rulesets.count() == 1
 
-        self.http_post(reverse("ruleset-list"), params, status=status.HTTP_201_CREATED)
+    # PUT/PATCH
+    params.pop("sources")
+    for idx, request in enumerate((drf.put, drf.patch)):
+        params["name"] = f"MyRenamedCreatedRuleset{idx}"
 
-    def test_005_update_ruleset_source_wrong_category(self):
-        params = {
-            "name": "MyCreatedRuleset",
-            "comment": "My custom ruleset comment",
-            "sources": [self.source.pk],
-            "categories": [self.category.pk],
-        }
+        # 200 because category is linked to source which is already in DB
+        resp = request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params)
+        assert resp.status_code == status.HTTP_200_OK
 
-        # Create valid Ruleset
-        self.http_post(reverse("ruleset-list"), params, status=status.HTTP_201_CREATED)
-        rulesets = Ruleset.objects.all()
-        self.assertEqual(rulesets.count(), 1)
 
-        # PUT/PATCH
-        params["sources"] = [self.source2.pk]
-        for idx, request in enumerate((self.http_put, self.http_patch)):
-            params["name"] = f"MyRenamedCreatedRuleset{idx}"
-            request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params, status=status.HTTP_400_BAD_REQUEST)
+def test_007_update_ruleset_sources_categories(drf: APIClient, source, category):
+    params = {
+        "name": "MyCreatedRuleset",
+        "comment": "My custom ruleset comment",
+        "sources": [source.pk],
+        "categories": [category.pk],
+    }
 
-    def test_006_update_ruleset_no_source_categories(self):
-        params = {
-            "name": "MyCreatedRuleset",
-            "comment": "My custom ruleset comment",
-            "sources": [self.source.pk],
-            "categories": [self.category.pk],
-        }
+    # Create valid Ruleset
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    rulesets = Ruleset.objects.all()
+    assert rulesets.count() == 1
 
-        # Create valid Ruleset
-        self.http_post(reverse("ruleset-list"), params, status=status.HTTP_201_CREATED)
-        rulesets = Ruleset.objects.all()
-        self.assertEqual(rulesets.count(), 1)
+    # PUT/PATCH
+    for idx, request in enumerate((drf.put, drf.patch)):
+        params["name"] = f"MyRenamedCreatedRuleset{idx}"
+        resp = request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params)
+        assert resp.status_code == status.HTTP_200_OK
 
-        # PUT/PATCH
-        params.pop("sources")
-        for idx, request in enumerate((self.http_put, self.http_patch)):
-            params["name"] = f"MyRenamedCreatedRuleset{idx}"
 
-            # 200 because category is linked to source which is already in DB
-            request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
+def test_008_copy_ruleset(drf: APIClient, source, source2, category):
+    params = {
+        "name": "MyCreatedRuleset",
+        "comment": "My custom ruleset comment",
+        "sources": [source.pk, source2.pk],
+        "categories": [category.pk],
+    }
 
-    def test_007_update_ruleset_sources_categories(self):
-        params = {
-            "name": "MyCreatedRuleset",
-            "comment": "My custom ruleset comment",
-            "sources": [self.source.pk],
-            "categories": [self.category.pk],
-        }
+    # Create Ruleset
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    response = resp.json()
+    ruleset = Ruleset.objects.get(pk=response["pk"])
 
-        # Create valid Ruleset
-        self.http_post(reverse("ruleset-list"), params, status=status.HTTP_201_CREATED)
-        rulesets = Ruleset.objects.all()
-        self.assertEqual(rulesets.count(), 1)
+    params = {"name": "MyCreatedRulesetCopy"}
+    resp = drf.post(reverse("ruleset-copy", args=(response["pk"],)), params)
+    assert resp.status_code == status.HTTP_200_OK
 
-        # PUT/PATCH
-        for idx, request in enumerate((self.http_put, self.http_patch)):
-            params["name"] = f"MyRenamedCreatedRuleset{idx}"
-            request(reverse("ruleset-detail", args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
+    ruleset_copy = Ruleset.objects.filter(name="MyCreatedRulesetCopy")[0]
+    assert ruleset.pk != ruleset_copy.pk
+    assert ruleset.sources.count() == ruleset_copy.sources.count()
+    assert ruleset.categories.count() == ruleset_copy.categories.count()
 
-    def test_008_copy_ruleset(self):
-        params = {
-            "name": "MyCreatedRuleset",
-            "comment": "My custom ruleset comment",
-            "sources": [self.source.pk, self.source2.pk],
-            "categories": [self.category.pk],
-        }
 
-        # Create Ruleset
-        response = self.http_post(reverse("ruleset-list"), params, status=status.HTTP_201_CREATED)
-        ruleset = Ruleset.objects.get(pk=response["pk"])
+def test_009_ruleset_name_unicode(drf: APIClient, source, source2, category):
+    name = "Rulesetàççé'-(è&_èç&àç\"ééè-"  # ignore_utf8_check: 224 231 233 232
+    params = {
+        "name": name,
+        "comment": "My custom ruleset comment",
+        "sources": [source.pk, source2.pk],
+        "categories": [category.pk],
+    }
 
-        params = {"name": "MyCreatedRulesetCopy"}
-        self.http_post(reverse("ruleset-copy", args=(response["pk"],)), params, status=status.HTTP_200_OK)
-
-        ruleset_copy = Ruleset.objects.filter(name="MyCreatedRulesetCopy")[0]
-        self.assertNotEqual(ruleset.pk, ruleset_copy.pk)
-        self.assertEqual(ruleset.sources.count(), ruleset_copy.sources.count())
-        self.assertEqual(ruleset.categories.count(), ruleset_copy.categories.count())
-
-    def test_009_ruleset_name_unicode(self):
-        name = "Rulesetàççé'-(è&_èç&àç\"ééè-"  # ignore_utf8_check: 224 231 233 232
-        params = {
-            "name": name,
-            "comment": "My custom ruleset comment",
-            "sources": [self.source.pk, self.source2.pk],
-            "categories": [self.category.pk],
-        }
-
-        # Create Ruleset
-        response = self.http_post(reverse("ruleset-list"), params, status=status.HTTP_201_CREATED)
-        self.assertEqual(response["name"], name)
+    # Create Ruleset
+    resp = drf.post(reverse("ruleset-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    assert resp.json()["name"] == name
