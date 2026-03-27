@@ -1,42 +1,45 @@
+import pytest
 from django.urls import reverse
-from rest_framework.test import APITestCase
+from rest_framework import status
+from rest_framework.test import APIClient
 
 from rules.models.misc import SystemSettings
 
-from .test_misc import RestAPITestBase
+
+@pytest.fixture
+def system_settings(db):
+    return SystemSettings.objects.get_or_create(id=1)[0]
 
 
-class RestAPISystemSettingsTestCase(RestAPITestBase, APITestCase):
-    def setUp(self):
-        RestAPITestBase.setUp(self)
-        APITestCase.setUp(self)
+def test_001_system_get(drf: APIClient, system_settings):
+    resp = drf.get(reverse("systemsettings"))
+    assert resp.status_code == status.HTTP_200_OK
+    content = resp.json()
+    assert "custom_elasticsearch" in content
+    assert "elasticsearch_url" in content
+    assert "http_proxy" in content
+    assert "use_http_proxy" in content
 
-        self.system_settings = SystemSettings.objects.get_or_create(id=1)[0]
 
-    def test_001_system_get(self):
-        content = self.http_get(reverse("systemsettings"))
-        self.assertEqual("custom_elasticsearch" in content, True)
-        self.assertEqual("elasticsearch_url" in content, True)
-        self.assertEqual("http_proxy" in content, True)
-        self.assertEqual("use_http_proxy" in content, True)
+def test_002_system_settings_update(drf: APIClient, system_settings):
+    params = {
+        "use_http_proxy": True,
+        "http_proxy": "",
+        "https_proxy": "",
+        "custom_elasticsearch": False,
+        "elasticsearch_url": "http://elasticsearch:9200/",
+    }
+    resp = drf.patch(reverse("systemsettings"), params)
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.json()["use_http_proxy"]
 
-    def test_002_system_settings_update(self):
-        params = {
-            "use_http_proxy": True,
-            "http_proxy": "",
-            "https_proxy": "",
-            "custom_elasticsearch": False,
-            "elasticsearch_url": "http://elasticsearch:9200/",
-        }
-        content = self.http_patch(reverse("systemsettings"), params)
-        self.assertEqual(content["use_http_proxy"], True)
-
-        params = {
-            "use_http_proxy": False,
-            "http_proxy": "",
-            "https_proxy": "",
-            "custom_elasticsearch": False,
-            "elasticsearch_url": "http://elasticsearch:9200/",
-        }
-        content = self.http_put(reverse("systemsettings"), params)
-        self.assertEqual(content["use_http_proxy"], False)
+    params = {
+        "use_http_proxy": False,
+        "http_proxy": "",
+        "https_proxy": "",
+        "custom_elasticsearch": False,
+        "elasticsearch_url": "http://elasticsearch:9200/",
+    }
+    resp = drf.put(reverse("systemsettings"), params)
+    assert resp.status_code == status.HTTP_200_OK
+    assert not resp.json()["use_http_proxy"]
