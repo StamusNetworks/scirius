@@ -1,6 +1,6 @@
 [project]
 name = "scirius"
-version = "42.1.0"
+version = "42.2.0"
 authors = [{ name = "Stamus Networks", email = "contact@stamus-networks.com" }]
 description = "A web interface to manage Suricata rulesets."
 readme = "README.rst"
