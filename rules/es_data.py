@@ -1771,7 +1771,7 @@ class ESData(ESQuery):
                 res = self.es.get(index='.kibana', id=_id, **self.es_extra_params)
 
                 with open(filename, 'wb') as file_:
-                    file_.write(orjson.dumps(res['_source'], separators=(',', ':')))
+                    file_.write(orjson.dumps(res['_source']))
 
     def kibana_export(self, full=False):
         dest = tempfile.mkdtemp()
