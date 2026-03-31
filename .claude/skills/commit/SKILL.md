@@ -22,6 +22,7 @@ Create a git commit for staged or recent changes. If `$ARGUMENTS` is provided, u
    - Files in different subsystems with no shared motivation
    - Mix of conventional commit types (e.g. `fix:` + `feat:` + `test:`)
    - Changes that would need different commit messages to describe accurately
+   - **Open/closed source split**: This repo has open-source and closed-source (appliance) code. A commit **must never mix** files from both sides. Closed-source paths: `appliances/`, `ui/app/appliance/`, `stamus-docs/`, `ui/cypress/`, `tests/`, `debian/`, `ansible/`, `volumetry/`, `.gitlab-ci-*.yml`, `.gitlab-test.sh`, `requirements-app.txt`, `requirements-base.txt`. Everything else is open-source. If staged changes span both, they **must** be split into separate commits. See `tests/master-build.py` for the full list.
 
    If changes are unrelated:
    - Tell the user you've identified N distinct logical changes and list them briefly
@@ -59,4 +60,5 @@ Create a git commit for staged or recent changes. If `$ARGUMENTS` is provided, u
 - NEVER skip pre-commit hooks (no --no-verify)
 - If lint or tests fail, fix the issues first and tell the user what was fixed
 - Prefer staging specific files over `git add -A`
+- NEVER mix open-source and closed-source (appliance) files in the same commit — the `tests/master-build.py` build script will reject it
 - Do not push unless explicitly asked
