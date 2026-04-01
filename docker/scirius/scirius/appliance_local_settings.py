@@ -22,6 +22,9 @@ Django settings for the Scirius project.
 
 import contextlib
 import os
+import structlog
+
+from scirius.instrumentation import STRUCTLOG_FOREIGN_PRE_CHAIN
 
 
 def strtobool(val):
@@ -60,7 +63,12 @@ LOGGING = {
         },
         'celeryformat': {
             'format': '%(asctime)s %(processName)s %(levelname)s %(message)s'
-        }
+        },
+        'json_formatter': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.JSONRenderer(),
+            'foreign_pre_chain': STRUCTLOG_FOREIGN_PRE_CHAIN,
+        },
     },
     'handlers': {
         'elasticsearch': {
@@ -93,6 +101,12 @@ LOGGING = {
             'filename': '/logs/celery_tasks.log',
             'formatter': 'celeryformat',
         },
+        'mcp': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/logs/mcp.log',
+            'formatter': 'json_formatter',
+        },
     },
     'loggers': {
         'elasticsearch': {
@@ -120,7 +134,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-
+        'mcp': {
+            'handlers': ['mcp'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     }
 }
 
