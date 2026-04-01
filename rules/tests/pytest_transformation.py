@@ -1,10 +1,11 @@
+from collections.abc import Callable
+from typing import TypedDict
 import pytest
 
-from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient
 
 from rules.models.model import (
     Category,
@@ -16,291 +17,246 @@ from rules.models.model import (
     Transformation,
 )
 
-from .test_misc import RestAPITestBase
+
+class TestData(TypedDict):
+    source: Source
+    category: Category
+    rule_commented: Rule
+    rule_lateral_yes: Rule
+    rule_lateral_auto_no_transfo: Rule
+    rule_lateral_auto_transfo: Rule
+    rule_target_auto_transfo: Rule
+    rule_target_auto_no_transfo: Rule
+    rule_target_source_transfo: Rule
+    rule_target_destination_transfo: Rule
 
 
-@pytest.mark.django_db
-class TransformationTestCase(TestCase):
-    def setUp(self):
-        self.source = Source.objects.create(
-            name="test source", created_date=timezone.now(), method="local", datatype="sig"
-        )
-        self.source.save()
-        self.category = Category.objects.create(name="test category", filename="test", source=self.source)
-        self.category.save()
+@pytest.fixture
+def setup_objects(db) -> TestData:
+    source = Source.objects.create(name="test source", created_date=timezone.now(), method="local", datatype="sig")
+    source.save()
+    category = Category.objects.create(name="test category", filename="test", source=source)
+    category.save()
 
-        # Commented rule
-        content = '#alert tcp $EXTERNAL_NET any -> $HOME_NET 445 (msg:"GPL NETBIOS SMB-DS Trans2 FIND_FIRST2 attempt"; \
+    # Commented rule
+    content = '#alert tcp $EXTERNAL_NET any -> $HOME_NET 445 (msg:"GPL NETBIOS SMB-DS Trans2 FIND_FIRST2 attempt"; \
 flow:established,to_server; content:"|00|"; depth:1; content:"|FF|SMB2"; within:5; distance:3; content:"|01 00|"; \
 within:2; distance:56; flowbits:set,smb.trans2; flowbits:noalert; classtype:protocol-command-decode; sid:2103141; \
 rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23;)'
 
-        self.rule_commented = Rule.objects.create(sid=1, category=self.category, msg="test commented rule")
-        self.rule_commented.save()
-        RuleAtVersion.objects.create(rule=self.rule_commented, content=content)
+    rule_commented = Rule.objects.create(sid=1, category=category, msg="test commented rule")
+    rule_commented.save()
+    RuleAtVersion.objects.create(rule=rule_commented, content=content)
 
-        # Lateral yes
-        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 143 (msg:"GPL IMAP Overflow Attempt"; flow:to_server,established; \
+    # Lateral yes
+    content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 143 (msg:"GPL IMAP Overflow Attempt"; flow:to_server,established; \
 content:"|E8 C0 FF FF FF|/bin/sh"; classtype:attempted-admin; sid:2100293; rev:8; metadata:created_at 2010_09_23, updated_at 2010_09_23;)'
 
-        self.rule_lateral_yes = Rule.objects.create(sid=2, category=self.category, msg="test lateral yes")
-        self.rule_lateral_yes.save()
-        RuleAtVersion.objects.create(rule=self.rule_lateral_yes, content=content)
+    rule_lateral_yes = Rule.objects.create(sid=2, category=category, msg="test lateral yes")
+    rule_lateral_yes.save()
+    RuleAtVersion.objects.create(rule=rule_lateral_yes, content=content)
 
-        # Lateral auto
-        content = 'alert dns $HOME_NET any -> any any (msg:"ET POLICY DNS Query to .onion proxy Domain (onion. sx)"; dns_query; \
+    # Lateral auto
+    content = 'alert dns $HOME_NET any -> any any (msg:"ET POLICY DNS Query to .onion proxy Domain (onion. sx)"; dns_query; \
 content:".onion.sx"; nocase; isdataat:!1,relative; metadata: former_category POLICY; \
 reference:url,en.wikipedia.org/wiki/Tor_(anonymity_network); classtype:bad-unknown; sid:2025446; rev:2; \
 metadata:affected_product Windows_XP_Vista_7_8_10_Server_32_64_Bit, attack_target Client_Endpoint, \
 deployment Perimeter, signature_severity Minor, created_at 2018_03_28, performance_impact Moderate, updated_at 2018_03_30;)'
 
-        self.rule_lateral_auto_no_transfo = Rule.objects.create(
-            sid=3, category=self.category, msg="test lateral auto => no transfo"
-        )
-        self.rule_lateral_auto_no_transfo.save()
-        RuleAtVersion.objects.create(rule=self.rule_lateral_auto_no_transfo, content=content)
+    rule_lateral_auto_no_transfo = Rule.objects.create(sid=3, category=category, msg="test lateral auto => no transfo")
+    rule_lateral_auto_no_transfo.save()
+    RuleAtVersion.objects.create(rule=rule_lateral_auto_no_transfo, content=content)
 
-        content = (
-            'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+    content = (
+        'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
 flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
 metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
 deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
-        )
+    )
 
-        self.rule_lateral_auto_transfo = Rule.objects.create(
-            sid=4, category=self.category, msg="test lateral auto => transfo"
-        )
-        self.rule_lateral_auto_transfo.save()
-        RuleAtVersion.objects.create(rule=self.rule_lateral_auto_transfo, content=content)
+    rule_lateral_auto_transfo = Rule.objects.create(sid=4, category=category, msg="test lateral auto => transfo")
+    rule_lateral_auto_transfo.save()
+    RuleAtVersion.objects.create(rule=rule_lateral_auto_transfo, content=content)
 
-        # Target Auto
-        content = (
-            'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+    # Target Auto
+    content = (
+        'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
 flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
 metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
 deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
-        )
+    )
 
-        self.rule_target_auto_transfo = Rule.objects.create(
-            sid=5, category=self.category, msg="test target auto => transfo"
-        )
-        self.rule_target_auto_transfo.save()
-        RuleAtVersion.objects.create(rule=self.rule_target_auto_transfo, content=content)
+    rule_target_auto_transfo = Rule.objects.create(sid=5, category=category, msg="test target auto => transfo")
+    rule_target_auto_transfo.save()
+    RuleAtVersion.objects.create(rule=rule_target_auto_transfo, content=content)
 
-        content = 'alert http $EXTERNAL_NET any -> $HOME_NET any (msg:"ET WEB_CLIENT HTA File Download Flowbit Set"; \
+    content = 'alert http $EXTERNAL_NET any -> $HOME_NET any (msg:"ET WEB_CLIENT HTA File Download Flowbit Set"; \
 flow:established,to_client; content:"Content-Type|3A| application/hta"; http_header; fast_pattern:12,16; flowbits:set,et.http.hta; \
 flowbits:noalert; metadata: former_category WEB_CLIENT; classtype:not-suspicious; sid:2024195; rev:2; \
 metadata:affected_product Windows_XP_Vista_7_8_10_Server_32_64_Bit, attack_target Client_Endpoint, deployment Perimeter, \
 signature_severity Major, created_at 2017_04_10, performance_impact Low, updated_at 2017_04_10;)'
 
-        self.rule_target_auto_no_transfo = Rule.objects.create(
-            sid=6, category=self.category, msg="test target auto => no transfo"
-        )
-        self.rule_target_auto_no_transfo.save()
-        RuleAtVersion.objects.create(rule=self.rule_target_auto_no_transfo, content=content)
+    rule_target_auto_no_transfo = Rule.objects.create(sid=6, category=category, msg="test target auto => no transfo")
+    rule_target_auto_no_transfo.save()
+    RuleAtVersion.objects.create(rule=rule_target_auto_no_transfo, content=content)
 
-        # Target Source
-        content = (
-            'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+    # Target Source
+    content = (
+        'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
 flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
 metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
 deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
-        )
+    )
 
-        self.rule_target_source_transfo = Rule.objects.create(
-            sid=7, category=self.category, msg="test target source => transfo"
-        )
-        self.rule_target_source_transfo.save()
-        RuleAtVersion.objects.create(rule=self.rule_target_source_transfo, content=content)
+    rule_target_source_transfo = Rule.objects.create(sid=7, category=category, msg="test target source => transfo")
+    rule_target_source_transfo.save()
+    RuleAtVersion.objects.create(rule=rule_target_source_transfo, content=content)
 
-        # Target Destination
-        content = (
-            'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+    # Target Destination
+    content = (
+        'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
 flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
 metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
 deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
-        )
+    )
 
-        self.rule_target_destination_transfo = Rule.objects.create(
-            sid=8, category=self.category, msg="test target destination => transfo"
-        )
-        self.rule_target_destination_transfo.save()
-        RuleAtVersion.objects.create(rule=self.rule_target_destination_transfo, content=content)
-
-    def tearDown(self):
-        pass
-
-    def test_001_commented_rule(self):
-        content = self.rule_commented.ruleatversion_set.first().content
-        content = self.rule_commented.apply_lateral_target_transfo(
-            content, Transformation.LATERAL, Transformation.L_YES
-        )
-        self.assertEqual(self.rule_commented.ruleatversion_set.first().content, content)
-
-    def test_002_lateral_yes(self):
-        content = self.rule_lateral_yes.ruleatversion_set.first().content
-        content = self.rule_lateral_yes.apply_lateral_target_transfo(
-            content, key=Transformation.LATERAL, value=Transformation.L_YES
-        )
-        self.assertIn("alert tcp any any", content)
-
-    def test_003_lateral_auto(self):
-        # ET POLICY disbale transformation
-        content = self.rule_lateral_auto_no_transfo.ruleatversion_set.first().content
-        content = self.rule_lateral_auto_no_transfo.apply_lateral_target_transfo(
-            content, Transformation.LATERAL, Transformation.L_AUTO
-        )
-        self.assertEqual(self.rule_lateral_auto_no_transfo.ruleatversion_set.first().content, content)
-
-        # deployment Interna enable Transformation
-        content = self.rule_lateral_auto_transfo.ruleatversion_set.first().content
-        content = self.rule_lateral_auto_transfo.apply_lateral_target_transfo(
-            content, Transformation.LATERAL, Transformation.L_AUTO
-        )
-        self.assertIn("alert tcp any any", content)
-
-    def test_004_target_auto(self):
-        # attack_target enable transformation
-        content = self.rule_target_auto_transfo.ruleatversion_set.first().content
-        content = self.rule_target_auto_transfo.apply_lateral_target_transfo(
-            content, Transformation.TARGET, Transformation.T_AUTO
-        )
-        self.assertTrue(content.endswith("target:dest_ip;)"))
-
-        # attack_target enable transformation
-        # but not-suspicious disable it
-        content = self.rule_target_auto_no_transfo.ruleatversion_set.first().content
-        content = self.rule_target_auto_no_transfo.apply_lateral_target_transfo(
-            content, Transformation.TARGET, Transformation.T_AUTO
-        )
-        self.assertEqual(self.rule_target_auto_no_transfo.ruleatversion_set.first().content, content)
-
-    def test_005_target_source(self):
-        # attack_target enable transformation
-        content = self.rule_target_source_transfo.ruleatversion_set.first().content
-        content = self.rule_target_source_transfo.apply_lateral_target_transfo(
-            content, Transformation.TARGET, Transformation.T_SOURCE
-        )
-        self.assertTrue(content.endswith("target:src_ip;)"))
-
-    def test_005_target_destination(self):
-        # attack_target enable transformation
-        content = self.rule_target_destination_transfo.ruleatversion_set.first().content
-        content = self.rule_target_destination_transfo.apply_lateral_target_transfo(
-            content, Transformation.TARGET, Transformation.T_DESTINATION
-        )
-        self.assertTrue(content.endswith("target:dest_ip;)"))
+    rule_target_destination_transfo = Rule.objects.create(
+        sid=8, category=category, msg="test target destination => transfo"
+    )
+    rule_target_destination_transfo.save()
+    RuleAtVersion.objects.create(rule=rule_target_destination_transfo, content=content)
+    return {
+        "category": category,
+        "source": source,
+        "rule_commented": rule_commented,
+        "rule_lateral_auto_no_transfo": rule_lateral_auto_no_transfo,
+        "rule_lateral_auto_transfo": rule_lateral_auto_transfo,
+        "rule_lateral_yes": rule_lateral_yes,
+        "rule_target_auto_no_transfo": rule_target_auto_no_transfo,
+        "rule_target_auto_transfo": rule_target_auto_transfo,
+        "rule_target_destination_transfo": rule_target_destination_transfo,
+        "rule_target_source_transfo": rule_target_source_transfo,
+    }
 
 
-class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
-    def setUp(self):
-        RestAPITestBase.setUp(self)
-        APITestCase.setUp(self)
+@pytest.mark.parametrize(
+    "rule_key, transfo_key, transfo_value, check",
+    [
+        pytest.param(
+            "rule_commented", Transformation.LATERAL, Transformation.L_YES,
+            lambda orig, result: result == orig,
+            id="commented-lateral-yes-unchanged",
+        ),
+        pytest.param(
+            "rule_lateral_yes", Transformation.LATERAL, Transformation.L_YES,
+            lambda _, result: "alert tcp any any" in result,
+            id="lateral-yes",
+        ),
+        pytest.param(
+            "rule_lateral_auto_no_transfo", Transformation.LATERAL, Transformation.L_AUTO,
+            lambda orig, result: result == orig,
+            id="lateral-auto-no-transfo",
+        ),
+        pytest.param(
+            "rule_lateral_auto_transfo", Transformation.LATERAL, Transformation.L_AUTO,
+            lambda _, result: "alert tcp any any" in result,
+            id="lateral-auto-transfo",
+        ),
+        pytest.param(
+            "rule_target_auto_transfo", Transformation.TARGET, Transformation.T_AUTO,
+            lambda _, result: result.endswith("target:dest_ip;)"),
+            id="target-auto-transfo",
+        ),
+        pytest.param(
+            "rule_target_auto_no_transfo", Transformation.TARGET, Transformation.T_AUTO,
+            lambda orig, result: result == orig,
+            id="target-auto-no-transfo",
+        ),
+        pytest.param(
+            "rule_target_source_transfo", Transformation.TARGET, Transformation.T_SOURCE,
+            lambda _, result: result.endswith("target:src_ip;)"),
+            id="target-source",
+        ),
+        pytest.param(
+            "rule_target_destination_transfo", Transformation.TARGET, Transformation.T_DESTINATION,
+            lambda _, result: result.endswith("target:dest_ip;)"),
+            id="target-destination",
+        ),
+    ],
+)
+def test_transformation(
+    setup_objects: TestData, rule_key: str, transfo_key, transfo_value, check: Callable
+):
+    rule = setup_objects[rule_key]
+    original = rule.ruleatversion_set.first().content
+    result = rule.apply_lateral_target_transfo(original, transfo_key, transfo_value)
+    assert check(original, result)
 
-        self.source = Source.objects.create(
-            name="test source", created_date=timezone.now(), method="local", datatype="sig"
-        )
-        self.source.save()
 
-        self.category = Category.objects.create(name="test category", filename="test", source=self.source)
-        self.category.save()
+@pytest.fixture
+def ruleset(db):
+    source = Source.objects.create(name="test source", created_date=timezone.now(), method="local", datatype="sig")
+    source.save()
 
-        self.rule = Rule.objects.create(sid=1, category=self.category, msg="test rule")
-        self.rule.save()
+    category = Category.objects.create(name="test category", filename="test", source=source)
+    category.save()
 
-        self.ruleset = Ruleset.objects.create(
-            name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
-        )
-        self.ruleset.save()
-        self.ruleset.sources.add(self.source)
-        self.ruleset.categories.add(self.category)
+    rule = Rule.objects.create(sid=1, category=category, msg="test rule")
+    rule.save()
 
-    def test_001_ruleset_transformations(self):
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "action", "transfo_value": "reject"}
-        self.http_post(reverse("rulesettransformation-list"), params, status=status.HTTP_201_CREATED)
+    ruleset = Ruleset.objects.create(
+        name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
+    )
+    ruleset.save()
+    ruleset.sources.add(source)
+    ruleset.categories.add(category)
+    return ruleset
 
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "lateral", "transfo_value": "yes"}
-        self.http_post(reverse("rulesettransformation-list"), params, status=status.HTTP_201_CREATED)
 
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "target", "transfo_value": "src"}
-        self.http_post(reverse("rulesettransformation-list"), params, status=status.HTTP_201_CREATED)
+@pytest.mark.parametrize(
+    "transfo_type, values",
+    [
+        ("action", ("reject", "drop", "filestore")),
+        ("lateral", ("yes", "auto", "yes")),
+        ("target", ("src", "dst", "auto")),
+    ],
+)
+def test_ruleset_transformations(drf: APIClient, ruleset: Ruleset, transfo_type: str, values: tuple[str, str, str]):
+    post_value, patch_value, put_value = values
 
-        # Create Ruleset Transformation
-        action_trans = RulesetTransformation.objects.filter(key="action")
-        self.assertEqual(action_trans.count() == 1, True)
-        self.assertEqual(action_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(action_trans[0].key == "action", True)
-        self.assertEqual(action_trans[0].value == "reject", True)
+    # Create Ruleset Transformation
+    params = {"ruleset": ruleset.pk, "transfo_type": transfo_type, "transfo_value": post_value}
+    resp = drf.post(reverse("rulesettransformation-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
 
-        lateral_trans = RulesetTransformation.objects.filter(key="lateral")
-        self.assertEqual(lateral_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(lateral_trans[0].key == "lateral", True)
-        self.assertEqual(lateral_trans[0].value == "yes", True)
+    trans = RulesetTransformation.objects.filter(key=transfo_type)
+    assert trans.count() == 1
+    assert trans[0].ruleset_transformation == ruleset
+    assert trans[0].key == transfo_type
+    assert trans[0].value == post_value
+    pk = trans[0].pk
 
-        target_trans = RulesetTransformation.objects.filter(key="target")
-        self.assertEqual(target_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(target_trans[0].key == "target", True)
-        self.assertEqual(target_trans[0].value == "src", True)
+    # PATCH Ruleset Transformation
+    params = {"ruleset": ruleset.pk, "transfo_type": transfo_type, "transfo_value": patch_value}
+    resp = drf.patch(reverse("rulesettransformation-detail", args=(pk,)), params)
+    assert resp.status_code == status.HTTP_200_OK
 
-        # PATCH Ruleset Transformation
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "action", "transfo_value": "drop"}
-        self.http_patch(reverse("rulesettransformation-detail", args=(action_trans[0].pk,)), params)
+    trans = RulesetTransformation.objects.filter(key=transfo_type)
+    assert trans[0].ruleset_transformation == ruleset
+    assert trans[0].key == transfo_type
+    assert trans[0].value == patch_value
 
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "lateral", "transfo_value": "auto"}
-        self.http_patch(reverse("rulesettransformation-detail", args=(lateral_trans[0].pk,)), params)
+    # PUT Ruleset Transformation
+    params = {"ruleset": ruleset.pk, "transfo_type": transfo_type, "transfo_value": put_value}
+    resp = drf.put(reverse("rulesettransformation-detail", args=(pk,)), params)
+    assert resp.status_code == status.HTTP_200_OK
 
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "target", "transfo_value": "dst"}
-        self.http_patch(reverse("rulesettransformation-detail", args=(target_trans[0].pk,)), params)
+    trans = RulesetTransformation.objects.filter(key=transfo_type)
+    assert trans[0].ruleset_transformation == ruleset
+    assert trans[0].key == transfo_type
+    assert trans[0].value == put_value
 
-        action_trans = RulesetTransformation.objects.filter(key="action")
-        self.assertEqual(action_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(action_trans[0].key == "action", True)
-        self.assertEqual(action_trans[0].value == "drop", True)
-
-        lateral_trans = RulesetTransformation.objects.filter(key="lateral")
-        self.assertEqual(lateral_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(lateral_trans[0].key == "lateral", True)
-        self.assertEqual(lateral_trans[0].value == "auto", True)
-
-        target_trans = RulesetTransformation.objects.filter(key="target")
-        self.assertEqual(target_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(target_trans[0].key == "target", True)
-        self.assertEqual(target_trans[0].value == "dst", True)
-
-        # PUT Ruleset Transformation
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "action", "transfo_value": "filestore"}
-        self.http_put(reverse("rulesettransformation-detail", args=(action_trans[0].pk,)), params)
-
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "lateral", "transfo_value": "yes"}
-        self.http_put(reverse("rulesettransformation-detail", args=(lateral_trans[0].pk,)), params)
-
-        params = {"ruleset": self.ruleset.pk, "transfo_type": "target", "transfo_value": "auto"}
-        self.http_put(reverse("rulesettransformation-detail", args=(target_trans[0].pk,)), params)
-
-        action_trans = RulesetTransformation.objects.filter(key="action")
-        self.assertEqual(action_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(action_trans[0].key == "action", True)
-        self.assertEqual(action_trans[0].value == "filestore", True)
-
-        lateral_trans = RulesetTransformation.objects.filter(key="lateral")
-        self.assertEqual(lateral_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(lateral_trans[0].key == "lateral", True)
-        self.assertEqual(lateral_trans[0].value == "yes", True)
-
-        target_trans = RulesetTransformation.objects.filter(key="target")
-        self.assertEqual(target_trans[0].ruleset_transformation == self.ruleset, True)
-        self.assertEqual(target_trans[0].key == "target", True)
-        self.assertEqual(target_trans[0].value == "auto", True)
-
-        # Delete
-        self.http_delete(
-            reverse("rulesettransformation-detail", args=(action_trans[0].pk,)), status=status.HTTP_204_NO_CONTENT
-        )
-        self.http_delete(
-            reverse("rulesettransformation-detail", args=(lateral_trans[0].pk,)), status=status.HTTP_204_NO_CONTENT
-        )
-        self.http_delete(
-            reverse("rulesettransformation-detail", args=(target_trans[0].pk,)), status=status.HTTP_204_NO_CONTENT
-        )
-        rulesets = RulesetTransformation.objects.all()
-        self.assertEqual(rulesets.count(), 0)
+    # Delete
+    resp = drf.delete(reverse("rulesettransformation-detail", args=(pk,)))
+    assert resp.status_code == status.HTTP_204_NO_CONTENT
+    assert RulesetTransformation.objects.count() == 0
