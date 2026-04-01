@@ -1,9 +1,10 @@
 import orjson
+import pytest
 
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient
 
 from rules.models.model import (
     Ruleset,
@@ -11,38 +12,40 @@ from rules.models.model import (
     SourceUpdate,
 )
 
-from .test_misc import RestAPITestBase
+
+@pytest.fixture
+def ruleset(db):
+    ruleset = Ruleset.objects.create(
+        name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
+    )
+    ruleset.save()
+    return ruleset
 
 
-class RestAPIPublicSourceTestCase(RestAPITestBase, APITestCase):
-    def setUp(self):
-        RestAPITestBase.setUp(self)
-        APITestCase.setUp(self)
+def _create_public_source(drf: APIClient, ruleset: Ruleset):
+    params = {
+        "name": "sonic test public source",
+        "comment": "MyPublicComment",
+        "public_source": "oisf/trafficid",
+    }
+    resp = drf.post(reverse("publicsource-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+    sources = Source.objects.filter(name="sonic test public source")
+    assert sources.count() == 1
 
-        self.ruleset = Ruleset.objects.create(
-            name="test ruleset", descr="descr", created_date=timezone.now(), updated_date=timezone.now()
-        )
-        self.ruleset.save()
+    public_source = sources.first()
+    assert public_source is not None
+    ruleset.sources.add(sources.first())
+    return public_source
 
-    def _create_public_source(self):
-        params = {
-            "name": "sonic test public source",
-            "comment": "MyPublicComment",
-            "public_source": "oisf/trafficid",
-        }
-        self.http_post(reverse("publicsource-list"), params, status=status.HTTP_201_CREATED)
-        sources = Source.objects.filter(name="sonic test public source")
-        self.assertEqual(sources.count() == 1, True)
 
-        self.public_source = sources.first()
-        self.ruleset.sources.add(sources.first())
+def test_007_source_name_unicode(drf: APIClient, ruleset: Ruleset):
+    public_source = _create_public_source(drf, ruleset)
 
-    def test_007_source_name_unicode(self):
-        self._create_public_source()
-
-        unic = 'é&"_è-àç'  # ignore_utf8_check: 233 232 231 224
-        response = self.http_patch(reverse("publicsource-detail", args=(self.public_source.pk,)), {"name": unic})
-        self.assertEqual(response["name"], unic)
+    unic = 'é&"_è-àç'  # ignore_utf8_check: 233 232 231 224
+    resp = drf.patch(reverse("publicsource-detail", args=(public_source.pk,)), {"name": unic})
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.json()["name"] == unic
 
 
 def test_001_public_source(db, drf: APIClient):
@@ -73,8 +76,9 @@ def test_001_public_source(db, drf: APIClient):
     # behavior/status could be different on remote and local build
     test_results = public_source.test()
 
-    if test_results["status"] is True:
-        drf.get(reverse("publicsource-list-sources"))
+    if test_results["status"]:
+        resp = drf.get(reverse("publicsource-list-sources"))
+        assert resp.status_code == status.HTTP_200_OK
     else:
         assert "errors" in test_results
 
@@ -97,7 +101,7 @@ def test_all_changelog(db, drf):
         "public_source": "oisf/trafficid",
     }
     resp = drf.post(reverse("publicsource-list"), params)
-    resp.status_code == status.HTTP_201_CREATED
+    assert resp.status_code == status.HTTP_201_CREATED
     sources = Source.objects.filter(name="sonic test public source")
     assert sources.count() == 1
 
