@@ -29,6 +29,7 @@ class TestData(TypedDict):
     rule_target_auto_no_transfo: Rule
     rule_target_source_transfo: Rule
     rule_target_destination_transfo: Rule
+    rule_with_target: Rule
 
 
 @pytest.fixture
@@ -125,6 +126,17 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
     )
     rule_target_destination_transfo.save()
     RuleAtVersion.objects.create(rule=rule_target_destination_transfo, content=content)
+
+    # Rule with existing target directive (for T_NONE test)
+    content = (
+        'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET Test Rule With Target"; '
+        'flow:established; content:"|00 01|"; classtype:trojan-activity; target:dest_ip; '
+        "sid:9001; rev:1; metadata:affected_product Windows;)"
+    )
+    rule_with_target = Rule.objects.create(sid=9, category=category, msg="test rule with target directive")
+    rule_with_target.save()
+    RuleAtVersion.objects.create(rule=rule_with_target, content=content)
+
     return {
         "category": category,
         "source": source,
@@ -136,6 +148,7 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         "rule_target_auto_transfo": rule_target_auto_transfo,
         "rule_target_destination_transfo": rule_target_destination_transfo,
         "rule_target_source_transfo": rule_target_source_transfo,
+        "rule_with_target": rule_with_target,
     }
 
 
@@ -143,53 +156,102 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
     "rule_key, transfo_key, transfo_value, check",
     [
         pytest.param(
-            "rule_commented", Transformation.LATERAL, Transformation.L_YES,
+            "rule_commented",
+            Transformation.LATERAL,
+            Transformation.L_YES,
             lambda orig, result: result == orig,
             id="commented-lateral-yes-unchanged",
         ),
         pytest.param(
-            "rule_lateral_yes", Transformation.LATERAL, Transformation.L_YES,
+            "rule_lateral_yes",
+            Transformation.LATERAL,
+            Transformation.L_YES,
             lambda _, result: "alert tcp any any" in result,
             id="lateral-yes",
         ),
         pytest.param(
-            "rule_lateral_auto_no_transfo", Transformation.LATERAL, Transformation.L_AUTO,
+            "rule_lateral_auto_no_transfo",
+            Transformation.LATERAL,
+            Transformation.L_AUTO,
             lambda orig, result: result == orig,
             id="lateral-auto-no-transfo",
         ),
         pytest.param(
-            "rule_lateral_auto_transfo", Transformation.LATERAL, Transformation.L_AUTO,
+            "rule_lateral_auto_transfo",
+            Transformation.LATERAL,
+            Transformation.L_AUTO,
             lambda _, result: "alert tcp any any" in result,
             id="lateral-auto-transfo",
         ),
         pytest.param(
-            "rule_target_auto_transfo", Transformation.TARGET, Transformation.T_AUTO,
+            "rule_target_auto_transfo",
+            Transformation.TARGET,
+            Transformation.T_AUTO,
             lambda _, result: result.endswith("target:dest_ip;)"),
             id="target-auto-transfo",
         ),
         pytest.param(
-            "rule_target_auto_no_transfo", Transformation.TARGET, Transformation.T_AUTO,
+            "rule_target_auto_no_transfo",
+            Transformation.TARGET,
+            Transformation.T_AUTO,
             lambda orig, result: result == orig,
             id="target-auto-no-transfo",
         ),
         pytest.param(
-            "rule_target_source_transfo", Transformation.TARGET, Transformation.T_SOURCE,
+            "rule_target_source_transfo",
+            Transformation.TARGET,
+            Transformation.T_SOURCE,
             lambda _, result: result.endswith("target:src_ip;)"),
             id="target-source",
         ),
         pytest.param(
-            "rule_target_destination_transfo", Transformation.TARGET, Transformation.T_DESTINATION,
+            "rule_target_destination_transfo",
+            Transformation.TARGET,
+            Transformation.T_DESTINATION,
             lambda _, result: result.endswith("target:dest_ip;)"),
             id="target-destination",
         ),
+        pytest.param(
+            "rule_lateral_yes",
+            Transformation.LATERAL,
+            Transformation.L_NO,
+            lambda _, result: "$EXTERNAL_NET" in result,
+            id="lateral-no-unchanged",
+        ),
+        pytest.param(
+            "rule_with_target",
+            Transformation.TARGET,
+            Transformation.T_NONE,
+            lambda _, result: "target:" not in result,
+            id="target-none-removes-directive",
+        ),
     ],
 )
-def test_transformation(
-    setup_objects: TestData, rule_key: str, transfo_key, transfo_value, check: Callable
-):
+def test_transformation(setup_objects: TestData, rule_key: str, transfo_key, transfo_value, check: Callable):
     rule = setup_objects[rule_key]
     original = rule.ruleatversion_set.first().content
     result = rule.apply_lateral_target_transfo(original, transfo_key, transfo_value)
+    assert check(original, result)
+
+
+@pytest.mark.parametrize(
+    "transfo_value, check",
+    [
+        pytest.param(Transformation.A_DROP, lambda _, result: result.startswith("drop "), id="action-drop"),
+        pytest.param(Transformation.A_REJECT, lambda _, result: result.startswith("reject "), id="action-reject"),
+        pytest.param(Transformation.A_FILESTORE, lambda _, result: "filestore;" in result, id="action-filestore"),
+        pytest.param(
+            Transformation.A_BYPASS,
+            lambda _, result: result.startswith("pass ") and "bypass;" in result,
+            id="action-bypass",
+        ),
+        pytest.param(Transformation.A_NONE, lambda orig, result: result == orig, id="action-none"),
+    ],
+)
+def test_action_transformation(setup_objects: TestData, transfo_value, check: Callable):
+    rule = setup_objects["rule_lateral_yes"]
+    original = rule.ruleatversion_set.first().content
+    result = rule.apply_transformation(original, Transformation.ACTION, transfo_value)
     assert check(original, result)
 
 
