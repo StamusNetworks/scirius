@@ -3,6 +3,8 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
+import structlog
+import structlog.testing
 from django.contrib.auth.models import Group, Permission, User
 from django.test import RequestFactory
 from django.utils import timezone
@@ -132,13 +134,13 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
     rule.save()
     RuleAtVersion.objects.create(rule=rule, content=content)
 
-    rule2 = Rule.objects.create(sid=2, category=category, msg="whatever DNS Query for whatever", created=timezone.localdate())
+    rule2 = Rule.objects.create(
+        sid=2, category=category, msg="whatever DNS Query for whatever", created=timezone.localdate()
+    )
     rule2.save()
     RuleAtVersion.objects.create(rule=rule2, content=content)
 
-    rule3 = Rule.objects.create(
-        sid=3, category=category, msg="other content DNS Query for another content"
-    )
+    rule3 = Rule.objects.create(sid=3, category=category, msg="other content DNS Query for another content")
     rule3.save()
     RuleAtVersion.objects.create(rule=rule3, content=content2)
 
@@ -190,7 +192,9 @@ def test_mcp_top_or_least_key(settings, ruleset_middleware: str, mcp_request: Re
         mock_instance.fields_stats.return_value = mock_data
 
         controller = McpController(request=mcp_request)
-        result = controller.top_or_least_keys(["dummy.key", "another.key"], top=True, start=start_date, end=end_date, limit=20)
+        result = controller.top_or_least_keys(
+            ["dummy.key", "another.key"], top=True, start=start_date, end=end_date, limit=20
+        )
 
         assert "dummy.key" in result
         assert "another.key" in result
@@ -202,3 +206,96 @@ def test_mcp_top_or_least_key(settings, ruleset_middleware: str, mcp_request: Re
         assert kwargs["top"]
         assert "dummy.key" in kwargs["fields"]
         assert "another.key" in kwargs["fields"]
+
+
+# --- Logging tests ---
+
+
+def test_mcp_logging_on_call_for_version(mcp_request: Request):
+    """INFO log with tool name is emitted on a successful undecorated call (version)"""
+    with structlog.testing.capture_logs() as cap_logs:
+        controller = McpController(request=mcp_request)
+        controller.version()
+
+    info_events = [
+        entry for entry in cap_logs if entry.get("log_level") == "info" and entry.get("event") == "mcp.tool_called"
+    ]
+    assert len(info_events) == 1
+    assert info_events[0]["tool"] == "version"
+
+    debug_events = [
+        entry for entry in cap_logs if entry.get("log_level") == "debug" and entry.get("event") == "mcp.tool_response"
+    ]
+    assert len(debug_events) == 1
+    assert debug_events[0]["tool"] == "version"
+
+
+@pytest.mark.django_db
+def test_mcp_logging_input_params(mcp_request: Request):
+    """INFO log includes the exact input parameters passed to the tool"""
+    with structlog.testing.capture_logs() as cap_logs:
+        controller = McpController(request=mcp_request)
+        controller.rules_search(query="dns query", page=2, limit=5)
+
+    info_events = [
+        entry for entry in cap_logs if entry.get("log_level") == "info" and entry.get("event") == "mcp.tool_called"
+    ]
+    assert len(info_events) == 1
+    log = info_events[0]
+    assert log["tool"] == "rules_search"
+    assert log["query"] == "dns query"
+    assert log["page"] == 2
+    assert log["limit"] == 5
+
+
+@pytest.mark.django_db
+def test_mcp_logging_response_result_count(mcp_request: Request):
+    """DEBUG response log includes result_count for list results"""
+    with structlog.testing.capture_logs() as cap_logs:
+        controller = McpController(request=mcp_request)
+        controller.rules_search("no match here at all zzz")
+
+    debug_events = [
+        entry for entry in cap_logs if entry.get("log_level") == "debug" and entry.get("event") == "mcp.tool_response"
+    ]
+    assert len(debug_events) == 1
+    assert debug_events[0]["tool"] == "rules_search"
+    assert debug_events[0]["result_count"] == 0
+
+
+@pytest.mark.django_db
+def test_mcp_logging_permission_denied_warning(rf: RequestFactory):
+    """WARNING log is emitted when the user lacks required group permissions"""
+    user = _create_user(username="noperm-log-test", group="logtest-noperm")
+    request = _create_request(rf, user)
+    controller = McpController(request=request)
+
+    with structlog.testing.capture_logs() as cap_logs, pytest.raises(PermissionDenied):
+        controller.rules_search("test")
+
+    warn_events = [
+        entry
+        for entry in cap_logs
+        if entry.get("log_level") == "warning" and entry.get("event") == "mcp.permission_denied"
+    ]
+    assert len(warn_events) == 1
+    assert warn_events[0]["reason"] == "no_group_permission"
+    assert warn_events[0]["tool"] == "rules_search"
+
+
+@pytest.mark.django_db
+def test_mcp_logging_error_on_service_exception(mcp_request: Request):
+    """ERROR log is emitted when the underlying service raises an unexpected exception"""
+    with (
+        patch("rules.services.mcp.McpService.rules_search", side_effect=RuntimeError("OpenSearch down")),
+        structlog.testing.capture_logs() as cap_logs,
+    ):
+        controller = McpController(request=mcp_request)
+        with pytest.raises(RuntimeError):
+            controller.rules_search("test")
+
+    error_events = [
+        entry for entry in cap_logs if entry.get("log_level") == "error" and entry.get("event") == "mcp.tool_error"
+    ]
+    assert len(error_events) == 1
+    assert error_events[0]["tool"] == "rules_search"

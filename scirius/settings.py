@@ -296,6 +296,12 @@ LOGGING = {
             'filename': '/var/log/celery/requests.log',
             'formatter': 'json_formatter',
         },
+        'mcp': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/mcp.log',
+            'formatter': 'json_formatter',
+        },
     },
     'loggers': {
         # default logger, log everything
@@ -363,6 +369,11 @@ LOGGING = {
             "handlers": ["scirius"],
             "level": "INFO",
             "propagate": False,  # Important to avoid double logging with parent loggers
+        },
+        "mcp": {
+            "handlers": ["mcp"],
+            "level": "DEBUG",
+            "propagate": False,
         },
     }
 }
