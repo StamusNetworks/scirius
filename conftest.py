@@ -42,6 +42,7 @@ def configure_structlog():
             structlog.dev.set_exc_info,
             structlog.dev.ConsoleRenderer(),  # redable display for the console
         ],
+        cache_logger_on_first_use=False,  # required for structlog.testing.capture_logs() to work
     )
 
 
