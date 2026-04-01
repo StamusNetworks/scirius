@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 from functools import wraps
 from typing import Any
 
+import structlog
 from django.conf import settings
 from django.http import HttpRequest
 from mcp_server import MCPToolset
@@ -21,6 +22,8 @@ from rules.messages.mcp import (
 )
 from rules.services.mcp import McpService
 from scirius.utils import convert_datetime_to_timestamp
+
+logger = structlog.get_logger("mcp")
 
 # In the CSR pattern, controllers are responsible to prepare input data for the Service (trim strings, reformat, ...)
 # They are also responsible for returning the formatted response and handle exceptions from the Service
@@ -41,13 +44,40 @@ def has_group_permission(required_groups: Iterable[str]):
 
             # 1. Ensure the user is authenticated first
             if not IsAuthenticated().has_permission(request, self):
+                logger.warning("mcp.permission_denied", tool=func.__name__, reason="not_authenticated")
                 raise PermissionDenied("Not authenticated")
 
             # 2. Check group permissions
             if not HasGroupPermission.check_perms(request, self, required_groups):
+                logger.warning(
+                    "mcp.permission_denied",
+                    tool=func.__name__,
+                    reason="no_group_permission",
+                    user=request.user.username,
+                )
                 raise PermissionDenied("No group permission")
 
-            return func(self, *args, **kwargs)
+            logger.info(
+                "mcp.tool_called",
+                tool=func.__name__,
+                user=request.user.username,
+                **{
+                    k: (str(v) if not isinstance(v, str | int | float | bool) else v) if v is not None else None
+                    for k, v in kwargs.items()
+                },
+            )
+            try:
+                result = func(self, *args, **kwargs)
+            except Exception:
+                logger.exception("mcp.tool_error", tool=func.__name__, user=request.user.username)
+                raise
+            logger.debug(
+                "mcp.tool_response",
+                tool=func.__name__,
+                user=request.user.username,
+                result_count=len(result) if isinstance(result, list | dict) else None,
+            )
+            return result
 
         return wrapper
 
@@ -218,11 +248,14 @@ class McpController(MCPToolset):
         * `flavor`: The product flavor (e.g., "Enterprise" or "Community").
         * `version`: The specific version number of the software.
         """
-        return ProductInfoMessage(
+        logger.info("mcp.tool_called", tool="version", user=self.request.user.username)
+        result = ProductInfoMessage(
             name=settings.APP_SHORT_NAME,
             version=settings.SCIRIUS_VERSION,
             flavor="Community" if settings.RULESET_MIDDLEWARE == "suricata" else "Enterprise",
         )
+        logger.debug("mcp.tool_response", tool="version", user=self.request.user.username, response=result)
+        return result
 
     def mapping_info(self) -> list[dict[str, str]]:
         """
@@ -236,25 +269,56 @@ class McpController(MCPToolset):
 
         * `list[dict]`: A list of dictionaries, with each dictionary containing information about a specific field available for Lucene queries.
         """
-        return [
+        logger.info("mcp.tool_called", tool="mapping_info", user=self.request.user.username)
+        result = [
             {"field": "timestamp", "type": "date", "description": "The timestamp of the alert in ISO 8601 format"},
             {"field": "src_ip", "type": "ip", "description": "The source IP address of the event"},
             {"field": "dest_ip", "type": "ip", "description": "The destination IP address of the event"},
             {"field": "src_port", "type": "integer", "description": "The source port of the event"},
             {"field": "dest_port", "type": "integer", "description": "The destination port of the event"},
-            {"field": "app_proto", "type": "string", "description": "The application layer protocol of the event (HTTP, DNS, TLS, etc.)"},
-            {"field": "alert.signature_id", "type": "integer", "description": "The signature ID (SID) of the rule that triggered the alert event"},
-            {"field": "alert.signature", "type": "string", "description": "The name of the rule that triggered the alert event"},
-            {"field": "flow_id", "type": "long", "description": "The unique identifier for the flow associated with the event"},
-            {"field": "event_type", "type": "string", "description": "The type of event (alert, anomaly, DNS, HTTP, etc.)"},
-            {"field": "proto", "type": "string", "description": "The protocol used in the event (TCP, UDP, ICMP, etc.)"},
+            {
+                "field": "app_proto",
+                "type": "string",
+                "description": "The application layer protocol of the event (HTTP, DNS, TLS, etc.)",
+            },
+            {
+                "field": "alert.signature_id",
+                "type": "integer",
+                "description": "The signature ID (SID) of the rule that triggered the alert event",
+            },
+            {
+                "field": "alert.signature",
+                "type": "string",
+                "description": "The name of the rule that triggered the alert event",
+            },
+            {
+                "field": "flow_id",
+                "type": "long",
+                "description": "The unique identifier for the flow associated with the event",
+            },
+            {
+                "field": "event_type",
+                "type": "string",
+                "description": "The type of event (alert, anomaly, DNS, HTTP, etc.)",
+            },
+            {
+                "field": "proto",
+                "type": "string",
+                "description": "The protocol used in the event (TCP, UDP, ICMP, etc.)",
+            },
             {"field": "http.hostname", "type": "string", "description": "The hostname from HTTP traffic"},
             {"field": "http.url", "type": "string", "description": "The URL from HTTP traffic"},
             {"field": "dns.query.rrname", "type": "string", "description": "The DNS resource record name"},
             {"field": "tls.sni", "type": "string", "description": "The Server Name Indication from TLS traffic"},
-            {"field": "metadata.flowbits", "type": "string", "description": "Label set on events by detection indicating specific behaviors"},
-            {"field": "host", "type": "string", "description": "Name of the probe that did generate the event"}
+            {
+                "field": "metadata.flowbits",
+                "type": "string",
+                "description": "Label set on events by detection indicating specific behaviors",
+            },
+            {"field": "host", "type": "string", "description": "Name of the probe that did generate the event"},
         ]
+        logger.debug("mcp.tool_called", tool="mapping_info", user=self.request.user.username, result_count=len(result))
+        return result
 
     @has_group_permission(required_groups=["rules.source_view", "rules.ruleset_policy_view"])
     def rules_search(
