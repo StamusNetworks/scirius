@@ -740,7 +740,7 @@ class ESPoststats(ESQuery):
                         'field': 'host.keyword',
                         'size': 1000,
                         'order': {
-                            '_term': 'desc'
+                            '_key': 'desc'
                         }
                     },
                     'aggs': {
