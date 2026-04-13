@@ -13,6 +13,7 @@ from rules.models.model import (
     Rule,
     RuleTransformation,
     Ruleset,
+    RulesetTransformation,
     Transformation,
     UserAction,
 )
@@ -33,6 +34,11 @@ _NONE_MAP = {
     Transformation.LATERAL: Transformation.L_NO,
     Transformation.TARGET: Transformation.T_NONE,
 }
+
+# Cache keys used in Category.TRANSFORMATIONS / Rule.TRANSFORMATIONS dicts
+_CATEGORY_KEY = "category"
+_RULESET_KEY = "ruleset"
+_RULE_KEY = "rule"
 
 
 class TransformationService:
@@ -177,14 +183,12 @@ class TransformationService:
                 result = self.get_for_ruleset(ruleset, key)
         else:
             # Cache path (Category.enable_cache() was called)
-            category_str = Category.__name__.lower()
-            ruleset_str = Ruleset.__name__.lower()
-            for trans, tsets in Category.TRANSFORMATIONS[key][category_str].items():
+            for trans, tsets in Category.TRANSFORMATIONS[key][_CATEGORY_KEY].items():
                 if category.pk in tsets:
                     result = trans
                     break
             if result is None and override:
-                for trans, tsets in Category.TRANSFORMATIONS[key][ruleset_str].items():
+                for trans, tsets in Category.TRANSFORMATIONS[key][_RULESET_KEY].items():
                     if tsets and ruleset.pk in tsets:
                         result = trans
                         break
@@ -203,17 +207,14 @@ class TransformationService:
         self, rule: Rule, ruleset: Ruleset, key: Transformation.Type, override: bool
     ) -> Any | None:
         """Cache-path implementation for :meth:`get_for_rule` (Rule.TRANSFORMATIONS is active)."""
-        rule_str = Rule.__name__.lower()
-        for trans, tsets in Rule.TRANSFORMATIONS[key][rule_str].items():
+        for trans, tsets in Rule.TRANSFORMATIONS[key][_RULE_KEY].items():
             if tsets is not None and tsets and rule.pk in tsets:
                 return trans
         if override:
-            category_str = Category.__name__.lower()
-            ruleset_str = Ruleset.__name__.lower()
-            for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].items():
+            for trans, tsets in Rule.TRANSFORMATIONS[key][_CATEGORY_KEY].items():
                 if tsets is not None and tsets and rule.category.pk in tsets:
                     return trans
-            for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].items():
+            for trans, tsets in Rule.TRANSFORMATIONS[key][_RULESET_KEY].items():
                 if tsets is not None and tsets and ruleset.pk in tsets:
                     return trans
         return None
@@ -285,8 +286,7 @@ class TransformationService:
                     value=value.value,
                 ).exists()
             else:
-                category_str = Category.__name__.lower()
-                result = obj.pk in Category.TRANSFORMATIONS[key][category_str][value]
+                result = obj.pk in Category.TRANSFORMATIONS[key][_CATEGORY_KEY][value]
             logger.debug(
                 "is_transformed",
                 category=obj.pk,
@@ -306,8 +306,7 @@ class TransformationService:
                     value=value.value,
                 ).exists()
             else:
-                rule_str = Rule.__name__.lower()
-                result = obj.pk in Rule.TRANSFORMATIONS[key][rule_str][value]
+                result = obj.pk in Rule.TRANSFORMATIONS[key][_RULE_KEY][value]
             logger.debug(
                 "is_transformed",
                 rule=obj.sid,
@@ -320,10 +319,10 @@ class TransformationService:
 
         # Ruleset — no cache path needed
         if isinstance(obj, Ruleset):
-            result = Ruleset.objects.filter(
-                pk=obj.pk,
-                rulesettransformation__key=key.value,
-                rulesettransformation__value=value.value,
+            result = RulesetTransformation.objects.filter(
+                ruleset_transformation=obj,
+                key=key.value,
+                value=value.value,
             ).exists()
             logger.debug(
                 "is_transformed",
@@ -365,8 +364,8 @@ class TransformationService:
         *,
         from_instance: bool = False,
     ) -> dict:
-        fields: dict[str, Any] = dict(fields_mapping)
-        for dest_key, src_key in dict(fields_mapping).items():
+        fields: dict[str, Any] = {}
+        for dest_key, src_key in fields_mapping.items():
             fields[dest_key] = getattr(source, src_key) if from_instance else source[src_key]  # type: ignore[index]
         fields["comment"] = comment
         fields["action_type"] = action_type
@@ -457,9 +456,13 @@ class TransformationService:
         try:
             Rule.enable_cache()
 
-            for ruleset in Ruleset.objects.all():
+            for ruleset in Ruleset.objects.prefetch_related("categories__rule_set"):
                 trans_rules = self._rule_repo.list_transformations(ruleset, key=key_str, value=value_str)
-                trans_cats = self._category_repo.list_transformations(ruleset, key=key_str, value=value_str)
+                trans_cats = (
+                    self._category_repo.list_transformations(ruleset, key=key_str, value=value_str)
+                    .select_related("category_transformation")
+                    .prefetch_related("category_transformation__rule_set")
+                )
                 trans_rulesets = self._ruleset_repo.list_transformations(ruleset, key=key_str, value=value_str)
 
                 all_rules: set[int] = set()
@@ -482,14 +485,14 @@ class TransformationService:
 
                 if trans_rulesets:
                     for category in ruleset.categories.all():
-                        trans_cat = self._category_repo.list_for_category(ruleset, category)
-                        if trans_cat.count() == 0:
+                        trans_cat_list = list(self._category_repo.list_for_category(ruleset, category))
+                        if not trans_cat_list:
                             for rule in category.rule_set.all():
                                 rule_trans_value = self.get_for_rule(rule, ruleset, key)
                                 if rule_trans_value is None or rule_trans_value == value:
                                     all_rules.add(rule.sid)
                         else:
-                            for trans in trans_cat:
+                            for trans in trans_cat_list:
                                 for rule in category.rule_set.all():
                                     rule_trans_value = self.get_for_rule(rule, ruleset, key)
                                     if trans.key == key and trans.value == value:
