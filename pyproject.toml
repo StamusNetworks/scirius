@@ -122,13 +122,13 @@ dev = [
     "pytest-django",
     "pytest-timeout",
     "pytest-freezegun",
-    "pytest-cov",
+    "slipcover", # coverage
     "pytest-xdist",
     "pytest-sugar",
     "pytest-drop-dup-tests",
     "ruff",           # Code linter/formatter
     "mypy",           # Type checker
-    "pre-commit",
+    "prek",
     # to resolve pyright typing
     "django-stubs",
     "celery-types",
@@ -316,13 +316,6 @@ addopts = [
     # "--no-migrations",           # avoid migration run
     # "--nomigrations",            # alternative to --no-migrations
     # "--reuse-db",                # reuse DB between runs
-    "--cov=scirius",             # Coverage of scirius package
-    "--cov=suricata",
-    "--cov=rules",
-    "--cov=appliances",
-    "--cov=volumetry",
-    "--cov-report=html",         # HTML report
-    "--cov-report=term-missing", # display missing lines in the terminal
     "--strict-markers",          # error if unknown marker
     "--tb=short",                # shorter Traceback
     "-v",                        # verbose mode
