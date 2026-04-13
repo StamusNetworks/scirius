@@ -9,10 +9,12 @@ from rest_framework.test import APIClient
 
 from rules.models.model import (
     Category,
+    CategoryTransformation,
     Rule,
     RuleAtVersion,
     Ruleset,
     RulesetTransformation,
+    RuleTransformation,
     Source,
     Transformation,
 )
@@ -322,3 +324,190 @@ def test_ruleset_transformations(drf: APIClient, ruleset: Ruleset, transfo_type:
     resp = drf.delete(reverse("rulesettransformation-detail", args=(pk,)))
     assert resp.status_code == status.HTTP_204_NO_CONTENT
     assert RulesetTransformation.objects.count() == 0
+
+
+@pytest.fixture
+def ruleset_with_rule(db):
+    """Ruleset with a rule that has content supporting action/lateral/target transformations."""
+    source = Source.objects.create(name="transfo source", created_date=timezone.now(), method="local", datatype="sig")
+    category = Category.objects.create(name="transfo category", filename="transfo", source=source)
+    content = (
+        'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET Test Transfo"; '
+        'flow:established; content:"|00 01|"; classtype:trojan-activity; sid:9999; rev:1;)'
+    )
+    rule = Rule.objects.create(sid=9999, category=category, msg="test transfo rule")
+    RuleAtVersion.objects.create(rule=rule, content=content)
+    rs = Ruleset.objects.create(
+        name="transfo ruleset", descr="", created_date=timezone.now(), updated_date=timezone.now()
+    )
+    rs.sources.add(source)
+    rs.categories.add(category)
+    return {"ruleset": rs, "category": category, "rule": rule}
+
+
+@pytest.mark.parametrize(
+    "transfo_type, values",
+    [
+        ("action", ("reject", "drop", "filestore")),
+        ("lateral", ("yes", "auto", "yes")),
+        ("target", ("src", "dst", "auto")),
+    ],
+)
+def test_category_transformations(drf: APIClient, ruleset: Ruleset, transfo_type: str, values: tuple[str, str, str]):
+    category = ruleset.categories.first()
+    assert category is not None
+    post_value, patch_value, put_value = values
+
+    # Create
+    params = {"category": category.pk, "ruleset": ruleset.pk, "transfo_type": transfo_type, "transfo_value": post_value}
+    resp = drf.post(reverse("categorytransformation-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+
+    trans = CategoryTransformation.objects.filter(key=transfo_type)
+    assert trans.count() == 1
+    assert trans[0].category_transformation == category
+    assert trans[0].key == transfo_type
+    assert trans[0].value == post_value
+    pk = trans[0].pk
+
+    # PATCH
+    params = {
+        "category": category.pk,
+        "ruleset": ruleset.pk,
+        "transfo_type": transfo_type,
+        "transfo_value": patch_value,
+    }
+    resp = drf.patch(reverse("categorytransformation-detail", args=(pk,)), params)
+    assert resp.status_code == status.HTTP_200_OK
+
+    trans = CategoryTransformation.objects.filter(key=transfo_type)
+    assert trans[0].category_transformation == category
+    assert trans[0].key == transfo_type
+    assert trans[0].value == patch_value
+
+    # PUT
+    params = {"category": category.pk, "ruleset": ruleset.pk, "transfo_type": transfo_type, "transfo_value": put_value}
+    resp = drf.put(reverse("categorytransformation-detail", args=(pk,)), params)
+    assert resp.status_code == status.HTTP_200_OK
+
+    trans = CategoryTransformation.objects.filter(key=transfo_type)
+    assert trans[0].category_transformation == category
+    assert trans[0].key == transfo_type
+    assert trans[0].value == put_value
+
+    # Delete
+    resp = drf.delete(reverse("categorytransformation-detail", args=(pk,)))
+    assert resp.status_code == status.HTTP_204_NO_CONTENT
+    assert CategoryTransformation.objects.count() == 0
+
+
+@pytest.mark.parametrize(
+    "transfo_type, values",
+    [
+        ("action", ("reject", "drop", "bypass")),
+        ("lateral", ("yes", "auto", "no")),
+        ("target", ("src", "dst", "auto")),
+    ],
+)
+def test_rule_transformations(drf: APIClient, ruleset_with_rule: dict, transfo_type: str, values: tuple[str, str, str]):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    post_value, patch_value, put_value = values
+
+    # Create
+    params = {"rule": rule.pk, "ruleset": rs.pk, "transfo_type": transfo_type, "transfo_value": post_value}
+    resp = drf.post(reverse("ruletransformation-list"), params)
+    assert resp.status_code == status.HTTP_201_CREATED
+
+    trans = RuleTransformation.objects.filter(key=transfo_type)
+    assert trans.count() == 1
+    assert trans[0].rule_transformation == rule
+    assert trans[0].key == transfo_type
+    assert trans[0].value == post_value
+    pk = trans[0].pk
+
+    # PATCH
+    params = {"rule": rule.pk, "ruleset": rs.pk, "transfo_type": transfo_type, "transfo_value": patch_value}
+    resp = drf.patch(reverse("ruletransformation-detail", args=(pk,)), params)
+    assert resp.status_code == status.HTTP_200_OK
+
+    trans = RuleTransformation.objects.filter(key=transfo_type)
+    assert trans[0].rule_transformation == rule
+    assert trans[0].key == transfo_type
+    assert trans[0].value == patch_value
+
+    # PUT
+    params = {"rule": rule.pk, "ruleset": rs.pk, "transfo_type": transfo_type, "transfo_value": put_value}
+    resp = drf.put(reverse("ruletransformation-detail", args=(pk,)), params)
+    assert resp.status_code == status.HTTP_200_OK
+
+    trans = RuleTransformation.objects.filter(key=transfo_type)
+    assert trans[0].rule_transformation == rule
+    assert trans[0].key == transfo_type
+    assert trans[0].value == put_value
+
+    # Delete
+    resp = drf.delete(reverse("ruletransformation-detail", args=(pk,)))
+    assert resp.status_code == status.HTTP_204_NO_CONTENT
+    assert RuleTransformation.objects.count() == 0
+
+
+@pytest.mark.parametrize(
+    "query_string, expected_error_key",
+    [
+        pytest.param("?transfo_value=drop", "transfo_type", id="missing-transfo-type"),
+        pytest.param("?transfo_type=action", "transfo_value", id="missing-transfo-value"),
+        pytest.param("", None, id="both-missing"),
+        pytest.param("?transfo_type=action&transfo_value=drop&unknown=foo", "filters", id="extra-filter"),
+        pytest.param("?transfo_type=bad_type&transfo_value=drop", "filters", id="wrong-transfo-type"),
+        pytest.param("?transfo_type=action&transfo_value=bad_value", "filters", id="wrong-transfo-value"),
+    ],
+)
+def test_rule_transformation_endpoint_invalid_request(
+    drf: APIClient, query_string: str, expected_error_key: str | None
+):
+    resp = drf.get(reverse("rule-transformation") + query_string)
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    if expected_error_key is not None:
+        assert expected_error_key in resp.json()
+
+
+def test_rule_transformation_endpoint_category_level(drf: APIClient, ruleset: Ruleset):
+    category = ruleset.categories.first()
+    assert category is not None
+
+    drf.post(
+        reverse("categorytransformation-list"),
+        {"category": category.pk, "ruleset": ruleset.pk, "transfo_type": "action", "transfo_value": "reject"},
+    )
+
+    resp = drf.get(reverse("rule-transformation") + "?transfo_type=action&transfo_value=reject")
+    assert resp.status_code == status.HTTP_200_OK
+
+    content = resp.json()
+    assert str(ruleset.pk) in content
+    assert content[str(ruleset.pk)]["transformation"]["transfo_key"] == "action"
+    assert content[str(ruleset.pk)]["transformation"]["transfo_value"] == "reject"
+    rule = Rule.objects.filter(category=category).first()
+    assert rule is not None
+    assert rule.sid in content[str(ruleset.pk)]["rules"]
+
+
+def test_rule_transformation_endpoint_ruleset_level(drf: APIClient, ruleset: Ruleset):
+    drf.post(
+        reverse("rulesettransformation-list"),
+        {"ruleset": ruleset.pk, "transfo_type": "action", "transfo_value": "drop"},
+    )
+
+    resp = drf.get(reverse("rule-transformation") + "?transfo_type=action&transfo_value=drop")
+    assert resp.status_code == status.HTTP_200_OK
+
+    content = resp.json()
+    assert str(ruleset.pk) in content
+    assert content[str(ruleset.pk)]["transformation"]["transfo_key"] == "action"
+    assert content[str(ruleset.pk)]["transformation"]["transfo_value"] == "drop"
+    first_category = ruleset.categories.first()
+    assert first_category is not None
+    first_rule = Rule.objects.filter(category=first_category).first()
+    assert first_rule is not None
+    assert first_rule.sid in content[str(ruleset.pk)]["rules"]
