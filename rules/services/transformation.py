@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypedDict
 
 import structlog
 
@@ -24,7 +24,10 @@ if TYPE_CHECKING:
 logger = structlog.get_logger("django_structlog")
 
 # Maps a Transformation.Type key to the matching enum class and "NONE" sentinel.
-_TYPE_MAP = {
+TransformationEnumType = type[
+    Transformation.ActionTransfoType | Transformation.LateralTransfoType | Transformation.TargetTransfoType
+]
+_TYPE_MAP: dict[Transformation.Type, TransformationEnumType] = {
     Transformation.ACTION: Transformation.ActionTransfoType,
     Transformation.LATERAL: Transformation.LateralTransfoType,
     Transformation.TARGET: Transformation.TargetTransfoType,
@@ -39,6 +42,18 @@ _NONE_MAP = {
 _CATEGORY_KEY = "category"
 _RULESET_KEY = "ruleset"
 _RULE_KEY = "rule"
+
+
+class TransformationFilter(TypedDict):
+    transfo_key: str
+    transfo_value: str
+
+
+class RulesetTransformationInfo(TypedDict):
+    name: str
+    transformation: TransformationFilter
+    rules: list[int]
+    rules_count: int
 
 
 class TransformationService:
@@ -56,10 +71,11 @@ class TransformationService:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _resolve_type(self, key: Transformation.Type) -> type:
+    def _resolve_type(self, key: Transformation.Type) -> TransformationEnumType:
+        """Narrows the contract for supported transformation enums."""
         if key not in _TYPE_MAP:
             logger.warning("unknown_transformation_key", key=str(key))
-            raise Exception(f"Key '{key}' is unknown")
+            raise ValueError(f"Key '{key}' is unknown")
         return _TYPE_MAP[key]
 
     # ------------------------------------------------------------------
@@ -108,9 +124,7 @@ class TransformationService:
 
         if params:
             logger.warning("unknown_transformation_filter_params", extra_params=list(params.keys()))
-            raise ValueError(
-                {"filters": ['Wrong filters: "{}"'.format(", ".join(params.keys()))]}
-            )
+            raise ValueError({"filters": ['Wrong filters: "{}"'.format(", ".join(params.keys()))]})
 
         if key_str not in Transformation.AVAILABLE_MODEL_TRANSFO:
             logger.warning("invalid_transformation_filter_key", transfo_type=key_str)
@@ -122,9 +136,7 @@ class TransformationService:
                 transfo_type=key_str,
                 transfo_value=value_str,
             )
-            raise ValueError(
-                {"filters": [f'Wrong filter value "{value_str}" for key "{key_str}".']}
-            )
+            raise ValueError({"filters": [f'Wrong filter value "{value_str}" for key "{key_str}".']})
 
         return key_str, value_str
 
@@ -208,14 +220,14 @@ class TransformationService:
     ) -> Any | None:
         """Cache-path implementation for :meth:`get_for_rule` (Rule.TRANSFORMATIONS is active)."""
         for trans, tsets in Rule.TRANSFORMATIONS[key][_RULE_KEY].items():
-            if tsets is not None and tsets and rule.pk in tsets:
+            if tsets and rule.pk in tsets:
                 return trans
         if override:
             for trans, tsets in Rule.TRANSFORMATIONS[key][_CATEGORY_KEY].items():
-                if tsets is not None and tsets and rule.category.pk in tsets:
+                if tsets and rule.category.pk in tsets:
                     return trans
             for trans, tsets in Rule.TRANSFORMATIONS[key][_RULESET_KEY].items():
-                if tsets is not None and tsets and ruleset.pk in tsets:
+                if tsets and ruleset.pk in tsets:
                     return trans
         return None
 
@@ -426,16 +438,65 @@ class TransformationService:
         comment: str | None,
     ) -> None:
         """Log a UserAction after a transformation has been deleted."""
-        fields = self._build_action_fields(
-            instance, fields_mapping, action_type, user, comment, from_instance=True
-        )
+        fields = self._build_action_fields(instance, fields_mapping, action_type, user, comment, from_instance=True)
         UserAction.create(**fields)
+
+    # ------------------------------------------------------------------
+    # Transformation list helpers
+    # ------------------------------------------------------------------
+
+    def _rules_from_rule_transformations(self, ruleset: Ruleset, key_str: str, value_str: str) -> set[int]:
+        """Extracts SIDs directly transformed at the rule level."""
+        trans_rules = self._rule_repo.list_transformations(ruleset, key=key_str, value=value_str)
+        return {t.rule_transformation.pk for t in trans_rules}
+
+    def _rules_from_category_transformations(
+        self, ruleset: Ruleset, key: Transformation.Type, value: Any, key_str: str, value_str: str
+    ) -> set[int]:
+        """Extracts SIDs transformed via category inheritance."""
+        sids = set()
+        trans_cats = (
+            self._category_repo.list_transformations(ruleset, key=key_str, value=value_str)
+            .select_related("category_transformation")
+            .prefetch_related("category_transformation__rule_set")
+        )
+        for trans in trans_cats:
+            for rule in trans.category_transformation.rule_set.all():
+                rule_trans_value = self.get_for_rule(rule, ruleset, key)
+                if rule_trans_value is None or rule_trans_value == value:
+                    sids.add(rule.sid)
+        return sids
+
+    def _rules_from_ruleset_transformations(
+        self, ruleset: Ruleset, key: Transformation.Type, value: Any, key_str: str, value_str: str
+    ) -> set[int]:
+        """Extracts SIDs transformed via global ruleset inheritance."""
+        sids: set[int] = set()
+        if not self._ruleset_repo.list_transformations(ruleset, key=key_str, value=value_str):
+            return sids
+
+        for category in ruleset.categories.all():
+            trans_cat_list = list(self._category_repo.list_for_category(ruleset, category))
+            if not trans_cat_list:
+                for rule in category.rule_set.all():
+                    rule_trans_value = self.get_for_rule(rule, ruleset, key)
+                    if rule_trans_value is None or rule_trans_value == value:
+                        sids.add(rule.sid)
+            else:
+                for trans in trans_cat_list:
+                    for rule in category.rule_set.all():
+                        rule_trans_value = self.get_for_rule(rule, ruleset, key)
+                        if ((trans.key == key and trans.value == value) or (rule_trans_value == value)) and (
+                            rule_trans_value is None or rule_trans_value == value
+                        ):
+                            sids.add(rule.sid)
+        return sids
 
     # ------------------------------------------------------------------
     # Transformation list endpoint
     # ------------------------------------------------------------------
 
-    def get_transformed_rules(self, key_str: str, value_str: str) -> dict:  # noqa: PLR0912
+    def get_transformed_rules(self, key_str: str, value_str: str) -> dict[int, RulesetTransformationInfo]:
         """
         For each ruleset, compute the set of rule sids that are effectively
         transformed by (key_str, value_str), taking category- and ruleset-level
@@ -444,66 +505,23 @@ class TransformationService:
         Returns ``{ruleset_pk: {"name": str, "transformation": {...}, "rules": [...], "rules_count": int}}``.
         """
         key = Transformation.Type(key_str)
+        value = _TYPE_MAP[key](value_str)
 
-        if key == Transformation.ACTION:
-            value = Transformation.ActionTransfoType(value_str)
-        elif key == Transformation.LATERAL:
-            value = Transformation.LateralTransfoType(value_str)
-        else:
-            value = Transformation.TargetTransfoType(value_str)
-
-        res: dict = {}
+        res: dict[int, RulesetTransformationInfo] = {}
         try:
             Rule.enable_cache()
 
             for ruleset in Ruleset.objects.prefetch_related("categories__rule_set"):
-                trans_rules = self._rule_repo.list_transformations(ruleset, key=key_str, value=value_str)
-                trans_cats = (
-                    self._category_repo.list_transformations(ruleset, key=key_str, value=value_str)
-                    .select_related("category_transformation")
-                    .prefetch_related("category_transformation__rule_set")
-                )
-                trans_rulesets = self._ruleset_repo.list_transformations(ruleset, key=key_str, value=value_str)
-
-                all_rules: set[int] = set()
+                all_rules = self._rules_from_rule_transformations(ruleset, key_str, value_str)
+                all_rules.update(self._rules_from_category_transformations(ruleset, key, value, key_str, value_str))
+                all_rules.update(self._rules_from_ruleset_transformations(ruleset, key, value, key_str, value_str))
 
                 res[ruleset.pk] = {
                     "name": ruleset.name,
                     "transformation": {"transfo_key": key_str, "transfo_value": value_str},
-                    "rules": [],
+                    "rules": list(all_rules),
+                    "rules_count": len(all_rules),
                 }
-
-                for trans in trans_rules:
-                    all_rules.add(trans.rule_transformation.pk)
-
-                for trans in trans_cats:
-                    category = trans.category_transformation
-                    for rule in category.rule_set.all():
-                        rule_trans_value = self.get_for_rule(rule, ruleset, key)
-                        if rule_trans_value is None or rule_trans_value == value:
-                            all_rules.add(rule.sid)
-
-                if trans_rulesets:
-                    for category in ruleset.categories.all():
-                        trans_cat_list = list(self._category_repo.list_for_category(ruleset, category))
-                        if not trans_cat_list:
-                            for rule in category.rule_set.all():
-                                rule_trans_value = self.get_for_rule(rule, ruleset, key)
-                                if rule_trans_value is None or rule_trans_value == value:
-                                    all_rules.add(rule.sid)
-                        else:
-                            for trans in trans_cat_list:
-                                for rule in category.rule_set.all():
-                                    rule_trans_value = self.get_for_rule(rule, ruleset, key)
-                                    if trans.key == key and trans.value == value:
-                                        if rule_trans_value is None or rule_trans_value == value:
-                                            all_rules.add(rule.sid)
-                                    else:
-                                        if rule_trans_value == value:
-                                            all_rules.add(rule.sid)
-
-                res[ruleset.pk]["rules"] = list(all_rules)
-                res[ruleset.pk]["rules_count"] = len(all_rules)
         finally:
             Rule.disable_cache()
 
