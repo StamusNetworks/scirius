@@ -1236,12 +1236,6 @@ class Transformable:
     _TARGET_REGEX = re.compile(r' target:\w*;')
     _SET_TARGET_REGEX = re.compile(r"\)$")
 
-    def get_transformation(self, ruleset, key):
-        raise NotImplementedError
-
-    def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
-        raise NotImplementedError
-
     def _set_target(self, rule, target="dest_ip"):
         target = f' target:{target};)'
         rule.raw = self._SET_TARGET_REGEX.sub(target, rule.raw) if target not in rule.raw else rule.raw
@@ -2025,61 +2019,14 @@ class Category(models.Model, Transformable, Cache):
                 action_type="disable_category", comment=comment, request=request, category=self, ruleset=ruleset
             )
 
-    def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
-        if Category.TRANSFORMATIONS == {}:
-            return self.pk in ruleset.get_transformed_categories(key=key, value=value).values_list("pk", flat=True)
-
-        category_str = Category.__name__.lower()
-        return self.pk in Category.TRANSFORMATIONS[key][category_str][value]
-
-    def suppress_transformation(self, ruleset, key):
-        CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=self, key=key.value).delete()
-
     def toggle_transformation(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
-        if self.is_transformed(ruleset, key=key, value=value):
+        is_set = CategoryTransformation.objects.filter(
+            ruleset=ruleset, category_transformation=self, key=key.value, value=value.value
+        ).exists()
+        if is_set:
             CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=self, key=key.value).delete()
         else:
-            c = CategoryTransformation(ruleset=ruleset, category_transformation=self, key=key.value, value=value.value)
-            c.save()
-
-    def get_transformation(self, ruleset, key=Transformation.ACTION, override=False):
-        TYPE = None
-
-        if key == Transformation.ACTION:
-            TYPE = Transformation.ActionTransfoType
-        elif key == Transformation.LATERAL:
-            TYPE = Transformation.LateralTransfoType
-        elif key == Transformation.TARGET:
-            TYPE = Transformation.TargetTransfoType
-        else:
-            raise Exception("Key '%s' is unknown" % key)
-
-        if Category.TRANSFORMATIONS == {}:
-            ct = CategoryTransformation.objects.filter(key=key.value, ruleset=ruleset, category_transformation=self)
-            if ct.count() > 0:
-                return TYPE(ct[0].value)
-
-            if override:
-                rt = RulesetTransformation.objects.filter(key=key.value, ruleset_transformation=ruleset)
-                if rt.count() > 0:
-                    return TYPE(rt[0].value)
-
-        else:
-            # This code is currently dead, not reachable from UI
-            # but it can be called from django shell
-            category_str = Category.__name__.lower()
-            ruleset_str = Ruleset.__name__.lower()
-
-            for trans, tsets in Category.TRANSFORMATIONS[key][category_str].items():
-                if self.pk in tsets:  # DROP / REJECT / FILESTORE / NONE
-                    return trans
-
-            if override:
-                for trans, tsets in Category.TRANSFORMATIONS[key][ruleset_str].items():
-                    if tsets and ruleset.pk in tsets:
-                        return trans
-
-        return None
+            CategoryTransformation(ruleset=ruleset, category_transformation=self, key=key.value, value=value.value).save()
 
     @staticmethod
     def get_transformation_choices(key=Transformation.ACTION):
@@ -2353,63 +2300,6 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
 
         return content
 
-    def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
-        if Rule.TRANSFORMATIONS == {}:
-            return self in ruleset.get_transformed_rules(key=key, value=value).values_list("pk", flat=True)
-
-        rule_str = Rule.__name__.lower()
-        return self.pk in Rule.TRANSFORMATIONS[key][rule_str][value]
-
-    def get_transformation(self, ruleset, key=Transformation.ACTION, override=False):
-        TYPE = None
-
-        if key == Transformation.ACTION:
-            TYPE = Transformation.ActionTransfoType
-        elif key == Transformation.LATERAL:
-            TYPE = Transformation.LateralTransfoType
-        elif key == Transformation.TARGET:
-            TYPE = Transformation.TargetTransfoType
-        else:
-            raise Exception("Key '%s' is unknown" % key)
-
-        if Rule.TRANSFORMATIONS == {}:
-            rt = RuleTransformation.objects.filter(key=key.value, ruleset=ruleset, rule_transformation=self).all()
-
-            if rt.count() > 0:
-                return TYPE(rt[0].value)
-
-            if override:
-                ct = CategoryTransformation.objects.filter(
-                    key=key.value, ruleset=ruleset, category_transformation=self.category
-                ).all()
-
-                if ct.count() > 0:
-                    return TYPE(ct[0].value)
-
-                rt = RulesetTransformation.objects.filter(key=key.value, ruleset_transformation=ruleset)
-                if rt.count() > 0:
-                    return TYPE(rt[0].value)
-
-        else:
-            rule_str = Rule.__name__.lower()
-            category_str = Category.__name__.lower()
-            ruleset_str = Ruleset.__name__.lower()
-
-            for trans, tsets in Rule.TRANSFORMATIONS[key][rule_str].items():
-                if tsets is not None and tsets and self.pk in tsets:
-                    return trans
-
-            if override:
-                for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].items():
-                    if tsets is not None and tsets and self.category.pk in tsets:
-                        return trans
-
-                for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].items():
-                    if tsets is not None and tsets and ruleset.pk in tsets:
-                        return trans
-
-        return None
-
     def remove_transformations(self, ruleset, key):
         RuleTransformation.objects.filter(ruleset=ruleset, rule_transformation=self, key=key.value).delete()
 
@@ -2647,6 +2537,11 @@ class RuleAtVersion(RangeCheckIntegerFields):
             return f"disabled_as_source_is_untrusted: {content}"
 
         # explicitely set prio on transformation here
+        # Local import avoids circular dependency (model → service → model)
+        # TODO: move import when split
+        from rules.services.transformation import TransformationService  # noqa: PLC0415
+        _service = TransformationService()
+
         # Action
         ACTION = Transformation.ACTION
         A_DROP = Transformation.A_DROP
@@ -2654,7 +2549,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
         A_REJECT = Transformation.A_REJECT
         A_BYPASS = Transformation.A_BYPASS
 
-        trans = self.rule.get_transformation(key=ACTION, ruleset=ruleset, override=True)
+        trans = _service.get_for_rule(self.rule, ruleset, ACTION, override=True)
         if (
             (trans in (A_DROP, A_REJECT) and self.can_drop()) or (trans == A_FILESTORE and self.can_filestore()) or (trans == A_BYPASS)
         ):
@@ -2665,7 +2560,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
         L_AUTO = Transformation.L_AUTO
         L_YES = Transformation.L_YES
 
-        trans = self.rule.get_transformation(key=LATERAL, ruleset=ruleset, override=True)
+        trans = _service.get_for_rule(self.rule, ruleset, LATERAL, override=True)
         if trans in (L_YES, L_AUTO) and self.can_lateral():
             content = self.rule.apply_transformation(content, key=Transformation.LATERAL, value=trans)
 
@@ -2675,7 +2570,7 @@ class RuleAtVersion(RangeCheckIntegerFields):
         T_DESTINATION = Transformation.T_DESTINATION
         T_AUTO = Transformation.T_AUTO
 
-        trans = self.rule.get_transformation(key=TARGET, ruleset=ruleset, override=True)
+        trans = _service.get_for_rule(self.rule, ruleset, TARGET, override=True)
         if trans in (T_SOURCE, T_DESTINATION, T_AUTO):
             content = self.rule.apply_transformation(content, key=Transformation.TARGET, value=trans)
 
@@ -2938,36 +2833,6 @@ class Ruleset(models.Model, Transformable):
         return Rule.objects.filter(
             ruletransformation__ruleset=self, ruletransformation__key=key.value, ruletransformation__value=value.value
         )
-
-    def get_transformation(self, key=Transformation.ACTION):
-        NONE = None
-        TYPE = None
-
-        if key == Transformation.ACTION:
-            NONE = Transformation.A_NONE
-            TYPE = Transformation.ActionTransfoType
-        elif key == Transformation.LATERAL:
-            NONE = Transformation.L_NO
-            TYPE = Transformation.LateralTransfoType
-        elif key == Transformation.TARGET:
-            NONE = Transformation.T_NONE
-            TYPE = Transformation.TargetTransfoType
-        else:
-            raise Exception("Key '%s' is unknown" % key)
-
-        rt = RulesetTransformation.objects.filter(key=key.value, ruleset_transformation=self).exclude(value=NONE.value)
-
-        if rt.count() > 0:
-            return TYPE(rt[0].value)
-
-        return None
-
-    def is_transformed(self, key=Transformation.ACTION, value=Transformation.A_DROP):
-        rulesets_t = Ruleset.objects.filter(
-            rulesettransformation__key=key.value, rulesettransformation__value=value.value
-        )
-
-        return self.pk in rulesets_t.values_list("pk", flat=True)
 
     def get_absolute_url(self):
         return reverse("ruleset", args=[str(self.id)])

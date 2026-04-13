@@ -44,6 +44,7 @@ from rules.forms.rule import (
 from rules.forms.ruleset import RulesetSuppressForm
 from rules.models.model import Ruleset, SuppressedRuleAtVersion, Threshold, Transformation
 from rules.models.model import Rule, RuleAtVersion, UserAction
+from rules.services.transformation import TransformationService
 from rules.suripyg import SuriHTMLFormat
 from rules.tables import RuleSuppressTable, RuleThresholdTable, ThresholdTable
 from scirius.utils import (
@@ -248,9 +249,10 @@ def build_rule_context(request: HttpRequest, rule: Rule):
                     "content": content,
                 }
 
-                # get rule transaformations
+                # get rule transformations
+                _service = TransformationService()
                 for TYPE in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-                    trans = rule.get_transformation(ruleset, TYPE, override=True)
+                    trans = _service.get_for_rule(rule, ruleset, TYPE, override=True)
                     prefix = "a_"
 
                     if TYPE == Transformation.LATERAL:
@@ -288,8 +290,10 @@ def build_rule_context(request: HttpRequest, rule: Rule):
 @permission_required("rules.ruleset_policy_edit", raise_exception=True)
 def edit_rule(request: HttpRequest, rule_id: int):
     rule_object = get_object_or_404(Rule, sid=rule_id)
+    _service = TransformationService()
 
     if request.method == "POST":  # If the form has been submitted...
+
         form = RuleTransformForm(request.POST, instance=rule_object)
         if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data["rulesets"]
@@ -320,13 +324,12 @@ def edit_rule(request: HttpRequest, rule_id: int):
                     else:
                         raise Exception("Key '%s' is unknown")
 
-                    trans = rule_object.get_transformation(ruleset, TYPE)
-
+                    trans = _service.get_for_rule(rule_object, ruleset, TYPE)
                     if form_trans == CAT_DEFAULT:
                         if trans is None:
                             continue
 
-                        cat_trans = rule_object.category.get_transformation(ruleset, TYPE)
+                        cat_trans = _service.get_for_category(rule_object.category, ruleset, TYPE)
                         if cat_trans is None:
                             cat_trans = NONE
 
@@ -390,9 +393,9 @@ def edit_rule(request: HttpRequest, rule_id: int):
 
         rulesets = Ruleset.objects.all()
         for ruleset in rulesets:
-            trans_action = rule_object.get_transformation(ruleset, Transformation.ACTION)
-            trans_lateral = rule_object.get_transformation(ruleset, Transformation.LATERAL)
-            trans_target = rule_object.get_transformation(ruleset, Transformation.TARGET)
+            trans_action = _service.get_for_rule(rule_object, ruleset, Transformation.ACTION)
+            trans_lateral = _service.get_for_rule(rule_object, ruleset, Transformation.LATERAL)
+            trans_target = _service.get_for_rule(rule_object, ruleset, Transformation.TARGET)
             all_trans = [
                 (Transformation.ACTION, trans_action),
                 (Transformation.LATERAL, trans_lateral),
@@ -438,8 +441,8 @@ def edit_rule(request: HttpRequest, rule_id: int):
         trans_cats_values = []
         trans_rulesets_values = []
         for trans_key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-            trans_cat_value = rule_object.category.get_transformation(ruleset, key=trans_key)
-            trans_ruleset_value = ruleset.get_transformation(key=trans_key)
+            trans_cat_value = _service.get_for_category(rule_object.category, ruleset, trans_key)
+            trans_ruleset_value = _service.get_for_ruleset(ruleset, trans_key)
 
             if trans_cat_value:
                 trans_cats_values.append(f"{trans_key.name.title()}: {trans_cat_value.name.title()}")
