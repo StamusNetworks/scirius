@@ -32,6 +32,7 @@ from rules.models.model import (
     UserAction,
 )
 from rules.api.permissions import NoPermission, edit_rule_permission
+from rules.services.transformation import TransformationService
 from rules.suripyg import SuriHTMLFormat
 from scirius.rest_utils import (
     ESManageMultipleESIndexesViewSet,
@@ -392,107 +393,12 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
 
     @action(detail=False, methods=["get"])
     def transformation(self, request):
-        copy_params = request.query_params.dict()
-        key_str = copy_params.pop("transfo_type", None)
-        value_str = copy_params.pop("transfo_value", None)
-
-        errors = {}
-        if key_str is None:
-            errors["transfo_type"] = ["This field is required."]
-
-        if value_str is None:
-            errors["transfo_value"] = ["This field is required."]
-
-        if len(errors) > 0:
-            raise serializers.ValidationError(errors)
-
-        params = {}
-        if key_str:
-            params["key"] = key_str
-        if value_str:
-            params["value"] = value_str
-
-        # Check wrongs filters types (other than type/value)
-        if len(copy_params) > 0:
-            params_str = ", ".join(list(copy_params.keys()))
-            raise serializers.ValidationError({"filters": ['Wrong filters: "%s"' % params_str]})
-
-        # Check key/value filters
-        # Key
-        if key_str:
-            if key_str not in list(Transformation.AVAILABLE_MODEL_TRANSFO.keys()):
-                raise serializers.ValidationError({"filters": ['Wrong filter type "%s".' % key_str]})
-
-            # Value
-            if value_str and value_str not in Transformation.AVAILABLE_MODEL_TRANSFO[key_str]:
-                raise serializers.ValidationError(
-                    {"filters": ['Wrong filter value "%s" for key "%s".' % (value_str, key_str)]}
-                )
-
-        res = {}
+        service = TransformationService()
         try:
-            Rule.enable_cache()
-
-            for ruleset in Ruleset.objects.all():
-                trans_rules = RuleTransformation.objects.filter(ruleset=ruleset, **params)
-                trans_cats = CategoryTransformation.objects.filter(ruleset=ruleset, **params)
-                trans_rulesets = RulesetTransformation.objects.filter(ruleset_transformation=ruleset, **params)
-
-                all_rules = set()
-                key = Transformation.Type(key_str)
-                value = None
-
-                if key == Transformation.ACTION:
-                    value = Transformation.ActionTransfoType(value_str)
-                elif key == Transformation.LATERAL:
-                    value = Transformation.LateralTransfoType(value_str)
-                elif key == Transformation.TARGET:
-                    value = Transformation.TargetTransfoType(value_str)
-
-                if ruleset.pk not in res:
-                    res[ruleset.pk] = {
-                        "name": ruleset.name,
-                        "transformation": {"transfo_key": key_str, "transfo_value": value_str},
-                        "rules": [],
-                    }
-
-                for trans in trans_rules:
-                    all_rules.add(trans.rule_transformation.pk)
-
-                for trans in trans_cats:
-                    category = trans.category_transformation
-                    for rule in category.rule_set.all():
-                        rule_trans_value = rule.get_transformation(ruleset, key=key)
-                        if rule_trans_value is None or rule_trans_value == value:
-                            all_rules.add(rule.sid)
-
-                if trans_rulesets:
-                    for category in ruleset.categories.all():
-                        trans_cat = CategoryTransformation.objects.filter(
-                            ruleset=ruleset, category_transformation=category
-                        )
-
-                        if trans_cat.count() == 0:
-                            for rule in category.rule_set.all():
-                                rule_trans_value = rule.get_transformation(ruleset, key=key)
-                                if rule_trans_value is None or rule_trans_value == value:
-                                    all_rules.add(rule.sid)
-                        else:
-                            for trans in trans_cat:
-                                for rule in category.rule_set.all():
-                                    rule_trans_value = rule.get_transformation(ruleset, key=key)
-                                    if trans.key == key and trans.value == value:
-                                        if rule_trans_value is None or rule_trans_value == value:
-                                            all_rules.add(rule.sid)
-                                    else:
-                                        if rule_trans_value == value:
-                                            all_rules.add(rule.sid)
-
-                res[ruleset.pk]["rules"] = list(all_rules)
-                res[ruleset.pk]["rules_count"] = len(all_rules)
-        finally:
-            Rule.disable_cache()
-
+            key_str, value_str = service.validate_transformation_filter(request.query_params.dict())
+        except ValueError as exc:
+            raise serializers.ValidationError(exc.args[0]) from exc
+        res = service.get_transformed_rules(key_str, value_str)
         return Response(res)
 
     @action(detail=True, methods=["get"])
@@ -600,8 +506,9 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
                 }
 
             res[ruleset.pk]["transformations"] = {}
+            _service = TransformationService()
             for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-                trans = rule.get_transformation(key=key, ruleset=ruleset, override=True)
+                trans = _service.get_for_rule(rule, ruleset, key, override=True)
                 res[ruleset.pk]["transformations"][key.value] = trans.value if trans else None
 
         return Response(res)
@@ -670,134 +577,79 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
-    def create(self, request, *args, **kwargs):
-        kwargs["fields"] = dict(self._fields)
-        kwargs["action_type"] = self._action_type
+    def _get_service(self) -> TransformationService:
+        return TransformationService()
 
-        comment = request.data.get("comment", None)
+    def create(self, request, *args, **kwargs):
         key = request.data.get("transfo_type")
         value = request.data.get("transfo_value")
-        trans_ok = (
-            key in Transformation.AVAILABLE_MODEL_TRANSFO and value in Transformation.AVAILABLE_MODEL_TRANSFO[key]
-        )
-        msg = ""
+        comment = request.data.get("comment")
 
-        if trans_ok is False:
-            msg = '"%s" is not a valid choice.'
-            title = "transfo_value"
-            type_ = value
-            values = Transformation.AVAILABLE_MODEL_TRANSFO.get(key, None)
-
-            if values is None:
-                title = "transfo_type"
-                type_ = key
-
-            raise serializers.ValidationError({title: [msg % type_]})
+        service = self._get_service()
+        try:
+            service.validate_key_value(key, value)
+        except ValueError as exc:
+            raise serializers.ValidationError(exc.args[0]) from exc
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Check that transformation is allowed
         if isinstance(self, RuleTransformationViewSet):
-            rule = serializer.validated_data["rule_transformation"]
-            transfo_type = Transformation.Type(key)
-            choices_ = rule.get_transformation_choices(transfo_type)
-            choices = [choice[0] for choice in choices_]
-
-            if value not in choices:
-                raise serializers.ValidationError({"transfo_value": '"%s" is not a valid choice.' % value})
+            try:
+                service.validate_rule_choices(
+                    serializer.validated_data["rule_transformation"],
+                    Transformation.Type(key),
+                    value,
+                )
+            except ValueError as exc:
+                raise serializers.ValidationError(exc.args[0]) from exc
 
         serializer.save()
+        service.log_create(serializer.validated_data, self._fields, self._action_type, request.user, comment)
 
-        comment_serializer = CommentSerializer(data={"comment": comment})
-        comment_serializer.is_valid(raise_exception=True)
-
-        fields = kwargs["fields"]
-        for key, value in dict(fields).items():
-            fields[key] = serializer.validated_data[value]
-
-        fields["comment"] = comment
-        fields["action_type"] = kwargs["action_type"]
-        fields["user"] = request.user
-        fields["transformation"] = "%s: %s" % (fields.pop("trans_type"), fields.pop("trans_value").title())
-
-        UserAction.create(**fields)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def destroy(self, request, *args, **kwargs):
-        kwargs["fields"] = dict(self._fields)
-        kwargs["action_type"] = f"delete_{self._action_type}"
-
         instance = self.get_object()
-        comment = request.data.get("comment", None)
-        comment_serializer = CommentSerializer(data={"comment": comment})
-        comment_serializer.is_valid(raise_exception=True)
+        comment = request.data.get("comment")
 
-        fields = kwargs["fields"]
-        for key, value in dict(fields).items():
-            fields[key] = getattr(instance, value)
+        service = self._get_service()
+        service.log_delete(instance, self._fields, f"delete_{self._action_type}", request.user, comment)
 
-        fields["comment"] = comment
-        fields["action_type"] = kwargs["action_type"]
-        fields["user"] = request.user
-        fields["transformation"] = "{}: {}".format(fields.pop("trans_type"), fields.pop("trans_value").title())
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-        UserAction.create(**fields)
-        return super().destroy(request, *args, **kwargs)
-
-    def _update_or_partial_update(self, request, partial):
-        params = {}
-        params["fields"] = dict(self._fields)
-        params["action_type"] = self._action_type
-
-        comment = request.data.get("comment", None)
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
         key = request.data.get("transfo_type")
         value = request.data.get("transfo_value")
-        trans_ok = (
-            key in Transformation.AVAILABLE_MODEL_TRANSFO and value in Transformation.AVAILABLE_MODEL_TRANSFO[key]
-        )
-        msg = ""
+        comment = request.data.get("comment")
 
-        if trans_ok is False:
-            msg = '"%s" is not a valid choice.'
-            title = "transfo_value"
-            type_ = value
-            values = Transformation.AVAILABLE_MODEL_TRANSFO.get(key, None)
-
-            if values is None:
-                title = "transfo_type"
-                type_ = key
-            return trans_ok, title, msg % type_
-
-        comment_serializer = CommentSerializer(data={"comment": comment})
-        comment_serializer.is_valid(raise_exception=True)
+        service = self._get_service()
+        try:
+            service.validate_key_value(key, value)
+        except ValueError as exc:
+            raise serializers.ValidationError(exc.args[0]) from exc
 
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.instance.clean()
         serializer.is_valid(raise_exception=True)
-
-        # This save is used to have the new name if user has edited transfo
         serializer.save()
 
-        fields = params["fields"]
-        for key, value in dict(fields).items():
-            if value in serializer.validated_data:
-                fields[key] = serializer.validated_data[value]
-            else:
-                if partial is True:
-                    val = getattr(instance, value, None)
-                    if val is not None:
-                        fields[key] = val
+        service.log_update(
+            instance, serializer.validated_data, self._fields, self._action_type, request.user, comment, partial=partial
+        )
 
-        fields["comment"] = comment_serializer.validated_data["comment"]
-        fields["action_type"] = params["action_type"]
-        fields["user"] = request.user
-        fields["transformation"] = "{}: {}".format(fields.pop("trans_type"), fields.pop("trans_value").title())
+        if getattr(instance, "_prefetched_objects_cache", None):
+            instance._prefetched_objects_cache = {}
 
-        UserAction.create(**fields)
-        return trans_ok, None, None
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs["partial"] = True
+        return self.update(request, *args, **kwargs)
 
 
 class CategoryTransformationSerializer(serializers.ModelSerializer):
@@ -883,24 +735,6 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
         "WRITE": ("rules.ruleset_policy_edit",),
     }
 
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        trans_ok, title, msg = self._update_or_partial_update(request, False)
-        if trans_ok is False:
-            raise serializers.ValidationError({title: [msg]})
-        return super().update(request, *args, **kwargs)
-
-    def partial_update(self, request, *args, **kwargs):
-        trans_ok, title, msg = self._update_or_partial_update(request, True)
-        if trans_ok is False:
-            raise serializers.ValidationError({title: [msg]})
-        return super().update(request, partial=True, *args, **kwargs)
-
 
 class RulesetTransformationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -981,24 +815,6 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
         "READ": ("rules.ruleset_policy_view",),
         "WRITE": ("rules.ruleset_policy_edit",),
     }
-
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    def update(self, request, pk, *args, **kwargs):
-        trans_ok, title, msg = self._update_or_partial_update(request, False)
-        if trans_ok is False:
-            raise serializers.ValidationError({title: [msg]})
-        return super().update(request, *args, **kwargs)
-
-    def partial_update(self, request, *args, **kwargs):
-        trans_ok, title, msg = self._update_or_partial_update(request, True)
-        if trans_ok is False:
-            raise serializers.ValidationError({title: [msg]})
-        return super().update(request, partial=True, *args, **kwargs)
 
 
 class RuleTransformationSerializer(serializers.ModelSerializer):
@@ -1090,21 +906,3 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
         "READ": ("rules.ruleset_policy_view",),
         "WRITE": ("rules.ruleset_policy_edit",),
     }
-
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        trans_ok, title, msg = self._update_or_partial_update(request, False)
-        if trans_ok is False:
-            raise serializers.ValidationError({title: [msg]})
-        return super().update(request, *args, **kwargs)
-
-    def partial_update(self, request, *args, **kwargs):
-        trans_ok, title, msg = self._update_or_partial_update(request, True)
-        if trans_ok is False:
-            raise serializers.ValidationError({title: [msg]})
-        return super().update(request, partial=True, *args, **kwargs)

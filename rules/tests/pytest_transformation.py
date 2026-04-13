@@ -18,6 +18,7 @@ from rules.models.model import (
     Source,
     Transformation,
 )
+from rules.services.transformation import TransformationService
 
 
 class TestData(TypedDict):
@@ -530,13 +531,13 @@ def test_category_get_transformation_direct(ruleset_with_rule: dict, transfo_key
     CategoryTransformation.objects.create(
         ruleset=rs, category_transformation=category, key=transfo_key.value, value=transfo_value.value
     )
-    assert category.get_transformation(ruleset=rs, key=transfo_key) == expected
+    assert TransformationService().get_for_category(category, rs, transfo_key) == expected
 
 
 def test_category_get_transformation_none_when_no_transfo(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
     category = ruleset_with_rule["category"]
-    assert category.get_transformation(ruleset=rs, key=Transformation.ACTION) is None
+    assert TransformationService().get_for_category(category, rs, Transformation.ACTION) is None
 
 
 def test_category_get_transformation_override_from_ruleset(ruleset_with_rule: dict):
@@ -546,7 +547,10 @@ def test_category_get_transformation_override_from_ruleset(ruleset_with_rule: di
         ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
     )
     # No CategoryTransformation; override=True falls back to the ruleset value
-    assert category.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_REJECT
+    assert (
+        TransformationService().get_for_category(category, rs, Transformation.ACTION, override=True)
+        == Transformation.A_REJECT
+    )
 
 
 def test_category_get_transformation_no_override_ignores_ruleset(ruleset_with_rule: dict):
@@ -556,7 +560,7 @@ def test_category_get_transformation_no_override_ignores_ruleset(ruleset_with_ru
         ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
     )
     # override=False: ruleset value not consulted
-    assert category.get_transformation(ruleset=rs, key=Transformation.ACTION, override=False) is None
+    assert TransformationService().get_for_category(category, rs, Transformation.ACTION, override=False) is None
 
 
 def test_category_get_transformation_direct_wins_over_ruleset(ruleset_with_rule: dict):
@@ -569,14 +573,17 @@ def test_category_get_transformation_direct_wins_over_ruleset(ruleset_with_rule:
         ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
     )
     # Category-level takes priority even with override=True
-    assert category.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_DROP
+    assert (
+        TransformationService().get_for_category(category, rs, Transformation.ACTION, override=True)
+        == Transformation.A_DROP
+    )
 
 
 def test_category_get_transformation_invalid_key(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
     category = ruleset_with_rule["category"]
     with pytest.raises(Exception, match="is unknown"):
-        category.get_transformation(ruleset=rs, key="bad_key")  # type: ignore[arg-type]
+        TransformationService().get_for_category(category, rs, "bad_key")  # type: ignore[arg-type]
 
 
 def test_category_is_transformed_true(ruleset_with_rule: dict):
@@ -585,13 +592,15 @@ def test_category_is_transformed_true(ruleset_with_rule: dict):
     CategoryTransformation.objects.create(
         ruleset=rs, category_transformation=category, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
     )
-    assert category.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+    assert TransformationService().is_transformed(category, rs, key=Transformation.ACTION, value=Transformation.A_DROP)
 
 
 def test_category_is_transformed_false_no_transfo(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
     category = ruleset_with_rule["category"]
-    assert not category.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+    assert not TransformationService().is_transformed(
+        category, rs, key=Transformation.ACTION, value=Transformation.A_DROP
+    )
 
 
 def test_category_is_transformed_false_different_value(ruleset_with_rule: dict):
@@ -604,7 +613,9 @@ def test_category_is_transformed_false_different_value(ruleset_with_rule: dict):
         value=Transformation.A_REJECT.value,
     )
     # Transformation exists but with different value
-    assert not category.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+    assert not TransformationService().is_transformed(
+        category, rs, key=Transformation.ACTION, value=Transformation.A_DROP
+    )
 
 
 # ============ Rule model method tests ============
@@ -624,13 +635,13 @@ def test_rule_get_transformation_direct(ruleset_with_rule: dict, transfo_key, tr
     RuleTransformation.objects.create(
         ruleset=rs, rule_transformation=rule, key=transfo_key.value, value=transfo_value.value
     )
-    assert rule.get_transformation(ruleset=rs, key=transfo_key) == expected
+    assert TransformationService().get_for_rule(rule, rs, transfo_key) == expected
 
 
 def test_rule_get_transformation_none_when_no_transfo(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
     rule = ruleset_with_rule["rule"]
-    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION) is None
+    assert TransformationService().get_for_rule(rule, rs, Transformation.ACTION) is None
 
 
 def test_rule_get_transformation_override_category(ruleset_with_rule: dict):
@@ -641,7 +652,7 @@ def test_rule_get_transformation_override_category(ruleset_with_rule: dict):
         ruleset=rs, category_transformation=category, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
     )
     # No rule-level; override=True falls back to category value
-    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_DROP
+    assert TransformationService().get_for_rule(rule, rs, Transformation.ACTION, override=True) == Transformation.A_DROP
 
 
 def test_rule_get_transformation_override_ruleset(ruleset_with_rule: dict):
@@ -651,7 +662,9 @@ def test_rule_get_transformation_override_ruleset(ruleset_with_rule: dict):
         ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_BYPASS.value
     )
     # No rule or category transfo; override=True falls back to ruleset value
-    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_BYPASS
+    assert (
+        TransformationService().get_for_rule(rule, rs, Transformation.ACTION, override=True) == Transformation.A_BYPASS
+    )
 
 
 def test_rule_get_transformation_rule_wins_over_category(ruleset_with_rule: dict):
@@ -664,7 +677,9 @@ def test_rule_get_transformation_rule_wins_over_category(ruleset_with_rule: dict
     RuleTransformation.objects.create(
         ruleset=rs, rule_transformation=rule, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
     )
-    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_REJECT
+    assert (
+        TransformationService().get_for_rule(rule, rs, Transformation.ACTION, override=True) == Transformation.A_REJECT
+    )
 
 
 def test_rule_get_transformation_no_override_ignores_category(ruleset_with_rule: dict):
@@ -675,36 +690,29 @@ def test_rule_get_transformation_no_override_ignores_category(ruleset_with_rule:
         ruleset=rs, category_transformation=category, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
     )
     # override=False: only rule-level check; category not consulted
-    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION, override=False) is None
+    assert TransformationService().get_for_rule(rule, rs, Transformation.ACTION, override=False) is None
 
 
 def test_rule_get_transformation_invalid_key(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
     rule = ruleset_with_rule["rule"]
     with pytest.raises(Exception, match="is unknown"):
-        rule.get_transformation(ruleset=rs, key="bad_key")  # type: ignore[arg-type]
+        TransformationService().get_for_rule(rule, rs, "bad_key")  # type: ignore[arg-type]
 
 
 def test_rule_is_transformed_false_no_transfo(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
     rule = ruleset_with_rule["rule"]
-    assert not rule.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+    assert not TransformationService().is_transformed(rule, rs, key=Transformation.ACTION, value=Transformation.A_DROP)
 
 
-@pytest.mark.xfail(
-    reason=(
-        "Rule.is_transformed DB-mode uses 'self in values_list(pk)' which compares a Rule instance "
-        "against integers — always returns False. Should use 'self.pk in values_list(pk)'."
-    ),
-    strict=True,
-)
 def test_rule_is_transformed_true(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
     rule = ruleset_with_rule["rule"]
     RuleTransformation.objects.create(
         ruleset=rs, rule_transformation=rule, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
     )
-    assert rule.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+    assert TransformationService().is_transformed(rule, rs, key=Transformation.ACTION, value=Transformation.A_DROP)
 
 
 # ============ Ruleset model method tests ============
@@ -721,12 +729,12 @@ def test_rule_is_transformed_true(ruleset_with_rule: dict):
 def test_ruleset_get_transformation_direct(ruleset_with_rule: dict, transfo_key, transfo_value, expected):
     rs = ruleset_with_rule["ruleset"]
     RulesetTransformation.objects.create(ruleset_transformation=rs, key=transfo_key.value, value=transfo_value.value)
-    assert rs.get_transformation(key=transfo_key) == expected
+    assert TransformationService().get_for_ruleset(rs, transfo_key) == expected
 
 
 def test_ruleset_get_transformation_none_when_no_transfo(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
-    assert rs.get_transformation(key=Transformation.ACTION) is None
+    assert TransformationService().get_for_ruleset(rs, Transformation.ACTION) is None
 
 
 def test_ruleset_get_transformation_excludes_action_none(ruleset_with_rule: dict):
@@ -735,7 +743,7 @@ def test_ruleset_get_transformation_excludes_action_none(ruleset_with_rule: dict
     RulesetTransformation.objects.create(
         ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_NONE.value
     )
-    assert rs.get_transformation(key=Transformation.ACTION) is None
+    assert TransformationService().get_for_ruleset(rs, Transformation.ACTION) is None
 
 
 def test_ruleset_get_transformation_excludes_lateral_no(ruleset_with_rule: dict):
@@ -744,7 +752,7 @@ def test_ruleset_get_transformation_excludes_lateral_no(ruleset_with_rule: dict)
     RulesetTransformation.objects.create(
         ruleset_transformation=rs, key=Transformation.LATERAL.value, value=Transformation.L_NO.value
     )
-    assert rs.get_transformation(key=Transformation.LATERAL) is None
+    assert TransformationService().get_for_ruleset(rs, Transformation.LATERAL) is None
 
 
 def test_ruleset_get_transformation_excludes_target_none(ruleset_with_rule: dict):
@@ -752,13 +760,13 @@ def test_ruleset_get_transformation_excludes_target_none(ruleset_with_rule: dict
     RulesetTransformation.objects.create(
         ruleset_transformation=rs, key=Transformation.TARGET.value, value=Transformation.T_NONE.value
     )
-    assert rs.get_transformation(key=Transformation.TARGET) is None
+    assert TransformationService().get_for_ruleset(rs, Transformation.TARGET) is None
 
 
 def test_ruleset_get_transformation_invalid_key(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
     with pytest.raises(Exception, match="is unknown"):
-        rs.get_transformation(key="bad_key")  # type: ignore[arg-type]
+        TransformationService().get_for_ruleset(rs, "bad_key")  # type: ignore[arg-type]
 
 
 def test_ruleset_is_transformed_true(ruleset_with_rule: dict):
@@ -766,12 +774,12 @@ def test_ruleset_is_transformed_true(ruleset_with_rule: dict):
     RulesetTransformation.objects.create(
         ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
     )
-    assert rs.is_transformed(key=Transformation.ACTION, value=Transformation.A_DROP)
+    assert TransformationService().is_transformed(rs, None, key=Transformation.ACTION, value=Transformation.A_DROP)
 
 
 def test_ruleset_is_transformed_false_no_transfo(ruleset_with_rule: dict):
     rs = ruleset_with_rule["ruleset"]
-    assert not rs.is_transformed(key=Transformation.ACTION, value=Transformation.A_DROP)
+    assert not TransformationService().is_transformed(rs, None, key=Transformation.ACTION, value=Transformation.A_DROP)
 
 
 def test_ruleset_is_transformed_false_different_value(ruleset_with_rule: dict):
@@ -779,4 +787,4 @@ def test_ruleset_is_transformed_false_different_value(ruleset_with_rule: dict):
     RulesetTransformation.objects.create(
         ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
     )
-    assert not rs.is_transformed(key=Transformation.ACTION, value=Transformation.A_DROP)
+    assert not TransformationService().is_transformed(rs, None, key=Transformation.ACTION, value=Transformation.A_DROP)
