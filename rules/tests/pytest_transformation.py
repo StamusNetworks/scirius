@@ -511,3 +511,272 @@ def test_rule_transformation_endpoint_ruleset_level(drf: APIClient, ruleset: Rul
     first_rule = Rule.objects.filter(category=first_category).first()
     assert first_rule is not None
     assert first_rule.sid in content[str(ruleset.pk)]["rules"]
+
+
+# ============ Category model method tests ============
+
+
+@pytest.mark.parametrize(
+    "transfo_key, transfo_value, expected",
+    [
+        pytest.param(Transformation.ACTION, Transformation.A_DROP, Transformation.A_DROP, id="action-drop"),
+        pytest.param(Transformation.LATERAL, Transformation.L_YES, Transformation.L_YES, id="lateral-yes"),
+        pytest.param(Transformation.TARGET, Transformation.T_SOURCE, Transformation.T_SOURCE, id="target-src"),
+    ],
+)
+def test_category_get_transformation_direct(ruleset_with_rule: dict, transfo_key, transfo_value, expected):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    CategoryTransformation.objects.create(
+        ruleset=rs, category_transformation=category, key=transfo_key.value, value=transfo_value.value
+    )
+    assert category.get_transformation(ruleset=rs, key=transfo_key) == expected
+
+
+def test_category_get_transformation_none_when_no_transfo(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    assert category.get_transformation(ruleset=rs, key=Transformation.ACTION) is None
+
+
+def test_category_get_transformation_override_from_ruleset(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
+    )
+    # No CategoryTransformation; override=True falls back to the ruleset value
+    assert category.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_REJECT
+
+
+def test_category_get_transformation_no_override_ignores_ruleset(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
+    )
+    # override=False: ruleset value not consulted
+    assert category.get_transformation(ruleset=rs, key=Transformation.ACTION, override=False) is None
+
+
+def test_category_get_transformation_direct_wins_over_ruleset(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    CategoryTransformation.objects.create(
+        ruleset=rs, category_transformation=category, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
+    )
+    # Category-level takes priority even with override=True
+    assert category.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_DROP
+
+
+def test_category_get_transformation_invalid_key(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    with pytest.raises(Exception, match="is unknown"):
+        category.get_transformation(ruleset=rs, key="bad_key")  # type: ignore[arg-type]
+
+
+def test_category_is_transformed_true(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    CategoryTransformation.objects.create(
+        ruleset=rs, category_transformation=category, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    assert category.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+
+
+def test_category_is_transformed_false_no_transfo(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    assert not category.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+
+
+def test_category_is_transformed_false_different_value(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    CategoryTransformation.objects.create(
+        ruleset=rs,
+        category_transformation=category,
+        key=Transformation.ACTION.value,
+        value=Transformation.A_REJECT.value,
+    )
+    # Transformation exists but with different value
+    assert not category.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+
+
+# ============ Rule model method tests ============
+
+
+@pytest.mark.parametrize(
+    "transfo_key, transfo_value, expected",
+    [
+        pytest.param(Transformation.ACTION, Transformation.A_REJECT, Transformation.A_REJECT, id="action-reject"),
+        pytest.param(Transformation.LATERAL, Transformation.L_YES, Transformation.L_YES, id="lateral-yes"),
+        pytest.param(Transformation.TARGET, Transformation.T_SOURCE, Transformation.T_SOURCE, id="target-src"),
+    ],
+)
+def test_rule_get_transformation_direct(ruleset_with_rule: dict, transfo_key, transfo_value, expected):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    RuleTransformation.objects.create(
+        ruleset=rs, rule_transformation=rule, key=transfo_key.value, value=transfo_value.value
+    )
+    assert rule.get_transformation(ruleset=rs, key=transfo_key) == expected
+
+
+def test_rule_get_transformation_none_when_no_transfo(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION) is None
+
+
+def test_rule_get_transformation_override_category(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    category = ruleset_with_rule["category"]
+    CategoryTransformation.objects.create(
+        ruleset=rs, category_transformation=category, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    # No rule-level; override=True falls back to category value
+    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_DROP
+
+
+def test_rule_get_transformation_override_ruleset(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_BYPASS.value
+    )
+    # No rule or category transfo; override=True falls back to ruleset value
+    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_BYPASS
+
+
+def test_rule_get_transformation_rule_wins_over_category(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    category = ruleset_with_rule["category"]
+    CategoryTransformation.objects.create(
+        ruleset=rs, category_transformation=category, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    RuleTransformation.objects.create(
+        ruleset=rs, rule_transformation=rule, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
+    )
+    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION, override=True) == Transformation.A_REJECT
+
+
+def test_rule_get_transformation_no_override_ignores_category(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    category = ruleset_with_rule["category"]
+    CategoryTransformation.objects.create(
+        ruleset=rs, category_transformation=category, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    # override=False: only rule-level check; category not consulted
+    assert rule.get_transformation(ruleset=rs, key=Transformation.ACTION, override=False) is None
+
+
+def test_rule_get_transformation_invalid_key(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    with pytest.raises(Exception, match="is unknown"):
+        rule.get_transformation(ruleset=rs, key="bad_key")  # type: ignore[arg-type]
+
+
+def test_rule_is_transformed_false_no_transfo(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    assert not rule.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+
+
+@pytest.mark.xfail(
+    reason=(
+        "Rule.is_transformed DB-mode uses 'self in values_list(pk)' which compares a Rule instance "
+        "against integers — always returns False. Should use 'self.pk in values_list(pk)'."
+    ),
+    strict=True,
+)
+def test_rule_is_transformed_true(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    RuleTransformation.objects.create(
+        ruleset=rs, rule_transformation=rule, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    assert rule.is_transformed(ruleset=rs, key=Transformation.ACTION, value=Transformation.A_DROP)
+
+
+# ============ Ruleset model method tests ============
+
+
+@pytest.mark.parametrize(
+    "transfo_key, transfo_value, expected",
+    [
+        pytest.param(Transformation.ACTION, Transformation.A_DROP, Transformation.A_DROP, id="action-drop"),
+        pytest.param(Transformation.LATERAL, Transformation.L_YES, Transformation.L_YES, id="lateral-yes"),
+        pytest.param(Transformation.TARGET, Transformation.T_SOURCE, Transformation.T_SOURCE, id="target-src"),
+    ],
+)
+def test_ruleset_get_transformation_direct(ruleset_with_rule: dict, transfo_key, transfo_value, expected):
+    rs = ruleset_with_rule["ruleset"]
+    RulesetTransformation.objects.create(ruleset_transformation=rs, key=transfo_key.value, value=transfo_value.value)
+    assert rs.get_transformation(key=transfo_key) == expected
+
+
+def test_ruleset_get_transformation_none_when_no_transfo(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    assert rs.get_transformation(key=Transformation.ACTION) is None
+
+
+def test_ruleset_get_transformation_excludes_action_none(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    # "none" action value is excluded from the query
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_NONE.value
+    )
+    assert rs.get_transformation(key=Transformation.ACTION) is None
+
+
+def test_ruleset_get_transformation_excludes_lateral_no(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    # "no" is the NONE equivalent for lateral and is excluded
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.LATERAL.value, value=Transformation.L_NO.value
+    )
+    assert rs.get_transformation(key=Transformation.LATERAL) is None
+
+
+def test_ruleset_get_transformation_excludes_target_none(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.TARGET.value, value=Transformation.T_NONE.value
+    )
+    assert rs.get_transformation(key=Transformation.TARGET) is None
+
+
+def test_ruleset_get_transformation_invalid_key(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    with pytest.raises(Exception, match="is unknown"):
+        rs.get_transformation(key="bad_key")  # type: ignore[arg-type]
+
+
+def test_ruleset_is_transformed_true(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    assert rs.is_transformed(key=Transformation.ACTION, value=Transformation.A_DROP)
+
+
+def test_ruleset_is_transformed_false_no_transfo(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    assert not rs.is_transformed(key=Transformation.ACTION, value=Transformation.A_DROP)
+
+
+def test_ruleset_is_transformed_false_different_value(ruleset_with_rule: dict):
+    rs = ruleset_with_rule["ruleset"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
+    )
+    assert not rs.is_transformed(key=Transformation.ACTION, value=Transformation.A_DROP)
