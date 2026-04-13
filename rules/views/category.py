@@ -27,6 +27,7 @@ from django.shortcuts import get_object_or_404, redirect
 from rules.forms.category import CategoryTransformForm
 from rules.forms.ruleset import RulesetSuppressForm
 from rules.models.model import Category, Ruleset, Transformation, Rule, UserAction
+from rules.services.transformation import TransformationService
 from rules.tables import CategoryRulesetTable, CategoryTable, RuleTable
 from scirius.utils import (
     scirius_listing,
@@ -76,6 +77,7 @@ def category(request: HttpRequest, cat_id: int):
         tables.RequestConfig(request).configure(commented_rules_table)
         rule_struct["commented_rules"] = commented_rules_table
 
+        _service = TransformationService()
         for ruleset in Ruleset.objects.all():
             status = "Inactive"
             if cat in ruleset.categories.all():
@@ -83,7 +85,7 @@ def category(request: HttpRequest, cat_id: int):
 
             transformations = {}
             for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-                trans = cat.get_transformation(ruleset, key, override=True)
+                trans = _service.get_for_category(cat, ruleset, key, override=True)
                 if trans:
                     transformations[key] = f"{key.value.capitalize()}: {trans.value.capitalize()}"
 
@@ -144,17 +146,18 @@ def transform_category(request: HttpRequest, cat_id: int):
                         LOOP = (Transformation.T_SOURCE, Transformation.T_DESTINATION, Transformation.T_AUTO)
                         RULESET_DEFAULT = Transformation.T_RULESET_DEFAULT
 
-                    trans = cat_object.get_transformation(ruleset, key=TYPE)
+                    _service = TransformationService()
+                    trans = _service.get_for_category(cat_object, ruleset, TYPE)
 
                     if form_trans == RULESET_DEFAULT:
-                        cat_object.suppress_transformation(ruleset, key=TYPE)
+                        _service.suppress_transformation(cat_object, ruleset, TYPE)
                         continue
 
                     for _trans in LOOP:
                         if _trans == form_trans:
                             continue
 
-                        if cat_object.is_transformed(ruleset, key=TYPE, value=_trans):
+                        if _service.is_transformed(cat_object, ruleset, key=TYPE, value=_trans):
                             cat_object.toggle_transformation(ruleset, key=TYPE, value=_trans)
 
                     # Enable new transformation
@@ -201,10 +204,11 @@ def transform_category(request: HttpRequest, cat_id: int):
         }
 
         rulesets = Ruleset.objects.all()
+        _service = TransformationService()
         for ruleset in rulesets:
-            trans_action = cat_object.get_transformation(ruleset, Transformation.ACTION)
-            trans_lateral = cat_object.get_transformation(ruleset, Transformation.LATERAL)
-            trans_target = cat_object.get_transformation(ruleset, Transformation.TARGET)
+            trans_action = _service.get_for_category(cat_object, ruleset, Transformation.ACTION)
+            trans_lateral = _service.get_for_category(cat_object, ruleset, Transformation.LATERAL)
+            trans_target = _service.get_for_category(cat_object, ruleset, Transformation.TARGET)
             all_trans = [
                 (Transformation.ACTION, trans_action),
                 (Transformation.LATERAL, trans_lateral),
@@ -243,10 +247,11 @@ def transform_category(request: HttpRequest, cat_id: int):
     ruleset_transforms = []
     rulesets = Ruleset.objects.all()
 
+    _service = TransformationService()
     for ruleset in rulesets:
         trans_values = []
         for trans_key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-            trans_value = ruleset.get_transformation(key=trans_key)
+            trans_value = _service.get_for_ruleset(ruleset, trans_key)
             if trans_value:
                 trans_values.append(f"{trans_key.name.title()}: {trans_value.name.title()}")
 

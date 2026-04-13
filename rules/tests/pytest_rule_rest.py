@@ -15,6 +15,7 @@ from rules.models.model import (
     RuleTransformation,
     UserAction,
 )
+from rules.services.transformation import TransformationService
 
 
 @pytest.fixture
@@ -106,12 +107,14 @@ def test_004_rule_transformation(drf: APIClient, ruleset, category, rule):
     )
     assert resp.status_code == status.HTTP_201_CREATED
 
+    service = TransformationService()
+
     # Check inheritance on category
-    transformation = category.get_transformation(ruleset=ruleset, key=Transformation.ACTION, override=True)
+    transformation = service.get_for_category(category, ruleset, Transformation.ACTION, override=True)
     assert transformation == Transformation.A_FILESTORE
 
     # Check inheritance on rule
-    transformation = rule.get_transformation(ruleset=ruleset, key=Transformation.ACTION, override=True)
+    transformation = service.get_for_rule(rule, ruleset, Transformation.ACTION, override=True)
     assert transformation == Transformation.A_FILESTORE
 
     # Transform Category
@@ -127,11 +130,11 @@ def test_004_rule_transformation(drf: APIClient, ruleset, category, rule):
     assert resp.status_code == status.HTTP_201_CREATED
 
     # Check category transformation
-    transformation = category.get_transformation(ruleset=ruleset, key=Transformation.ACTION)
+    transformation = service.get_for_category(category, ruleset, Transformation.ACTION)
     assert transformation == Transformation.A_DROP
 
     # Check inheritance on rule (from category)
-    transformation = rule.get_transformation(ruleset=ruleset, key=Transformation.ACTION, override=True)
+    transformation = service.get_for_rule(rule, ruleset, Transformation.ACTION, override=True)
     assert transformation == Transformation.A_DROP
 
     # Transform rule
@@ -151,7 +154,7 @@ def test_004_rule_transformation(drf: APIClient, ruleset, category, rule):
     assert transformed.count() == 1
     assert transformed[0].pk == rule.pk
 
-    transformation = rule.get_transformation(ruleset=ruleset, key=Transformation.ACTION)
+    transformation = service.get_for_rule(rule, ruleset, Transformation.ACTION)
     assert transformation == Transformation.A_REJECT
 
     # Transform same rule
