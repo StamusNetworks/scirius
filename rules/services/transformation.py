@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import structlog
+
 from rules.django_repository.category import CategoryRepository
 from rules.django_repository.rule import RuleRepository
 from rules.django_repository.ruleset import RulesetRepository
@@ -17,6 +19,8 @@ from rules.models.model import (
 
 if TYPE_CHECKING:
     from django.contrib.auth.models import User
+
+logger = structlog.get_logger("django_structlog")
 
 # Maps a Transformation.Type key to the matching enum class and "NONE" sentinel.
 _TYPE_MAP = {
@@ -48,6 +52,7 @@ class TransformationService:
 
     def _resolve_type(self, key: Transformation.Type) -> type:
         if key not in _TYPE_MAP:
+            logger.warning("unknown_transformation_key", key=str(key))
             raise Exception(f"Key '{key}' is unknown")
         return _TYPE_MAP[key]
 
@@ -58,14 +63,22 @@ class TransformationService:
     def validate_key_value(self, key: str | None, value: str | None) -> None:
         """Raise ValueError when the (key, value) pair is not a valid transformation."""
         if key not in Transformation.AVAILABLE_MODEL_TRANSFO:
+            logger.warning("invalid_transformation_key", transfo_type=key)
             raise ValueError({"transfo_type": [f'"{key}" is not a valid choice.']})
         if value not in Transformation.AVAILABLE_MODEL_TRANSFO[key]:
+            logger.warning("invalid_transformation_value", transfo_type=key, transfo_value=value)
             raise ValueError({"transfo_value": [f'"{value}" is not a valid choice.']})
 
     def validate_rule_choices(self, rule: Rule, transfo_type: Transformation.Type, value: str) -> None:
         """Raise ValueError when value is not an allowed choice for this specific rule."""
         choices = [choice[0] for choice in rule.get_transformation_choices(transfo_type)]
         if value not in choices:
+            logger.warning(
+                "invalid_rule_transformation_choice",
+                rule=rule.sid,
+                transfo_type=transfo_type.value,
+                transfo_value=value,
+            )
             raise ValueError({"transfo_value": [f'"{value}" is not a valid choice.']})
 
     def validate_transformation_filter(self, query_params: dict[str, Any]) -> tuple[str, str]:
@@ -84,17 +97,25 @@ class TransformationService:
         if value_str is None:
             errors["transfo_value"] = ["This field is required."]
         if errors:
+            logger.warning("missing_transformation_filter_params", errors=errors)
             raise ValueError(errors)
 
         if params:
+            logger.warning("unknown_transformation_filter_params", extra_params=list(params.keys()))
             raise ValueError(
                 {"filters": ['Wrong filters: "{}"'.format(", ".join(params.keys()))]}
             )
 
         if key_str not in Transformation.AVAILABLE_MODEL_TRANSFO:
+            logger.warning("invalid_transformation_filter_key", transfo_type=key_str)
             raise ValueError({"filters": [f'Wrong filter type "{key_str}".']})
 
         if value_str not in Transformation.AVAILABLE_MODEL_TRANSFO[key_str]:
+            logger.warning(
+                "invalid_transformation_filter_value",
+                transfo_type=key_str,
+                transfo_value=value_str,
+            )
             raise ValueError(
                 {"filters": [f'Wrong filter value "{value_str}" for key "{key_str}".']}
             )
@@ -119,9 +140,14 @@ class TransformationService:
         TYPE = self._resolve_type(key)
         NONE = _NONE_MAP[key]
         row = self._ruleset_repo.get_transformation(ruleset, key.value)
-        if row is not None and row.value != NONE.value:
-            return TYPE(row.value)
-        return None
+        result = TYPE(row.value) if (row is not None and row.value != NONE.value) else None
+        logger.debug(
+            "get_transformation_for_ruleset",
+            ruleset=ruleset.pk,
+            key=key.value,
+            value=result.value if result else None,
+        )
+        return result
 
     def get_for_category(
         self,
@@ -140,27 +166,38 @@ class TransformationService:
         Respects the in-memory ``Category.TRANSFORMATIONS`` cache when active.
         """
         TYPE = self._resolve_type(key)
+        result = None
 
         if Category.TRANSFORMATIONS == {}:
             # DB path
             row = self._category_repo.get_transformation(category, ruleset, key.value)
             if row is not None:
-                return TYPE(row.value)
-            if override:
-                return self.get_for_ruleset(ruleset, key)
+                result = TYPE(row.value)
+            elif override:
+                result = self.get_for_ruleset(ruleset, key)
         else:
             # Cache path (Category.enable_cache() was called)
             category_str = Category.__name__.lower()
             ruleset_str = Ruleset.__name__.lower()
             for trans, tsets in Category.TRANSFORMATIONS[key][category_str].items():
                 if category.pk in tsets:
-                    return trans
-            if override:
+                    result = trans
+                    break
+            if result is None and override:
                 for trans, tsets in Category.TRANSFORMATIONS[key][ruleset_str].items():
                     if tsets and ruleset.pk in tsets:
-                        return trans
+                        result = trans
+                        break
 
-        return None
+        logger.debug(
+            "get_transformation_for_category",
+            category=category.pk,
+            ruleset=ruleset.pk,
+            key=key.value,
+            override=override,
+            value=result.value if result else None,
+        )
+        return result
 
     def _get_for_rule_from_cache(
         self, rule: Rule, ruleset: Ruleset, key: Transformation.Type, override: bool
@@ -198,20 +235,28 @@ class TransformationService:
         Respects the in-memory ``Rule.TRANSFORMATIONS`` cache when active.
         """
         TYPE = self._resolve_type(key)
+        result = None
 
         if Rule.TRANSFORMATIONS != {}:
-            return self._get_for_rule_from_cache(rule, ruleset, key, override)
+            result = self._get_for_rule_from_cache(rule, ruleset, key, override)
+        else:
+            # DB path
+            row = self._rule_repo.get_transformation(rule, ruleset, key.value)
+            if row is not None:
+                result = TYPE(row.value)
+            elif override:
+                cat_row = self._category_repo.get_transformation(rule.category, ruleset, key.value)
+                result = TYPE(cat_row.value) if cat_row is not None else self.get_for_ruleset(ruleset, key)
 
-        # DB path
-        row = self._rule_repo.get_transformation(rule, ruleset, key.value)
-        if row is not None:
-            return TYPE(row.value)
-        if override:
-            cat_row = self._category_repo.get_transformation(rule.category, ruleset, key.value)
-            if cat_row is not None:
-                return TYPE(cat_row.value)
-            return self.get_for_ruleset(ruleset, key)
-        return None
+        logger.debug(
+            "get_transformation_for_rule",
+            rule=rule.sid,
+            ruleset=ruleset.pk,
+            key=key.value,
+            override=override,
+            value=result.value if result else None,
+        )
+        return result
 
     def is_transformed(
         self,
@@ -230,35 +275,64 @@ class TransformationService:
                          a list of integers)
         - ``Ruleset``  — checks ``RulesetTransformation`` directly
         """
+        result: bool
         if isinstance(obj, Category):
             if Category.TRANSFORMATIONS == {}:
-                return CategoryTransformation.objects.filter(
+                result = CategoryTransformation.objects.filter(
                     ruleset=ruleset,
                     category_transformation=obj,
                     key=key.value,
                     value=value.value,
                 ).exists()
-            category_str = Category.__name__.lower()
-            return obj.pk in Category.TRANSFORMATIONS[key][category_str][value]
+            else:
+                category_str = Category.__name__.lower()
+                result = obj.pk in Category.TRANSFORMATIONS[key][category_str][value]
+            logger.debug(
+                "is_transformed",
+                category=obj.pk,
+                ruleset=ruleset.pk if ruleset else None,
+                key=key.value,
+                value=value.value,
+                result=result,
+            )
+            return result
 
         if isinstance(obj, Rule):
             if Rule.TRANSFORMATIONS == {}:
-                return RuleTransformation.objects.filter(
+                result = RuleTransformation.objects.filter(
                     ruleset=ruleset,
                     rule_transformation=obj,
                     key=key.value,
                     value=value.value,
                 ).exists()
-            rule_str = Rule.__name__.lower()
-            return obj.pk in Rule.TRANSFORMATIONS[key][rule_str][value]
+            else:
+                rule_str = Rule.__name__.lower()
+                result = obj.pk in Rule.TRANSFORMATIONS[key][rule_str][value]
+            logger.debug(
+                "is_transformed",
+                rule=obj.sid,
+                ruleset=ruleset.pk if ruleset else None,
+                key=key.value,
+                value=value.value,
+                result=result,
+            )
+            return result
 
         # Ruleset — no cache path needed
         if isinstance(obj, Ruleset):
-            return Ruleset.objects.filter(
+            result = Ruleset.objects.filter(
                 pk=obj.pk,
                 rulesettransformation__key=key.value,
                 rulesettransformation__value=value.value,
             ).exists()
+            logger.debug(
+                "is_transformed",
+                ruleset=obj.pk,
+                key=key.value,
+                value=value.value,
+                result=result,
+            )
+            return result
 
         raise TypeError(f"Cannot check transformation for type {type(obj)!r}")
 
@@ -269,6 +343,12 @@ class TransformationService:
         key: Transformation.Type,
     ) -> None:
         """Delete the CategoryTransformation row for *category* + *ruleset* + *key*."""
+        logger.debug(
+            "suppress_transformation",
+            category=category.pk,
+            ruleset=ruleset.pk,
+            key=key.value,
+        )
         self._category_repo.delete_transformation(category, ruleset, key.value)
 
     # ------------------------------------------------------------------
