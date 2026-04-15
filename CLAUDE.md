@@ -14,7 +14,7 @@ These paths are filtered out when building the open-source `master` branch:
 
 - `appliances/`, `ui/app/appliance/`, `stamus-docs/`, `ui/cypress/`
 - `tests/`, `debian/`, `ansible/`, `volumetry/`
-- `.gitlab-ci-rf.yml`, `.gitlab-ci-cypress.yml`, `.gitlab-ci-manual-es6.yml`, `.gitlab-ci-always.yml`, `.gitlab-ci-manual.yml`, `.gitlab-ci-functests.yml`, `.gitlab-ci-docker.yml`
+- `.gitlab-ci-rf.yml`, `.gitlab-ci-cypress.yml`, `.gitlab-ci-manual-es6.yml`, `.gitlab-ci-always.yml`, `.gitlab-ci-manual.yml`, `.gitlab-ci-functests.yml`, `.gitlab-ci-docker.yml`, `.gitlab-ci-claude-review.yml`
 - `.gitlab-test.sh`, `requirements-app.txt`, `requirements-base.txt`
 
 Everything else is considered open-source code.
