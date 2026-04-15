@@ -13,6 +13,7 @@ urlpatterns = [
     path('viz/', include('viz.urls')),
     re_path(r'^' + settings.RULESET_MIDDLEWARE + '/', include('' + settings.RULESET_MIDDLEWARE + '.urls')),
     path('rest/', include(router.urls)),
+    path('api/v1/', include(router.urls)),
     path('api/v2/', include(router_v2.urls)),
     re_path(r'^stamus(/.*)?$', ui_view),
     path('', homepage),
