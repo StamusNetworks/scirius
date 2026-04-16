@@ -13,6 +13,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from rules.es_graphs import (
@@ -392,7 +393,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
         return Response(result)
 
     @action(detail=False, methods=["get"])
-    def transformation(self, request):
+    def transformation(self, request: Request):
         service = TransformationService()
         try:
             key_str, value_str = service.validate_transformation_filter(request.query_params.dict())
