@@ -788,3 +788,109 @@ def test_ruleset_is_transformed_false_different_value(ruleset_with_rule: dict):
         ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
     )
     assert not TransformationService().is_transformed(rs, None, key=Transformation.ACTION, value=Transformation.A_DROP)
+
+
+# ============ get_transformed_rules (ruleset-level inheritance) ============
+
+
+@pytest.fixture
+def multi_category_ruleset(db):
+    """Ruleset with two categories, one rule each — no transformations."""
+    source = Source.objects.create(name="mc source", created_date=timezone.now(), method="local", datatype="sig")
+    cat_a = Category.objects.create(name="cat-a", filename="cat_a.rules", source=source)
+    cat_b = Category.objects.create(name="cat-b", filename="cat_b.rules", source=source)
+    rule_a = Rule.objects.create(sid=2001, category=cat_a, msg="rule a")
+    rule_b = Rule.objects.create(sid=2002, category=cat_b, msg="rule b")
+    rs = Ruleset.objects.create(
+        name="mc ruleset", descr="", created_date=timezone.now(), updated_date=timezone.now()
+    )
+    rs.sources.add(source)
+    rs.categories.add(cat_a, cat_b)
+    return {"ruleset": rs, "cat_a": cat_a, "cat_b": cat_b, "rule_a": rule_a, "rule_b": rule_b}
+
+
+def test_get_transformed_rules_empty_when_no_ruleset_transfo(ruleset_with_rule: dict):
+    """No RulesetTransformation → early return, no rules in result."""
+    rs = ruleset_with_rule["ruleset"]
+    result = TransformationService().get_transformed_rules("action", "drop")
+    assert result[rs.pk]["rules"] == []
+
+
+def test_get_transformed_rules_ruleset_level_includes_rule(ruleset_with_rule: dict):
+    """RulesetTransformation with no category/rule overrides → rule is included."""
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    result = TransformationService().get_transformed_rules("action", "drop")
+    assert rule.sid in result[rs.pk]["rules"]
+
+
+def test_get_transformed_rules_ruleset_level_excludes_rule_with_different_rule_transfo(ruleset_with_rule: dict):
+    """Rule-level transformation with a different value overrides the ruleset → rule excluded."""
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    RuleTransformation.objects.create(
+        ruleset=rs, rule_transformation=rule, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
+    )
+    result = TransformationService().get_transformed_rules("action", "drop")
+    assert rule.sid not in result[rs.pk]["rules"]
+
+
+def test_get_transformed_rules_ruleset_level_multi_category(multi_category_ruleset: dict):
+    """Ruleset transformation with two unconfigured categories → both rules included."""
+    rs = multi_category_ruleset["ruleset"]
+    rule_a = multi_category_ruleset["rule_a"]
+    rule_b = multi_category_ruleset["rule_b"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    result = TransformationService().get_transformed_rules("action", "drop")
+    rules = result[rs.pk]["rules"]
+    assert rule_a.sid in rules
+    assert rule_b.sid in rules
+
+
+def test_get_transformed_rules_category_transfo_does_not_block_ruleset_cascade(multi_category_ruleset: dict):
+    """A CategoryTransformation with a different value does not exclude rules from the ruleset-level
+    result — only an explicit rule-level override with a conflicting value does."""
+    rs = multi_category_ruleset["ruleset"]
+    cat_b = multi_category_ruleset["cat_b"]
+    rule_a = multi_category_ruleset["rule_a"]
+    rule_b = multi_category_ruleset["rule_b"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    # cat_b has a category-level reject — but no rule-level override, so rule_b still inherits
+    # the ruleset-level drop via the else branch in _rules_from_ruleset_transformations.
+    CategoryTransformation.objects.create(
+        ruleset=rs,
+        category_transformation=cat_b,
+        key=Transformation.ACTION.value,
+        value=Transformation.A_REJECT.value,
+    )
+    result = TransformationService().get_transformed_rules("action", "drop")
+    rules = result[rs.pk]["rules"]
+    assert rule_a.sid in rules
+    assert rule_b.sid in rules  # no rule-level override → included
+
+
+def test_get_transformed_rules_rule_override_excludes_in_multi_category(multi_category_ruleset: dict):
+    """An explicit rule-level transformation with a different value is the correct way to exclude a rule."""
+    rs = multi_category_ruleset["ruleset"]
+    rule_a = multi_category_ruleset["rule_a"]
+    rule_b = multi_category_ruleset["rule_b"]
+    RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+    RuleTransformation.objects.create(
+        ruleset=rs, rule_transformation=rule_b, key=Transformation.ACTION.value, value=Transformation.A_REJECT.value
+    )
+    result = TransformationService().get_transformed_rules("action", "drop")
+    rules = result[rs.pk]["rules"]
+    assert rule_a.sid in rules
+    assert rule_b.sid not in rules  # rule-level reject overrides the ruleset-level drop

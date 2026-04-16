@@ -18,9 +18,6 @@ class CategoryRepository:
             qs = qs.filter(value=value)
         return qs
 
-    def list_for_category(self, ruleset: Ruleset, category: Category) -> QuerySet[CategoryTransformation]:
-        return CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=category)
-
     def get_transformation(self, category: Category, ruleset: Ruleset, key: str) -> CategoryTransformation | None:
         return CategoryTransformation.objects.filter(
             ruleset=ruleset, category_transformation=category, key=key

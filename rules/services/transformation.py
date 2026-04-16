@@ -81,7 +81,7 @@ class TransformationService:
 
     def validate_key_value(self, key: str | None, value: str | None) -> None:
         """Raise ValueError when the (key, value) pair is not a valid transformation."""
-        if key not in Transformation.AVAILABLE_MODEL_TRANSFO:
+        if key is None or key not in Transformation.AVAILABLE_MODEL_TRANSFO:
             logger.warning("invalid_transformation_key", transfo_type=key)
             raise ValueError({"transfo_type": [f'"{key}" is not a valid choice.']})
         if value not in Transformation.AVAILABLE_MODEL_TRANSFO[key]:
@@ -107,6 +107,7 @@ class TransformationService:
         Returns ``(key_str, value_str)`` on success; raises ValueError otherwise.
         """
         params = dict(query_params)
+        # pop items to check for unwanted extra params later
         key_str = params.pop("transfo_type", None)
         value_str = params.pop("transfo_value", None)
 
@@ -453,26 +454,20 @@ class TransformationService:
     def _rules_from_ruleset_transformations(
         self, ruleset: Ruleset, key: Transformation.Type, value: Any, key_str: str, value_str: str
     ) -> set[int]:
-        """Extracts SIDs transformed via global ruleset inheritance."""
+        """Extracts SIDs transformed via global ruleset inheritance.
+
+        Only an explicit rule-level override with a different value excludes a rule.
+        Category-level transformations do not block the ruleset cascade.
+        """
         sids: set[int] = set()
         if not self._ruleset_repo.list_transformations(ruleset, key=key_str, value=value_str):
             return sids
 
         for category in ruleset.categories.all():
-            trans_cat_list = list(self._category_repo.list_for_category(ruleset, category))
-            if not trans_cat_list:
-                for rule in category.rule_set.all():
-                    rule_trans_value = self.get_for_rule(rule, ruleset, key)
-                    if rule_trans_value is None or rule_trans_value == value:
-                        sids.add(rule.sid)
-            else:
-                for trans in trans_cat_list:
-                    for rule in category.rule_set.all():
-                        rule_trans_value = self.get_for_rule(rule, ruleset, key)
-                        if ((trans.key == key and trans.value == value) or (rule_trans_value == value)) and (
-                            rule_trans_value is None or rule_trans_value == value
-                        ):
-                            sids.add(rule.sid)
+            for rule in category.rule_set.all():
+                rule_trans_value = self.get_for_rule(rule, ruleset, key)
+                if rule_trans_value is None or rule_trans_value == value:
+                    sids.add(rule.sid)
         return sids
 
     # ------------------------------------------------------------------
