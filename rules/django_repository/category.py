@@ -30,3 +30,11 @@ class CategoryRepository:
         CategoryTransformation.objects.filter(
             ruleset=ruleset, category_transformation=category, key=key
         ).delete()
+
+    def transformation_exists(self, ruleset: Ruleset, category: Category, key: str, value: str) -> bool:
+        return CategoryTransformation.objects.filter(
+            ruleset=ruleset,
+            category_transformation=category,
+            key=key,
+            value=value,
+        ).exists()
