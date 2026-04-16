@@ -5,7 +5,7 @@ from django.db.models import QuerySet
 from rules.models.model import Rule, RuleTransformation, Ruleset
 
 
-class RuleRepositoryIterface(ABC):
+class RuleRepositoryInterface(ABC):
     @abstractmethod
     def rules(
         self,
@@ -19,7 +19,7 @@ class RuleRepositoryIterface(ABC):
         pass
 
 
-class RuleRepository(RuleRepositoryIterface):
+class RuleRepository(RuleRepositoryInterface):
     def rules(
         self,
         sids: list[int] | None = None,
