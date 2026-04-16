@@ -9,11 +9,8 @@ from rules.django_repository.rule import RuleRepository
 from rules.django_repository.ruleset import RulesetRepository
 from rules.models.model import (
     Category,
-    CategoryTransformation,
     Rule,
-    RuleTransformation,
     Ruleset,
-    RulesetTransformation,
     Transformation,
     UserAction,
 )
@@ -291,12 +288,7 @@ class TransformationService:
         result: bool
         if isinstance(obj, Category):
             if Category.TRANSFORMATIONS == {}:
-                result = CategoryTransformation.objects.filter(
-                    ruleset=ruleset,
-                    category_transformation=obj,
-                    key=key.value,
-                    value=value.value,
-                ).exists()
+                result = self._category_repo.transformation_exists(ruleset, obj, key.value, value.value)
             else:
                 result = obj.pk in Category.TRANSFORMATIONS[key][_CATEGORY_KEY][value]
             logger.debug(
@@ -311,12 +303,7 @@ class TransformationService:
 
         if isinstance(obj, Rule):
             if Rule.TRANSFORMATIONS == {}:
-                result = RuleTransformation.objects.filter(
-                    ruleset=ruleset,
-                    rule_transformation=obj,
-                    key=key.value,
-                    value=value.value,
-                ).exists()
+                result = self._rule_repo.transformation_exists(ruleset, obj, key.value, value.value)
             else:
                 result = obj.pk in Rule.TRANSFORMATIONS[key][_RULE_KEY][value]
             logger.debug(
@@ -331,11 +318,7 @@ class TransformationService:
 
         # Ruleset — no cache path needed
         if isinstance(obj, Ruleset):
-            result = RulesetTransformation.objects.filter(
-                ruleset_transformation=obj,
-                key=key.value,
-                value=value.value,
-            ).exists()
+            result = self._ruleset_repo.transformation_exists(obj, key.value, value.value)
             logger.debug(
                 "is_transformed",
                 ruleset=obj.pk,

@@ -61,3 +61,11 @@ class RuleRepository(RuleRepositoryInterface):
 
     def get_transformation(self, rule: Rule, ruleset: Ruleset, key: str) -> RuleTransformation | None:
         return RuleTransformation.objects.filter(ruleset=ruleset, rule_transformation=rule, key=key).first()
+
+    def transformation_exists(self, ruleset: Ruleset, rule: Rule, key: str, value: str) -> bool:
+        return RuleTransformation.objects.filter(
+            ruleset=ruleset,
+            rule_transformation=rule,
+            key=key,
+            value=value,
+        ).exists()
