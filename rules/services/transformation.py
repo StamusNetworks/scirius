@@ -438,17 +438,22 @@ class TransformationService:
         self, ruleset: Ruleset, key: Transformation.Type, value: Any, key_str: str, value_str: str
     ) -> set[int]:
         """Extracts SIDs transformed via category inheritance."""
-        sids = set()
-        trans_cats = (
+        # Bulk-fetch all transformed category IDs in one query to avoid an N+1 when
+        # iterating over rules per category.  A select_related + prefetch_related on
+        # the same FK path is unreliable: select_related pre-fills the instance cache
+        # so the prefetch machinery skips that level and never populates rule_set.
+        category_ids = set(
             self._category_repo.list_transformations(ruleset, key=key_str, value=value_str)
-            .select_related("category_transformation")
-            .prefetch_related("category_transformation__rule_set")
+            .values_list("category_transformation_id", flat=True)
         )
-        for trans in trans_cats:
-            for rule in trans.category_transformation.rule_set.all():
-                rule_trans_value = self.get_for_rule(rule, ruleset, key)
-                if rule_trans_value is None or rule_trans_value == value:
-                    sids.add(rule.sid)
+        if not category_ids:
+            return set()
+
+        sids = set()
+        for rule in Rule.objects.filter(category_id__in=category_ids):
+            rule_trans_value = self.get_for_rule(rule, ruleset, key)
+            if rule_trans_value is None or rule_trans_value == value:
+                sids.add(rule.sid)
         return sids
 
     def _rules_from_ruleset_transformations(
