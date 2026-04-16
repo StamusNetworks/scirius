@@ -20,3 +20,10 @@ class RulesetRepository:
 
     def get_transformation(self, ruleset: Ruleset, key: str) -> RulesetTransformation | None:
         return RulesetTransformation.objects.filter(ruleset_transformation=ruleset, key=key).first()
+
+    def transformation_exists(self, ruleset: Ruleset, key: str, value: str) -> bool:
+        return RulesetTransformation.objects.filter(
+            ruleset_transformation=ruleset,
+            key=key,
+            value=value,
+        ).exists()
