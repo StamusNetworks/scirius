@@ -1,12 +1,14 @@
 from collections.abc import Callable
 from typing import TypedDict
+from unittest.mock import MagicMock
 import pytest
 
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
+from rules.api.rule import CategoryTransformationViewSet, RuleTransformationViewSet, RulesetTransformationViewSet
 from rules.models.model import (
     Category,
     CategoryTransformation,
@@ -907,3 +909,89 @@ def test_get_transformed_rules_rule_override_excludes_in_multi_category(multi_ca
     rules = result[rs.pk]["rules"]
     assert rule_a.sid in rules
     assert rule_b.sid not in rules  # rule-level reject overrides the ruleset-level drop
+
+
+# ============ Dependency injection — ViewSet unit tests ============
+
+
+def _mock_service() -> MagicMock:
+    svc = MagicMock(spec=TransformationService)
+    svc.validate_key_value.return_value = None
+    svc.log_create.return_value = None
+    svc.log_delete.return_value = None
+    svc.log_update.return_value = None
+    return svc
+
+
+@pytest.mark.parametrize(
+    "viewset_class, url_name, extra_body",
+    [
+        pytest.param(RulesetTransformationViewSet, "rulesettransformation-list", {}, id="ruleset"),
+        pytest.param(CategoryTransformationViewSet, "categorytransformation-list", {}, id="category"),
+        pytest.param(RuleTransformationViewSet, "ruletransformation-list", {}, id="rule"),
+    ],
+)
+def test_transformation_viewset_create_uses_injected_service(
+    default_profile, ruleset_with_rule, viewset_class, url_name, extra_body
+):
+    """create() must delegate validation and logging to the injected service, not a fresh one."""
+    rs = ruleset_with_rule["ruleset"]
+    category = ruleset_with_rule["category"]
+    rule = ruleset_with_rule["rule"]
+
+    body: dict = {"ruleset": rs.pk, "transfo_type": "action", "transfo_value": "drop"}
+    if viewset_class is CategoryTransformationViewSet:
+        body["category"] = category.pk
+    elif viewset_class is RuleTransformationViewSet:
+        body["rule"] = rule.pk
+
+    svc = _mock_service()
+    factory = APIRequestFactory()
+    request = factory.post("/", body, format="json")
+    force_authenticate(request, user=default_profile["user"])
+
+    view = viewset_class.as_view({"post": "create"}, service=svc)
+    response = view(request)
+
+    assert response.status_code == status.HTTP_201_CREATED
+    svc.validate_key_value.assert_called_once_with("action", "drop")
+    svc.log_create.assert_called_once()
+
+
+def test_transformation_viewset_destroy_uses_injected_service(default_profile, ruleset_with_rule):
+    """destroy() must delegate logging to the injected service."""
+    rs = ruleset_with_rule["ruleset"]
+    transfo = RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+
+    svc = _mock_service()
+    factory = APIRequestFactory()
+    request = factory.delete("/")
+    force_authenticate(request, user=default_profile["user"])
+
+    view = RulesetTransformationViewSet.as_view({"delete": "destroy"}, service=svc)
+    response = view(request, pk=transfo.pk)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    svc.log_delete.assert_called_once()
+
+
+def test_transformation_viewset_update_uses_injected_service(default_profile, ruleset_with_rule):
+    """update() must delegate validation and logging to the injected service."""
+    rs = ruleset_with_rule["ruleset"]
+    transfo = RulesetTransformation.objects.create(
+        ruleset_transformation=rs, key=Transformation.ACTION.value, value=Transformation.A_DROP.value
+    )
+
+    svc = _mock_service()
+    factory = APIRequestFactory()
+    request = factory.patch("/", {"ruleset": rs.pk, "transfo_type": "action", "transfo_value": "reject"}, format="json")
+    force_authenticate(request, user=default_profile["user"])
+
+    view = RulesetTransformationViewSet.as_view({"patch": "partial_update"}, service=svc)
+    response = view(request, pk=transfo.pk)
+
+    assert response.status_code == status.HTTP_200_OK
+    svc.validate_key_value.assert_called_once_with("action", "reject")
+    svc.log_update.assert_called_once()

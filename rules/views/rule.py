@@ -188,6 +188,7 @@ def build_rule_context(request: HttpRequest, rule: Rule):
     # real_version of the rule which can be u39
     # u40 are be shown but actions are done on u39 rule at versions
     versions = MIDDLEWARE.common.rules_version()
+    _service = TransformationService()
     added = []
     for version in versions:
         real_version = Rule.get_last_real_version(version, pk=rule.pk)
@@ -250,7 +251,6 @@ def build_rule_context(request: HttpRequest, rule: Rule):
                 }
 
                 # get rule transformations
-                _service = TransformationService()
                 for TYPE in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
                     trans = _service.get_for_rule(rule, ruleset, TYPE, override=True)
                     prefix = "a_"
