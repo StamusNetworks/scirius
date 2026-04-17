@@ -453,6 +453,19 @@ def test_rule_transformations(drf: APIClient, ruleset_with_rule: dict, transfo_t
     assert RuleTransformation.objects.count() == 0
 
 
+def test_rule_transformation_create_rejects_invalid_rule_choice(drf: APIClient, ruleset_with_rule: dict):
+    """POSTing a transfo_value that is not a valid choice for the specific rule returns 400.
+
+    The fixture rule uses protocol 'tcp', so can_filestore() is False and 'filestore' is
+    excluded from its ACTION choices by get_transformation_choices().
+    """
+    rs = ruleset_with_rule["ruleset"]
+    rule = ruleset_with_rule["rule"]
+    params = {"rule": rule.pk, "ruleset": rs.pk, "transfo_type": "action", "transfo_value": "filestore"}
+    resp = drf.post(reverse("ruletransformation-list"), params)
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+
+
 @pytest.mark.parametrize(
     "query_string, expected_error_key",
     [
