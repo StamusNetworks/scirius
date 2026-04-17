@@ -360,6 +360,12 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
         "WRITE": ("rules.ruleset_policy_edit",),
     }
 
+    service: TransformationService = None  # type: ignore[assignment]
+
+    def __init__(self, service: TransformationService | None = None, **kwargs):
+        super().__init__(**kwargs)
+        self.transformation_service = service if service is not None else TransformationService()
+
     def get_permissions(self):
         if self.action == "delete_alerts":
             if not self.request.user.has_perm("rules.events_edit"):
@@ -394,12 +400,11 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
 
     @action(detail=False, methods=["get"])
     def transformation(self, request: Request):
-        service = TransformationService()
         try:
-            key_str, value_str = service.validate_transformation_filter(request.query_params.dict())
+            key_str, value_str = self.transformation_service.validate_transformation_filter(request.query_params.dict())
         except ValueError as exc:
             raise serializers.ValidationError(exc.args[0]) from exc
-        res = service.get_transformed_rules(key_str, value_str)
+        res = self.transformation_service.get_transformed_rules(key_str, value_str)
         return Response(res)
 
     @action(detail=True, methods=["get"])
@@ -507,9 +512,8 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
                 }
 
             res[ruleset.pk]["transformations"] = {}
-            _service = TransformationService()
             for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-                trans = _service.get_for_rule(rule, ruleset, key, override=True)
+                trans = self.transformation_service.get_for_rule(rule, ruleset, key, override=True)
                 res[ruleset.pk]["transformations"][key.value] = trans.value if trans else None
 
         return Response(res)
@@ -578,17 +582,21 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
-    def _get_service(self) -> TransformationService:
-        return TransformationService()
+    # Class-level sentinel so DRF's as_view() hasattr() check accepts 'service' as an initkwarg.
+    # __init__ always replaces this with a real TransformationService instance.
+    service: TransformationService = None  # type: ignore[assignment]
+
+    def __init__(self, service: TransformationService | None = None, **kwargs):
+        super().__init__(**kwargs)
+        self.transformation_service = service if service is not None else TransformationService()
 
     def create(self, request, *args, **kwargs):
         key = request.data.get("transfo_type")
         value = request.data.get("transfo_value")
         comment = request.data.get("comment")
 
-        service = self._get_service()
         try:
-            service.validate_key_value(key, value)
+            self.transformation_service.validate_key_value(key, value)
         except ValueError as exc:
             raise serializers.ValidationError(exc.args[0]) from exc
 
@@ -596,7 +604,9 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         serializer.save()
-        service.log_create(serializer.validated_data, self._fields, self._action_type, request.user, comment)
+        self.transformation_service.log_create(
+            serializer.validated_data, self._fields, self._action_type, request.user, comment
+        )
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -605,8 +615,9 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         comment = request.data.get("comment")
 
-        service = self._get_service()
-        service.log_delete(instance, self._fields, f"delete_{self._action_type}", request.user, comment)
+        self.transformation_service.log_delete(
+            instance, self._fields, f"delete_{self._action_type}", request.user, comment
+        )
 
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -617,9 +628,8 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         value = request.data.get("transfo_value")
         comment = request.data.get("comment")
 
-        service = self._get_service()
         try:
-            service.validate_key_value(key, value)
+            self.transformation_service.validate_key_value(key, value)
         except ValueError as exc:
             raise serializers.ValidationError(exc.args[0]) from exc
 
@@ -629,7 +639,7 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        service.log_update(
+        self.transformation_service.log_update(
             instance, serializer.validated_data, self._fields, self._action_type, request.user, comment, partial=partial
         )
 
@@ -824,7 +834,9 @@ class RuleTransformationSerializer(serializers.ModelSerializer):
         value = attrs.get("value")
         if rule and key and value:
             try:
-                TransformationService().validate_rule_choices(rule, Transformation.Type(key), value)
+                view = self.context.get("view")
+                service = view.transformation_service if view is not None else TransformationService()
+                service.validate_rule_choices(rule, Transformation.Type(key), value)
             except ValueError as exc:
                 raise serializers.ValidationError(exc.args[0]) from exc
         return attrs
