@@ -115,6 +115,7 @@ def transform_category(request: HttpRequest, cat_id: int):
         form = CategoryTransformForm(request.POST, request=request)
         if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data["rulesets"]
+            _service = TransformationService()
 
             for ruleset in rulesets:
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
@@ -146,7 +147,6 @@ def transform_category(request: HttpRequest, cat_id: int):
                         LOOP = (Transformation.T_SOURCE, Transformation.T_DESTINATION, Transformation.T_AUTO)
                         RULESET_DEFAULT = Transformation.T_RULESET_DEFAULT
 
-                    _service = TransformationService()
                     trans = _service.get_for_category(cat_object, ruleset, TYPE)
 
                     if form_trans == RULESET_DEFAULT:
