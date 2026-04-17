@@ -595,16 +595,6 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        if isinstance(self, RuleTransformationViewSet):
-            try:
-                service.validate_rule_choices(
-                    serializer.validated_data["rule_transformation"],
-                    Transformation.Type(key),
-                    value,
-                )
-            except ValueError as exc:
-                raise serializers.ValidationError(exc.args[0]) from exc
-
         serializer.save()
         service.log_create(serializer.validated_data, self._fields, self._action_type, request.user, comment)
 
@@ -827,6 +817,17 @@ class RuleTransformationSerializer(serializers.ModelSerializer):
             "transfo_type": {"source": "key"},
             "transfo_value": {"source": "value"},
         }
+
+    def validate(self, attrs):
+        rule = attrs.get("rule_transformation")
+        key = attrs.get("key")
+        value = attrs.get("value")
+        if rule and key and value:
+            try:
+                TransformationService().validate_rule_choices(rule, Transformation.Type(key), value)
+            except ValueError as exc:
+                raise serializers.ValidationError(exc.args[0]) from exc
+        return attrs
 
 
 @extend_schema(tags=["Rule", "Transformation"])
