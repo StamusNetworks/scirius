@@ -350,6 +350,14 @@ class TransformationService:
     # UserAction logging helpers
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _format_transformation_field(fields: dict[str, Any]) -> None:
+        """Pop trans_type/trans_value from *fields* and write a formatted ``transformation`` key."""
+        fields["transformation"] = "{}: {}".format(
+            fields.pop("trans_type"),
+            fields.pop("trans_value").title(),
+        )
+
     def _build_action_fields(  # noqa: PLR0913
         self,
         source: dict | object,
@@ -366,10 +374,7 @@ class TransformationService:
         fields["comment"] = comment
         fields["action_type"] = action_type
         fields["user"] = user
-        fields["transformation"] = "{}: {}".format(
-            fields.pop("trans_type"),
-            fields.pop("trans_value").title(),
-        )
+        self._format_transformation_field(fields)
         return fields
 
     def log_create(
@@ -407,10 +412,7 @@ class TransformationService:
         fields["comment"] = comment
         fields["action_type"] = action_type
         fields["user"] = user
-        fields["transformation"] = "{}: {}".format(
-            fields.pop("trans_type"),
-            fields.pop("trans_value").title(),
-        )
+        self._format_transformation_field(fields)
         UserAction.create(**fields)
 
     def log_delete(
