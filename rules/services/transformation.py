@@ -450,7 +450,9 @@ class TransformationService:
             return set()
 
         sids = set()
-        for rule in Rule.objects.filter(category_id__in=category_ids):
+        for rule in (
+            Rule.objects.filter(category_id__in=category_ids).only("pk", "sid", "category_id").iterator(chunk_size=512)
+        ):
             rule_trans_value = self.get_for_rule(rule, ruleset, key)
             if rule_trans_value is None or rule_trans_value == value:
                 sids.add(rule.sid)
@@ -468,11 +470,14 @@ class TransformationService:
         if not self._ruleset_repo.list_transformations(ruleset, key=key_str, value=value_str):
             return sids
 
-        for category in ruleset.categories.all():
-            for rule in category.rule_set.all():
-                rule_trans_value = self.get_for_rule(rule, ruleset, key)
-                if rule_trans_value is None or rule_trans_value == value:
-                    sids.add(rule.sid)
+        category_ids = set(ruleset.categories.values_list("id", flat=True))
+        if not category_ids:
+            return sids
+
+        for rule in Rule.objects.filter(category_id__in=category_ids).only("sid", "category_id"):
+            rule_trans_value = self.get_for_rule(rule, ruleset, key)
+            if rule_trans_value is None or rule_trans_value == value:
+                sids.add(rule.sid)
         return sids
 
     # ------------------------------------------------------------------
