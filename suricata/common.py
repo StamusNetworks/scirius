@@ -352,7 +352,9 @@ def login_redirection_url(request):
 
 
 def current_user_js(request):
-    return 'var current_user = %s;\n' % orjson.dumps(request.user.sciriususer.to_dict(json_compatible=True).decode('utf-8'))
+    return 'var current_user = {};\n'.format(
+        orjson.dumps(request.user.sciriususer.to_dict(json_compatible=True)).decode('utf-8')
+    )
 
 
 def rule_version(_):
