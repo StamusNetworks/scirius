@@ -578,7 +578,7 @@ def rule_toggle_availability(request, rule_id):
     rule = get_object_or_404(Rule, pk=rule_id)
 
     if request.method != "POST":
-        context = {"object": rule, "error": "Invalid action"}
+        context = {"object": rule, "rule": rule, "comment_form": RuleCommentForm(), "error": "Invalid action"}
         return scirius_render(request, "rules/rule.html", context)
 
     for rav in rule.ruleatversion_set.all():
@@ -597,10 +597,10 @@ def rule_toggle_availability(request, rule_id):
 @permission_required("rules.ruleset_policy_edit", raise_exception=True)
 def rav_toggle_availability(request: HttpRequest, rav_id: int):
     rav = get_object_or_404(RuleAtVersion, pk=rav_id)
-    rule = Rule.objects.get(pk=rav.rule.sid)
+    rule = Rule.objects.get(sid=rav.rule.sid)
 
     if request.method != "POST":
-        context = {"object": rule, "error": "Invalid action"}
+        context = {"object": rule, "rule": rule, "comment_form": RuleCommentForm(), "error": "Invalid action"}
         return scirius_render(request, "rules/rule.html", context)
 
     rav.toggle_availability()
