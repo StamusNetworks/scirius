@@ -54,6 +54,7 @@ from scirius.utils import (
 )
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
+_service = TransformationService()
 
 
 @permission_required("rules.ruleset_policy_view", raise_exception=True)
@@ -188,7 +189,6 @@ def build_rule_context(request: HttpRequest, rule: Rule):
     # real_version of the rule which can be u39
     # u40 are be shown but actions are done on u39 rule at versions
     versions = MIDDLEWARE.common.rules_version()
-    _service = TransformationService()
     added = []
     for version in versions:
         real_version = Rule.get_last_real_version(version, pk=rule.pk)
@@ -290,7 +290,6 @@ def build_rule_context(request: HttpRequest, rule: Rule):
 @permission_required("rules.ruleset_policy_edit", raise_exception=True)
 def edit_rule(request: HttpRequest, rule_id: int):
     rule_object = get_object_or_404(Rule, sid=rule_id)
-    _service = TransformationService()
 
     if request.method == "POST":  # If the form has been submitted...
 

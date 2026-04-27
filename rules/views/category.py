@@ -35,6 +35,7 @@ from scirius.utils import (
 )
 
 MIDDLEWARE = __import__(settings.RULESET_MIDDLEWARE)
+_service = TransformationService()
 
 
 @permission_required("rules.ruleset_policy_view", raise_exception=True)
@@ -77,7 +78,6 @@ def category(request: HttpRequest, cat_id: int):
         tables.RequestConfig(request).configure(commented_rules_table)
         rule_struct["commented_rules"] = commented_rules_table
 
-        _service = TransformationService()
         for ruleset in Ruleset.objects.all():
             status = "Inactive"
             if cat in ruleset.categories.all():
@@ -115,7 +115,6 @@ def transform_category(request: HttpRequest, cat_id: int):
         form = CategoryTransformForm(request.POST, request=request)
         if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data["rulesets"]
-            _service = TransformationService()
 
             for ruleset in rulesets:
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
@@ -204,7 +203,6 @@ def transform_category(request: HttpRequest, cat_id: int):
         }
 
         rulesets = Ruleset.objects.all()
-        _service = TransformationService()
         for ruleset in rulesets:
             trans_action = _service.get_for_category(cat_object, ruleset, Transformation.ACTION)
             trans_lateral = _service.get_for_category(cat_object, ruleset, Transformation.LATERAL)
@@ -247,7 +245,6 @@ def transform_category(request: HttpRequest, cat_id: int):
     ruleset_transforms = []
     rulesets = Ruleset.objects.all()
 
-    _service = TransformationService()
     for ruleset in rulesets:
         trans_values = []
         for trans_key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
