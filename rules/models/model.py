@@ -3092,6 +3092,9 @@ class RuleTransformation(Transformation):
 
     class Meta:
         unique_together = ("ruleset", "rule_transformation", "key")
+        indexes = [
+            models.Index(fields=["ruleset", "rule_transformation", "key", "value"], name="rt_rk_key_value_idx"),
+        ]
 
 
 class SuppressedRuleAtVersion(models.Model):
@@ -3108,6 +3111,9 @@ class CategoryTransformation(Transformation):
 
     class Meta:
         unique_together = ("ruleset", "category_transformation", "key")
+        indexes = [
+            models.Index(fields=["ruleset", "category_transformation", "key", "value"], name="ct_rk_key_value_idx"),
+        ]
 
 
 class RulesetTransformation(Transformation):
@@ -3115,6 +3121,9 @@ class RulesetTransformation(Transformation):
 
     class Meta:
         unique_together = ("ruleset_transformation", "key")
+        indexes = [
+            models.Index(fields=["ruleset_transformation", "key", "value"], name="rst_rk_key_value_idx"),
+        ]
 
 
 class Threshold(models.Model):
