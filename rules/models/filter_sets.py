@@ -462,14 +462,6 @@ FILTER_SETS: list[FilterSetDict] = [
     },
     {
         "content": [
-            {"negated": False, "fullString": True, "id": "alert.severity", "value": 1, "label": "alert.severity: 1"}
-        ],
-        "name": "Hunt: Severity 1 events",
-        "page": "DASHBOARDS",
-        "description": 'This filter highlights the events classified as "Severity 1" by one of the rulesets. Use case examples: Hunters can use this filter to immediately prioritize the most critical detections in the environment, focusing investigation resources on events that represent the highest confidence or most severe threat indicators. It provides an efficient triage mechanism during incident response, ensuring that the highest-risk activity receives immediate analyst attention.',
-    },
-    {
-        "content": [
             {
                 "negated": True,
                 "fullString": False,
