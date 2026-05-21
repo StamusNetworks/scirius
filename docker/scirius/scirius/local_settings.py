@@ -21,6 +21,8 @@ Django settings for the Scirius project.
 """
 
 import os
+from typing import Final
+
 import structlog
 from distutils.util import strtobool
 
@@ -285,6 +287,7 @@ CSP_EXCLUDE_URL_PREFIXES = tuple(os.getenv('CSP_EXCLUDE_URL_PREFIXES', '/evebox'
 GIT_SOURCES_BASE_DIRECTORY = '/data/git-sources/'
 
 SCIRIUS_VERSION = os.getenv('SCIRIUS_VERSION', '1.0.0')
+LOGIN_REDIRECT_URL: Final[str] = "/scout/explorer"
 LOGO = 'rules/stamus.png'
 
 ENGINE = "django.db.backends.postgresql"
