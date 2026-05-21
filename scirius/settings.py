@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import contextlib
 import os
+from typing import Final
+
 import structlog
 from distutils.version import LooseVersion
 from django import get_version
@@ -564,6 +566,7 @@ GENERATED_BASE_DIR = '/data/'
 FLOCK_PATH = os.path.join(GENERATED_BASE_DIR, 'lock')
 
 LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL: Final[str] = "/ui/explorer"
 
 IPWARE_PRIVATE_IP_PREFIX = ()
 
