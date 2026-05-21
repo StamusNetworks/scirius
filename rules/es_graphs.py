@@ -58,7 +58,7 @@ def get_es_major_version():
 
     try:
         es_version = fetch_es_version()
-        if es_version[0] == 1 or es_version[0] == 2:
+        if es_version[0] in (1, 2, 3):
             es_version[0] = 7
             ES_VERSION = es_version
             return 7
