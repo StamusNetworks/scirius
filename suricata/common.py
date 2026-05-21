@@ -345,9 +345,9 @@ def use_stamuslogger():
     return False
 
 
-def login_redirection_url(request):
+def login_redirection_url(request) -> str:
     if request.user.has_perm('rules.events_view'):
-        return '/ui/explorer'
+        return getattr(settings, "LOGIN_REDIRECT_URL", "/ui/explorer")
     return '/rules'
 
 
