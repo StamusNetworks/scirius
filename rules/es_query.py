@@ -456,7 +456,7 @@ class ESQuery:
         result: dict[str, dict[str, str]] = {}
         indexes = get_middleware_module("common").get_es_indexes()
         for index in indexes:
-            full_mapping = self.es.indices.get_mapping(index)
+            full_mapping = self.es.indices.get_mapping(index=index)
             for content in full_mapping.values():
                 result |= self._extract_mapping_types(content["mappings"]["properties"])
         return result
@@ -543,7 +543,7 @@ class ESQuery:
                               request_timeout=self.TIMEOUT)
 
     def is_read_only(self, index=None):
-        settings_ = self.es.indices.get_settings(index)
+        settings_ = self.es.indices.get_settings(index=index)
 
         for val in settings_.values():
             if 'settings' in val:
